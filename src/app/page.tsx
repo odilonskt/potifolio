@@ -1,9 +1,12 @@
+import Start from "@/components/start/page";
 
 export default function Home() {
   return (
-    <main>
-      <h1>Welcome to Next.js!</h1>
-    </main>
-  );    
-
+    <>
+      <link rel="icon" href="/favicon.svg" sizes="any" />
+      <main>
+        <Start></Start>
+      </main>
+    </>
+  );
 }
