@@ -2,9 +2,9 @@
 
 export default function Header() {
   const menuItems = [
-    { label: "Início", href: "#" },
-    { label: "Meio", href: "#" },
-    { label: "Fim", href: "#" },
+    { label: "Início", href: "#start" },
+    { label: "Meio", href: "#meio" },
+    { label: "Fim", href: "#fim" },
   ];
 
   return (
