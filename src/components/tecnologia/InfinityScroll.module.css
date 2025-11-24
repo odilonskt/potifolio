@@ -41,7 +41,7 @@
 .scrollContent {
   display: flex;
   gap: 4.5rem;
-  animation: infinite-scroll 37s linear infinite;
+  animation: infinite-scroll 60s linear infinite;
 }
 
 .scrollContent:hover {
