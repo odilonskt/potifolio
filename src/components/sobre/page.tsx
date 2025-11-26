@@ -1,7 +1,9 @@
 import Titan from "../titan/page";
 
 interface SobreProps {
-  descrition: string;
+  descrition_softSkill: string;
+  descrition_hardSkill: string;
+  descrition_estudo: string;
   id: string;
 }
 
@@ -22,7 +24,21 @@ export default function Sobre(props: SobreProps) {
                        leading-relaxed sm:leading-loose md:leading-loose
                        text-justify sm:text-left"
           >
-            {props.descrition}
+            {props.descrition_hardSkill}
+          </p>
+          <p
+            className="text-base sm:text-lg md:text-xl lg:text-2xl 
+                       leading-relaxed sm:leading-loose md:leading-loose
+                       text-justify sm:text-left"
+          >
+            {props.descrition_softSkill}
+          </p>
+          <p
+            className="text-base sm:text-lg md:text-xl lg:text-2xl 
+                       leading-relaxed sm:leading-loose md:leading-loose
+                       text-justify sm:text-left"
+          >
+            {props.descrition_estudo}
           </p>
         </div>
       </div>
