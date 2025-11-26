@@ -13,10 +13,22 @@ export default function Home() {
         <Start id="start"></Start>
         <Sobre
           id="meio"
-          descrition="Sou Desenvolvedor Full Stack  focado em JavaScript/TypeScript, Node.js e React, com experiência prática na criação de APIs RESTful e Single-Page Applications (SPA). Tenho proficiência em MySQL e Git/GitHub, além de interesse constante em aprimorar minhas habilidades técnicas. Atualmente, curso Análise e Desenvolvimento de Sistemas na PUC Minas e sou formando pelo programa Programadores do Amanhã, iniciativa de formação intensiva em tecnologia e empregabilidade. Busco minha primeira oportunidade como Desenvolvedor Full Stack em Desenvolvimento, onde possa aplicar meus conhecimentos, aprender com profissionais experientes e contribuir para projetos desafiadores. Sou curioso, proativo e comunicativo, com facilidade de aprendizado e gosto por trabalhar em equipe. Acredito na tecnologia como ferramenta de transformação e estou pronto para colocar meu potencial em prática."
+          descrition_hardSkill="Desenvolvedor Full Stack com foco em JavaScript/TypeScript, Node.js e React
+Experiência prática na criação de APIs RESTful e Single-Page Applications (SPA)
+Proficiência em MySQL e Git/GitHub
+Interesse contínuo em aprimorar habilidades técnicas e explorar novas tecnologias."
+          descrition_softSkill="Profissional curioso, proativo e comunicativo
+Facilidade de aprendizado e adaptação a novas ferramentas
+Boa capacidade de trabalho em equipe
+Motivado a contribuir em projetos desafiadores e aprender com profissionais experientes."
+          descrition_estudo="Cursando Análise e Desenvolvimento de Sistemas na PUC Minas
+sou Formando em Desenvolvedor Web pelo programa Programadores do Amanhã, com foco em tecnologia e empregabilidade
+Buscando minha primeira oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecimentos na prática."
         />
-        <InfinityScrollAnimation />
-        <Localition id="fim" />
+        <section id="Tecnologia" className="pt-8 sm:pt-16">
+          <InfinityScrollAnimation />
+          <Localition />
+        </section>
       </main>
     </>
   );
