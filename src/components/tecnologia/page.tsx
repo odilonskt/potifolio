@@ -29,7 +29,6 @@ const technologies = [
   { icon: SiPostgresql, name: "PostgreSQL", color: "text-blue-600" },
   { icon: SiTailwindcss, name: "Tailwind", color: "text-cyan-400" },
   { icon: SiGit, name: "Git", color: "text-orange-500" },
-
   { icon: TbApi, name: "RESTful", color: "text-green-500" },
   { icon: SiCss3, name: "CSS3", color: "text-blue-600" },
   { icon: SiExpress, name: "Express", color: "text-gray-700" },
@@ -44,38 +43,39 @@ export default function InfinityScrollAnimation({
 }: InfinityScrollAnimationProps) {
   return (
     <>
-      <Titan title="Tecnologia:" />
-      <div className="w-full max-w-6xl mx-auto" id={id}>
-        <div className={styles.scrollContainer}>
-          {/* efeito blur lateral */}
-          <div className={styles.leftBlur}></div>
-          <div className={styles.rightBlur}></div>
+      <section
+        className=" flex flex-col items-center justify-center max-w-6xl mx-auto p-4"
+        id="Tecnologia"
+      >
+        <Titan title="Tecnologia:" />
+        <div className="w-full max-w-6xl mx-auto" id={id}>
+          <div className={styles.scrollContainer}>
+            {/* efeito blur lateral */}
+            <div className={styles.leftBlur}></div>
+            <div className={styles.rightBlur}></div>
 
-          <div className={styles.scrollWrapper}>
-            <div className={styles.scrollContent}>
-              {[
-                ...technologies,
-                ...technologies,
-                ...technologies,
-                ...technologies,
-                ...technologies,
-                ...technologies,
-                ...technologies,
-                ...technologies,
-                ...technologies,
-                ...technologies,
-                ...technologies,
-                ...technologies,
-              ].map((tech, index) => (
-                <div key={index} className={styles.techItem}>
-                  <tech.icon className={`text-5xl ${tech.color}`} />
-                  <span className="mt-2 text-white text-sm">{tech.name}</span>
-                </div>
-              ))}
+            <div className={styles.scrollWrapper}>
+              <div className={styles.scrollContent}>
+                {[
+                  ...technologies,
+                  ...technologies,
+                  ...technologies,
+                  ...technologies,
+                ].map((tech, index) => (
+                  <div key={index} className={styles.techItem}>
+                    <tech.icon
+                      className={`text-3xl md:text-4xl lg:text-5xl ${tech.color}`}
+                    />
+                    <span className="mt-1 md:mt-2 text-white text-xs md:text-sm">
+                      {tech.name}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
     </>
   );
 }
