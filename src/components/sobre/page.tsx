@@ -26,6 +26,7 @@ export default function Sobre(props: SobreProps) {
           >
             {props.descrition_hardSkill}
           </p>
+          <br></br>
           <p
             className="text-base sm:text-lg md:text-xl lg:text-2xl 
                        leading-relaxed sm:leading-loose md:leading-loose
@@ -33,6 +34,7 @@ export default function Sobre(props: SobreProps) {
           >
             {props.descrition_softSkill}
           </p>
+          <br></br>
           <p
             className="text-base sm:text-lg md:text-xl lg:text-2xl 
                        leading-relaxed sm:leading-loose md:leading-loose
