@@ -1,10 +1,13 @@
 import Titan from "../titan/page";
 interface LocalitionProps {
-  id: string;
+  id?: string;
 }
 export default function Localition({ id }: LocalitionProps) {
   return (
-    <div className="w-full flex flex-col items-center p-4 sm:p-6" id={id}>
+    <div
+      className="w-full  h-dvh flex flex-col items-center p-4 sm:p-6"
+      id={id}
+    >
       <Titan title="Localização:" />
       <div className="w-full max-w-6xl mt-4 sm:mt-8">
         <iframe
