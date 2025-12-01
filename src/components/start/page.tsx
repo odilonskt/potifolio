@@ -28,9 +28,12 @@ export default function Start({ id }: StartProps) {
           />
         </div>
         <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-4 sm:gap-6 max-w-2xl">
-          <h1 className=" text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold leading-tight ">
-            Desenvolvedor Full-Stack
+          <h1 className=" text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white leading-tight drop-shadow-[0_0_10px_rgba(34,211,238,0.5)] ">
+            Odilon de Campos
           </h1>
+          <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white drop-shadow-[0_0_10px_rgba(34,211,238,0.5)]">
+            Full-Stack Developer
+          </h2>
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-gray-300 max-w-lg">
             Criando soluções digitais inovadoras com tecnologias modernas
           </p>
