@@ -34,7 +34,7 @@ Buscando minha primeira oportunidade como Desenvolvedor Full Stack, para aplicar
         </section>
 
         <section id="Projeto">
-          <ProjectPage></ProjectPage>
+          <ProjectPage />
         </section>
 
         <section className="py-20 bg-black" id="Contato">
