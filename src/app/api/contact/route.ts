@@ -1,14 +1,13 @@
-import { saveContactForm } from "@/lib/firebase";
 import { contactFormSchema } from "@/lib/schemas/contact-form";
 import { NextRequest, NextResponse } from "next/server";
+
+// Marcar como dinâmico para não ser otimizado durante build
+export const dynamic = "force-dynamic";
 
 export async function POST(request: NextRequest) {
   try {
     // Verificar se o Firebase está configurado
     if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
-      console.error(
-        "Firebase não configurado - variáveis de ambiente ausentes"
-      );
       return NextResponse.json(
         {
           success: false,
@@ -18,7 +17,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Dados inválidos",
+        },
+        { status: 400 }
+      );
+    }
 
     // Validar
     const validatedData = contactFormSchema.safeParse(body);
@@ -35,15 +45,30 @@ export async function POST(request: NextRequest) {
 
     const data = validatedData.data;
 
-    // Salvar no Firebase
-    const result = await saveContactForm(data);
-
-    if (!result.success) {
-      console.error("Erro ao salvar:", result.error);
+    // Importar apenas quando necessário (runtime)
+    let saveContactForm;
+    try {
+      const firebaseModule = await import("@/lib/firebase");
+      saveContactForm = firebaseModule.saveContactForm;
+    } catch (error) {
+      console.error("Erro ao carregar módulo Firebase:", error);
       return NextResponse.json(
         {
           success: false,
           error: "Erro ao processar sua solicitação",
+        },
+        { status: 500 }
+      );
+    }
+
+    // Salvar no Firebase
+    const result = await saveContactForm(data);
+
+    if (!result.success) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: result.error || "Erro ao processar sua solicitação",
         },
         { status: 500 }
       );
