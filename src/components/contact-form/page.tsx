@@ -39,7 +39,6 @@ const defaultValues: ContactFormInput = {
 export function ContactForm() {
   const { submitForm, isLoading, error, success, reset } = useContactForm();
 
-  // Use FormInput para o useForm e FormData para o submit
   const form = useForm<ContactFormInput>({
     resolver: zodResolver(contactFormSchema),
     defaultValues,
@@ -47,7 +46,6 @@ export function ContactForm() {
   });
 
   async function onSubmit(inputData: ContactFormInput) {
-    // Converter para ContactFormData (após validação)
     const validatedData = contactFormSchema.parse(inputData);
 
     const formData: ContactFormData = {
@@ -65,72 +63,97 @@ export function ContactForm() {
   }
 
   return (
-    <div className="w-full max-w-2xl mx-auto p-6">
+    <div className="w-full space-y-6">
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          {/* Nome */}
-          <FormField
-            control={form.control}
-            name="nome"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome Completo *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Seu nome completo" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5">
+          {/* Grid de Campos */}
+          <div className="grid md:grid-cols-2 gap-5">
+            {/* Nome */}
+            <FormField
+              control={form.control}
+              name="nome"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-white">
+                    Nome *
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Seu nome"
+                      {...field}
+                      className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-500 hover:border-gray-600 focus:border-primary"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-sm text-red-400" />
+                </FormItem>
+              )}
+            />
 
-          {/* Email */}
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email *</FormLabel>
-                <FormControl>
-                  <Input placeholder="seu@email.com" type="email" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            {/* Email */}
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-white">
+                    Email *
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="seu@email.com"
+                      type="email"
+                      {...field}
+                      className="bg-gray-900/50 border-gray-700  placeholder:text-gray-500 hover:border-gray-600 focus:border-primary text-white"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-sm text-red-400" />
+                </FormItem>
+              )}
+            />
 
-          {/* Telefone */}
-          <FormField
-            control={form.control}
-            name="telefone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Telefone (Opcional)</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="(11) 99999-9999"
-                    {...field}
-                    value={field.value || ""}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            {/* Telefone */}
+            <FormField
+              control={form.control}
+              name="telefone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-white">
+                    Telefone
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="(11) 99999-9999"
+                      {...field}
+                      value={field.value || ""}
+                      className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-500 hover:border-gray-600 focus:border-primary"
+                    />
+                  </FormControl>
+                  <FormMessage className="text-sm text-red-400" />
+                </FormItem>
+              )}
+            />
 
-          {/* Assunto */}
-          <FormField
-            control={form.control}
-            name="subject"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Assunto *</FormLabel>
-                <FormControl>
-                  <Input placeholder="Assunto da mensagem" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            {/* Assunto */}
+            <FormField
+              control={form.control}
+              name="subject"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-sm font-medium text-white">
+                    Assunto *
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Assunto"
+                      {...field}
+                      className="bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-500 hover:border-gray-600 focus:border-primary "
+                    />
+                  </FormControl>
+                  <FormMessage className="text-sm text-red-400" />
+                </FormItem>
+              )}
+            />
+          </div>
 
           {/* Mensagem */}
           <FormField
@@ -138,41 +161,53 @@ export function ContactForm() {
             name="message"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Mensagem *</FormLabel>
+                <FormLabel className="text-sm font-medium text-white">
+                  Mensagem *
+                </FormLabel>
                 <FormControl>
                   <Textarea
                     placeholder="Digite sua mensagem..."
-                    className="min-h-[120px]"
+                    className="min-h-[100px] bg-gray-900/50 border-gray-700 text-white placeholder:text-gray-500 hover:border-gray-600 focus:border-primary"
                     {...field}
                   />
                 </FormControl>
-                <FormDescription>
+                <FormDescription className="text-xs text-gray-500">
                   Mínimo 10 caracteres, máximo 500 caracteres
                 </FormDescription>
-                <FormMessage />
+                <FormMessage className="text-sm text-red-400" />
               </FormItem>
             )}
           />
 
           {/* Status do Envio */}
           {success && (
-            <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <p className="text-green-800 text-sm">
-                Mensagem enviada com sucesso! Entrarei em contato em breve.
-              </p>
+            <div className="flex items-center gap-3 p-3 bg-green-900/30 border border-green-800/50 rounded-lg">
+              <CheckCircle className="h-5 w-5 text-green-400 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-green-300">Sucesso!</p>
+                <p className="text-xs text-green-400/80">
+                  Mensagem enviada. Entrarei em contato em breve.
+                </p>
+              </div>
             </div>
           )}
 
           {error && (
-            <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className="flex items-center gap-3 p-3 bg-red-900/30 border border-red-800/50 rounded-lg">
+              <AlertCircle className="h-5 w-5 text-red-400 flex-shrink-0" />
+              <div>
+                <p className="text-sm font-medium text-red-300">Erro</p>
+                <p className="text-xs text-red-400/80">{error}</p>
+              </div>
             </div>
           )}
 
           {/* Botão de Envio */}
-          <Button type="submit" disabled={isLoading} className="w-full">
+          <Button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-3"
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
