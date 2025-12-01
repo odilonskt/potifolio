@@ -30,14 +30,14 @@ Buscando minha primeira oportunidade como Desenvolvedor Full Stack, para aplicar
         />
         <section id="Tecnologia" className="pt-8 sm:pt-16">
           <InfinityScrollAnimation />
-          <Localition />
+          <Localition id="location" />
         </section>
 
-        <section>
+        <section id="Projeto">
           <ProjectPage></ProjectPage>
         </section>
 
-        <section className="py-20 bg-black">
+        <section className="py-20 bg-black" id="Contato">
           <Titan title="Formulario: " />
           <ContactForm />
         </section>
