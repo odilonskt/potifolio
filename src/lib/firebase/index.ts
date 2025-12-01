@@ -62,11 +62,13 @@ export async function saveContactForm(data: ContactFormData) {
     });
 
     return { success: true, id: docRef.id };
-  } catch (error: any) {
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Erro ao salvar dados";
     console.error("Erro ao salvar no Firestore:", error);
     return {
       success: false,
-      error: error.message || "Erro ao salvar dados",
+      error: errorMessage,
     };
   }
 }
