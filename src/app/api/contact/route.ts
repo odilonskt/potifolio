@@ -4,45 +4,50 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("API de contato: Recebendo requisição...");
+    // Verificar se o Firebase está configurado
+    if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+      console.error(
+        "Firebase não configurado - variáveis de ambiente ausentes"
+      );
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Serviço temporariamente indisponível",
+        },
+        { status: 503 }
+      );
+    }
 
-    // Obter dados
     const body = await request.json();
-    console.log("Dados recebidos:", JSON.stringify(body, null, 2));
 
     // Validar
-    const validationResult = contactFormSchema.safeParse(body);
+    const validatedData = contactFormSchema.safeParse(body);
 
-    if (!validationResult.success) {
-      console.error("Validação falhou:", validationResult.error.format());
+    if (!validatedData.success) {
       return NextResponse.json(
         {
           success: false,
           error: "Dados inválidos",
-          details: validationResult.error._zod,
         },
         { status: 400 }
       );
     }
 
-    const data = validationResult.data;
+    const data = validatedData.data;
 
     // Salvar no Firebase
-    console.log("Salvando no Firebase...");
     const result = await saveContactForm(data);
 
     if (!result.success) {
-      console.error("Erro ao salvar no Firebase:", result.error);
+      console.error("Erro ao salvar:", result.error);
       return NextResponse.json(
         {
           success: false,
-          error: "Erro ao salvar no banco de dados",
+          error: "Erro ao processar sua solicitação",
         },
         { status: 500 }
       );
     }
-
-    console.log("Salvo com sucesso, ID:", result.id);
 
     return NextResponse.json(
       {
@@ -54,38 +59,28 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error("Erro na API:", error);
+
     return NextResponse.json(
       {
         success: false,
         error: "Erro interno do servidor",
-        details: error instanceof Error ? error.message : "Erro desconhecido",
       },
       { status: 500 }
     );
   }
 }
 
-// Método GET para testar
-export async function GET(request: NextRequest) {
-  console.log("GET /api/contact");
+export async function GET() {
+  // Verificação simples de saúde da API
+  const isFirebaseConfigured = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+
   return NextResponse.json(
     {
       success: true,
-      message: "API de contato funcionando",
+      api: "online",
+      firebase: isFirebaseConfigured ? "configured" : "not-configured",
       timestamp: new Date().toISOString(),
     },
     { status: 200 }
   );
-}
-
-// Método OPTIONS para CORS
-export async function OPTIONS(request: NextRequest) {
-  return new NextResponse(null, {
-    status: 200,
-    headers: {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-      "Access-Control-Allow-Headers": "Content-Type",
-    },
-  });
 }
