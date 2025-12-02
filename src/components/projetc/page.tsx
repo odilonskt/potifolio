@@ -21,6 +21,20 @@ interface GitHubRepo {
   stargazers_count: number;
   forks_count: number;
   updated_at: string;
+  homepage?: string;
+  topics?: string[];
+}
+
+interface TeamProject {
+  id: number;
+  name: string;
+  description: string;
+  imageUrl: string;
+  technologies: string[];
+  githubUrl?: string;
+  liveUrl?: string;
+  teamSize: number;
+  role: string;
 }
 
 export default function ProjectPage() {
