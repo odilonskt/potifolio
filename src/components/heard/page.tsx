@@ -4,9 +4,9 @@ export default function Header() {
   const menuItems = [
     { label: "Intro", href: "#start" },
     { label: "Sobre", href: "#meio" },
-    { label: "Projeto", href: "#Projeto" },
     { label: "Tech", href: "#Tecnologia" },
     { label: "Local", href: "#location" },
+    { label: "Projeto", href: "#Projeto" },
     { label: "Contato", href: "#Contato" },
   ];
 
