@@ -84,9 +84,9 @@ export function ContactForm() {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent mb-3">
             Envie sua Mensagem
           </h2>
-          <p className="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto">
+          {/* <p className="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto">
             Preencha o formulário abaixo e retornarei em até 24h úteis
-          </p>
+          </p> */}
         </div>
 
         <Form {...form}>
