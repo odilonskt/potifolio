@@ -26,7 +26,7 @@ Boa capacidade de trabalho em equipe
 Motivado a contribuir em projetos desafiadores e aprender com profissionais experientes."
           descrition_estudo="Cursando Análise e Desenvolvimento de Sistemas na PUC Minas
 sou Formando em Desenvolvedor Web pelo programa Programadores do Amanhã, com foco em tecnologia e empregabilidade
-Buscando minha primeira oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecimentos na prática."
+Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecimentos na prática."
         />
         <section id="Tecnologia" className="pt-8 sm:pt-16">
           <InfinityScrollAnimation />
