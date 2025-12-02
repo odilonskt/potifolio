@@ -63,7 +63,7 @@ export default function Start({ id }: StartProps) {
               className="flex gap-2 items-center text-black bg-white hover:bg-gray-100 px-4 py-2 sm:px-6 sm:py-3 min-w-[140px] sm:min-w-[160px] text-sm sm:text-base font-medium transition-all duration-200 hover:scale-105"
             >
               <Download size={20} color="black" />
-              Meu CV
+              Meu Curriculo
             </Button>
           </div>
         </div>
