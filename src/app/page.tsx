@@ -38,7 +38,7 @@ Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecim
         </section>
 
         <section className="py-20 bg-black" id="Contato">
-          <Titan title="Formulario: " />
+          <Titan title="Contato: " />
           <ContactForm />
         </section>
       </main>
