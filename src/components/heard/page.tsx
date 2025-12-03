@@ -5,7 +5,7 @@ export default function Header() {
     { label: "Intro", href: "#start" },
     { label: "Sobre", href: "#meio" },
     { label: "Tech", href: "#Tecnologia" },
-    { label: "Local", href: "#location" },
+    // { label: "Local", href: "#location" },
     { label: "Projeto", href: "#Projeto" },
     { label: "Contato", href: "#Contato" },
   ];

@@ -1,6 +1,5 @@
 import { ContactForm } from "@/components/contact-form/page";
 import Header from "@/components/heard/page";
-import Localition from "@/components/localition/page";
 import ProjectPage from "@/components/projetc/page";
 import Sobre from "@/components/sobre/page";
 import Start from "@/components/start/page";
@@ -30,7 +29,7 @@ Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecim
         />
         <section id="Tecnologia" className="pt-8 sm:pt-16">
           <InfinityScrollAnimation />
-          <Localition id="location" />
+          {/* <Localition id="location" /> */}
         </section>
 
         <section id="Projeto">

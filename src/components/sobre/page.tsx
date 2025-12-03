@@ -15,61 +15,7 @@ interface PalavraLink {
   target: string;
 }
 
-// Função 1: Apenas negrito
-function formatarTextoComNegrito(texto: string, palavrasNegrito: string[]) {
-  if (!palavrasNegrito.length) return texto;
-
-  const regex = new RegExp(`(${palavrasNegrito.join("|")})`, "gi");
-  const partes = texto.split(regex);
-
-  return partes.map((parte, index) =>
-    palavrasNegrito.some(
-      (palavra) => parte.toLowerCase() === palavra.toLowerCase()
-    ) ? (
-      <strong key={index} className="font-bold text-white">
-        {parte}
-      </strong>
-    ) : (
-      <span key={index}>{parte}</span>
-    )
-  );
-}
-
-// Função 2: Apenas links (com strong incluído)
-function formatarTextoComLinks(texto: string, palavrasLinks: PalavraLink[]) {
-  if (!palavrasLinks.length) return texto;
-
-  const regex = new RegExp(
-    `(${palavrasLinks.map((p) => p.palavra).join("|")})`,
-    "gi"
-  );
-  const partes = texto.split(regex);
-
-  return partes.map((parte, index) => {
-    const palavraLink = palavrasLinks.find(
-      (p) => parte.toLowerCase() === p.palavra.toLowerCase()
-    );
-
-    if (palavraLink) {
-      return (
-        <strong key={index}>
-          <Link
-            href={palavraLink.href}
-            className="font-bold text-white hover:text-blue-400 transition-colors duration-300 underline underline-offset-4"
-            title={palavraLink.descricao || `Ir para ${palavraLink.palavra}`}
-            target={palavraLink.target}
-          >
-            {parte}
-          </Link>
-        </strong>
-      );
-    }
-
-    return <span key={index}>{parte}</span>;
-  });
-}
-
-// Função 3: Combinada - palavras com link ficam em strong+link, outras em strong apenas
+// Função: Combinada - palavras com link ficam em strong+link, outras em strong apenas
 function formatarTextoComLinksENegrito(
   texto: string,
   palavrasLinks: PalavraLink[],
@@ -229,79 +175,90 @@ const palavrasNegritoEstudo = [
 export default function Sobre(props: SobreProps) {
   return (
     <div
-      className="w-full flex flex-col items-center px-4 sm:px-6 lg:px-8 py-8 sm:py-12"
+      className="w-full flex flex-col items-center px-3 xs:px-4 sm:px-6 lg:px-8 py-8 xs:py-10 sm:py-12 md:py-16 lg:py-20 relative"
       id={props.id}
     >
+      {/* Decorative Background Elements */}
+      <div className="hidden lg:block absolute top-20 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl -z-10" />
+      <div className="hidden lg:block absolute bottom-0 left-0 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl -z-10" />
+
       <Titan title="Sobre:" />
-      <div className="w-full max-w-4xl">
-        <div
-          className="rounded-xl text-white border-2 sm:border-3 lg:border-4 border-white p-4 sm:p-6 lg:p-8 mt-4 sm:mt-6 lg:mt-8 
-                      bg-black/20 backdrop-blur-sm shadow-xl"
-        >
-          <p
-            className="text-base sm:text-lg md:text-xl lg:text-2xl 
-                       leading-relaxed sm:leading-loose md:leading-loose
-                       text-justify sm:text-left"
-          >
-            {formatarTextoComLinksENegrito(
-              props.descrition_hardSkill,
-              palavrasComLinks.filter((link) =>
-                [
-                  "Full Stack",
-                  "JavaScript",
-                  "TypeScript",
-                  "Node.js",
-                  "Express",
-                  "React",
-                  "Next.js",
-                  "Nest.js",
-                  "MySQL",
-                  "PostgreSQL",
-                  "Git",
-                  "GitHub",
-                ].includes(link.palavra)
-              ),
-              palavrasNegritoHardSkills
-            )}
-          </p>
-          <br></br>
-          <p
-            className="text-base sm:text-lg md:text-xl lg:text-2xl 
-                       leading-relaxed sm:leading-loose md:leading-loose
-                       text-justify sm:text-left"
-          >
-            {formatarTextoComLinksENegrito(
-              props.descrition_softSkill,
-              palavrasComLinks.filter((link) =>
-                ["curioso", "proativo", "comunicativo", "aprendizado"].includes(
-                  link.palavra
-                )
-              ),
-              palavrasNegritoSoftSkills
-            )}
-          </p>
-          <br></br>
-          <p
-            className="text-base sm:text-lg md:text-xl lg:text-2xl 
-                       leading-relaxed sm:leading-loose md:leading-loose
-                       text-justify sm:text-left"
-          >
-            {formatarTextoComLinksENegrito(
-              props.descrition_estudo,
-              palavrasComLinks.filter((link) =>
-                [
-                  "Análise e Desenvolvimento de Sistemas",
-                  "PUC Minas",
-                  "Desenvolvedor Web",
-                  "Programadores do Amanhã",
-                  "Desenvolvedor Full Stack",
-                ].includes(link.palavra)
-              ),
-              palavrasNegritoEstudo
-            )}
-          </p>
+
+      <div className="w-full max-w-5xl mt-6 sm:mt-8 lg:mt-10">
+        {/* Hard Skills Section */}
+        <div className="group mb-6 sm:mb-8 lg:mb-10">
+          <div className="relative">
+            {/* Gradient Border Effect */}
+            <div className="absolute -inset-0.5 bg-linear-to-r from-blue-600 via-blue-700 to-blue-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
+
+            <div className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                <div className="w-1.5 h-8 bg-linear-to-b from-blue-500 to-cyan-500 rounded-full" />
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
+                  Competências Técnicas
+                </h3>
+              </div>
+
+              <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed sm:leading-loose md:leading-loose text-justify sm:text-left">
+                {formatarTextoComLinksENegrito(
+                  props.descrition_hardSkill,
+                  palavrasComLinks,
+                  palavrasNegritoHardSkills
+                )}
+              </p>
+            </div>
+          </div>
         </div>
-        <br></br>
+
+        {/* Soft Skills Section */}
+        <div className="group mb-6 sm:mb-8 lg:mb-10">
+          <div className="relative">
+            {/* Gradient Border Effect */}
+            <div className="absolute -inset-0.5 bg-linear-to-r from-purple-600 via-pink-600 to-rose-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
+
+            <div className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                <div className="w-1.5 h-8 bg-linear-to-b from-purple-500 to-rose-500 rounded-full" />
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold bg-linear-to-r from-purple-400 to-rose-400 bg-clip-text text-transparent">
+                  Competências Pessoais
+                </h3>
+              </div>
+
+              <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed sm:leading-loose md:leading-loose text-justify sm:text-left">
+                {formatarTextoComLinksENegrito(
+                  props.descrition_softSkill,
+                  palavrasComLinks,
+                  palavrasNegritoSoftSkills
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Education Section */}
+        <div className="group">
+          <div className="relative">
+            {/* Gradient Border Effect */}
+            <div className="absolute -inset-0.5 bg-linear-to-r from-green-600 via-emerald-600 to-teal-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
+
+            <div className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm">
+              <div className="flex items-center gap-3 mb-4 sm:mb-5">
+                <div className="w-1.5 h-8 bg-linear-to-b from-green-500 to-emerald-500 rounded-full" />
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold bg-linear-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
+                  Formação e Certificações
+                </h3>
+              </div>
+
+              <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed sm:leading-loose md:leading-loose text-justify sm:text-left">
+                {formatarTextoComLinksENegrito(
+                  props.descrition_estudo,
+                  palavrasComLinks,
+                  palavrasNegritoEstudo
+                )}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
