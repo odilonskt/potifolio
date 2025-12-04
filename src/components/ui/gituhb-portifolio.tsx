@@ -43,7 +43,7 @@ import {
   LayoutList,
   Star,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
 interface Repo {
@@ -66,7 +66,13 @@ interface Languages {
   [key: string]: number;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+const fetcher = async (url: string) => {
+  const res = await fetch(url);
+  if (!res.ok) {
+    throw new Error(`Failed to fetch: ${res.status}`);
+  }
+  return res.json();
+};
 
 export function GithubPortfolio({ username }: { username: string }) {
   const [viewMode, setViewMode] = useState<string>("grid");
@@ -79,19 +85,39 @@ export function GithubPortfolio({ username }: { username: string }) {
     isLoading,
   } = useSWR<Repo[]>(
     `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`,
-    fetcher
+    fetcher,
+    { revalidateOnFocus: false }
   );
 
-  const languages = repos?.reduce((acc: Record<string, number>, repo: Repo) => {
-    if (repo.language) {
-      acc[repo.language] = (acc[repo.language] || 0) + 1;
-    }
-    return acc;
-  }, {} as Record<string, number>);
+  // Garantir que repos é sempre um array
+  const reposArray = useMemo(
+    () => (Array.isArray(repos) ? repos : []),
+    [repos]
+  );
+
+  // Debug
+  useEffect(() => {
+    console.log("GithubPortfolio Debug:", {
+      isLoading,
+      error,
+      reposCount: reposArray.length,
+      repos: reposArray.slice(0, 2),
+    });
+  }, [isLoading, error, reposArray]);
+
+  const languages = reposArray.reduce(
+    (acc: Record<string, number>, repo: Repo) => {
+      if (repo.language) {
+        acc[repo.language] = (acc[repo.language] || 0) + 1;
+      }
+      return acc;
+    },
+    {} as Record<string, number>
+  );
 
   const filteredRepos = filterLanguage
-    ? repos?.filter((repo: Repo) => repo.language === filterLanguage)
-    : repos;
+    ? reposArray.filter((repo: Repo) => repo.language === filterLanguage)
+    : reposArray;
 
   if (isLoading) {
     return (
@@ -105,10 +131,18 @@ export function GithubPortfolio({ username }: { username: string }) {
   }
 
   if (error) {
+    console.error("GithubPortfolio Error:", error);
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Card className="p-8 text-center">
-          <p className="text-destructive">Erro ao carregar repositórios</p>
+        <Card className="p-8 text-center max-w-md">
+          <p className="text-destructive mb-2">Erro ao carregar repositórios</p>
+          <p className="text-sm text-muted-foreground">
+            {error?.message ||
+              "Ocorreu um erro ao buscar os dados da API do GitHub"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-4">
+            Verifique a conexão com a internet ou tente novamente mais tarde.
+          </p>
         </Card>
       </div>
     );
@@ -217,15 +251,25 @@ export function GithubPortfolio({ username }: { username: string }) {
                 : "flex flex-col gap-4"
             }
           >
-            {filteredRepos?.map((repo: Repo, index: number) => (
-              <RepoCard
-                key={repo.id}
-                repo={repo}
-                viewMode={viewMode}
-                index={index}
-                onSelectRepo={setSelectedRepo}
-              />
-            ))}
+            {filteredRepos && filteredRepos.length > 0 ? (
+              filteredRepos.map((repo: Repo, index: number) => (
+                <RepoCard
+                  key={repo.id}
+                  repo={repo}
+                  viewMode={viewMode}
+                  index={index}
+                  onSelectRepo={setSelectedRepo}
+                />
+              ))
+            ) : (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">
+                  {filterLanguage
+                    ? `Nenhum repositório encontrado para ${filterLanguage}`
+                    : "Carregando repositórios..."}
+                </p>
+              </div>
+            )}
           </motion.div>
         </AnimatePresence>
 
