@@ -189,6 +189,6 @@ function convertMarkdownToHtml(markdown: string): string {
     .replace(/\n/g, "<br />");
 
   html = `<p>${html}</p>`;
-  html = html.replace(/(<li>.*?<\/li>)+/gs, (match) => `<ul>${match}</ul>`);
+  html = html.replace(/(<li>[\s\S]*?<\/li>)+/g, (match) => `<ul>${match}</ul>`);
   return html;
 }
