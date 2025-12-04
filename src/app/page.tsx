@@ -1,6 +1,6 @@
 import { ContactForm } from "@/components/contact-form/page";
 import Header from "@/components/heard/page";
-import ProjectPage from "@/components/projetc/page";
+import ProjectPage from "@/components/iu/page";
 import Sobre from "@/components/sobre/page";
 import Start from "@/components/start/page";
 import InfinityScrollAnimation from "@/components/tecnologia/page";
