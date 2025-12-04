@@ -1,7 +1,5 @@
 "use client";
 
-import { ReadmeViewer } from "@/components/readme-viewer";
-import { TechBadge } from "@/components/tech-badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -22,9 +20,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { ReadmeViewer } from "@/components/ui/readme-viewer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
+import { TechBadge } from "@/components/ui/tech-badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import {
   Tooltip,
@@ -82,7 +82,7 @@ export function GithubPortfolio({ username }: { username: string }) {
     fetcher
   );
 
-  const languages = repos?.reduce((acc, repo) => {
+  const languages = repos?.reduce((acc: Record<string, number>, repo: Repo) => {
     if (repo.language) {
       acc[repo.language] = (acc[repo.language] || 0) + 1;
     }
@@ -90,7 +90,7 @@ export function GithubPortfolio({ username }: { username: string }) {
   }, {} as Record<string, number>);
 
   const filteredRepos = filterLanguage
-    ? repos?.filter((repo) => repo.language === filterLanguage)
+    ? repos?.filter((repo: Repo) => repo.language === filterLanguage)
     : repos;
 
   if (isLoading) {
@@ -126,12 +126,9 @@ export function GithubPortfolio({ username }: { username: string }) {
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="relative"></div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              <span className="bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent"></span>
+              <span className="bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent"></span>
             </h1>
           </div>
-          <p className="text-muted-foreground">
-            Explore os projetos do @{username}
-          </p>
         </motion.header>
 
         {/* Stats Carousel */}
@@ -183,7 +180,7 @@ export function GithubPortfolio({ username }: { username: string }) {
                     Todos
                   </Button>
                   {languages &&
-                    Object.entries(languages)
+                    (Object.entries(languages) as [string, number][])
                       .sort((a, b) => b[1] - a[1])
                       .map(([lang, count]) => (
                         <Button
@@ -220,7 +217,7 @@ export function GithubPortfolio({ username }: { username: string }) {
                 : "flex flex-col gap-4"
             }
           >
-            {filteredRepos?.map((repo, index) => (
+            {filteredRepos?.map((repo: Repo, index: number) => (
               <RepoCard
                 key={repo.id}
                 repo={repo}
@@ -322,11 +319,12 @@ function RepoCard({
       transition={{ delay: index * 0.05 }}
       whileHover={{ y: -4 }}
     >
-      <Card className="h-full flex flex-col overflow-hidden hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300 group">
+      <Card className="h-full flex flex-col overflow-hidden hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 group bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
         <CardHeader className="p-0">
           <AspectRatio ratio={16 / 9}>
-            <div className="w-full h-full bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/10 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="w-full h-full bg-linear-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden">
+              <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={`https://opengraph.githubassets.com/1/${repo.html_url.replace(
                   "https://github.com/",
@@ -376,26 +374,27 @@ function RepoCard({
             <div className="space-y-2">
               <div className="flex h-2 rounded-full overflow-hidden bg-muted">
                 {Object.entries(languages)
-                  .sort((a, b) => b[1] - a[1])
+                  .sort(
+                    (a: [string, number], b: [string, number]) => b[1] - a[1]
+                  )
                   .slice(0, 5)
-                  .map(([lang, bytes], i) => (
-                    <Tooltip key={lang}>
-                      <TooltipTrigger asChild>
-                        <div
-                          className="h-full transition-all hover:brightness-110"
-                          style={{
-                            width: `${(bytes / totalBytes) * 100}%`,
+                  .map(([lang, bytes]) => {
+                    const percentage = (bytes / totalBytes) * 100;
+                    return (
+                      <div
+                        key={lang}
+                        className="h-full flex-1 transition-all hover:brightness-110"
+                        style={
+                          {
+                            width: `${percentage}%`,
                             backgroundColor: getLanguageColor(lang),
-                          }}
-                        />
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>
-                          {lang}: {((bytes / totalBytes) * 100).toFixed(1)}%
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  ))}
+                            flex: `${percentage} 1 0%`,
+                          } as React.CSSProperties
+                        }
+                        title={`${lang}: ${percentage.toFixed(1)}%`}
+                      />
+                    );
+                  })}
               </div>
               <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
                 {Object.entries(languages)
@@ -474,7 +473,12 @@ function ActionButtons({
             className="h-8 w-8 hover:text-foreground hover:bg-foreground/10"
             asChild
           >
-            <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
+            <a
+              href={repo.html_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Ver Repositório"
+            >
               <Github className="h-4 w-4" />
             </a>
           </Button>
@@ -491,7 +495,12 @@ function ActionButtons({
               className="h-8 w-8 hover:text-green-400 hover:bg-green-400/10"
               asChild
             >
-              <a href={repo.homepage} target="_blank" rel="noopener noreferrer">
+              <a
+                href={repo.homepage}
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Ver Deploy"
+              >
                 <ExternalLink className="h-4 w-4" />
               </a>
             </Button>

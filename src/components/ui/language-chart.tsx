@@ -2,15 +2,11 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
-import {
   Bar,
   BarChart,
   Cell,
   ResponsiveContainer,
+  Tooltip,
   XAxis,
   YAxis,
 } from "recharts";
@@ -53,20 +49,15 @@ export function LanguageChart({ languages, totalRepos }: LanguageChartProps) {
     }));
 
   return (
-    <Card className="overflow-hidden">
+    <Card className="overflow-hidden bg-slate-900/50 border-slate-700/50 backdrop-blur-sm neon-card">
       <CardHeader className="pb-2">
         <CardTitle className="text-lg flex items-center gap-2">
-          <span className="w-3 h-3 rounded-full bg-gradient-to-r from-cyan-400 to-purple-500 animate-pulse" />
-          Linguagens Utilizadas
+          <span className="w-3 h-3 rounded-full bg-linear-to-r from-cyan-400 to-purple-500 animate-pulse neon-glow" />
+          <span className="neon-text">Linguagens Utilizadas</span>
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <ChartContainer
-          config={Object.fromEntries(
-            data.map((d) => [d.name, { label: d.name, color: d.fill }])
-          )}
-          className="h-[200px] w-full"
-        >
+        <div className="h-[200px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
@@ -82,17 +73,13 @@ export function LanguageChart({ languages, totalRepos }: LanguageChartProps) {
                 tickLine={false}
                 axisLine={false}
               />
-              <ChartTooltip
-                content={
-                  <ChartTooltipContent
-                    formatter={(value, name) => [
-                      `${value} repos (${
-                        data.find((d) => d.name === name)?.percentage
-                      }%)`,
-                      name,
-                    ]}
-                  />
-                }
+              <Tooltip
+                formatter={(value: number, name: string) => [
+                  `${value} repos (${
+                    data.find((d) => d.name === name)?.percentage
+                  }%)`,
+                  name,
+                ]}
               />
               <Bar dataKey="count" radius={[0, 4, 4, 0]}>
                 {data.map((entry, index) => (
@@ -101,12 +88,12 @@ export function LanguageChart({ languages, totalRepos }: LanguageChartProps) {
               </Bar>
             </BarChart>
           </ResponsiveContainer>
-        </ChartContainer>
+        </div>
 
         {/* Neon Badges */}
         <div className="flex flex-wrap gap-2 mt-4">
           {data.map((lang) => (
-            <div
+            <span
               key={lang.name}
               className="px-3 py-1 rounded-full text-xs font-medium transition-all hover:scale-105 cursor-default"
               style={{
@@ -117,7 +104,7 @@ export function LanguageChart({ languages, totalRepos }: LanguageChartProps) {
               }}
             >
               {lang.name} • {lang.percentage}%
-            </div>
+            </span>
           ))}
         </div>
       </CardContent>

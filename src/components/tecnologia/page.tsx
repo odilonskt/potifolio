@@ -15,7 +15,6 @@ import {
   SiTypescript,
 } from "react-icons/si";
 import { TbApi } from "react-icons/tb";
-import Titan from "../titan/page";
 import styles from "./InfinityScroll.module.css";
 
 const technologies = [
@@ -47,7 +46,6 @@ export default function InfinityScrollAnimation({
         className=" flex flex-col items-center justify-center max-w-6xl mx-auto p-4"
         id="Tecnologia"
       >
-        <Titan title="Tecnologia:" />
         <div className="w-full max-w-6xl mx-auto" id={id}>
           <div className={styles.scrollContainer}>
             {/* efeito blur lateral */}

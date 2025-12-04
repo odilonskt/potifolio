@@ -32,14 +32,14 @@ interface StatItem {
 function ProfileImage() {
   return (
     <div className="flex items-center justify-center shrink-0 relative group w-full lg:w-auto">
-      <div className="absolute inset-0 bg-linear-to-r from-blue-500 via-purple-500 to-pink-500 rounded-2xl blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+      <div className="absolute inset-0 bg-linear-to-r from-blue-500 via-purple-600 to-green-500 rounded-2xl blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
       <Image
         src="/perfil.svg"
         alt="Foto de perfil de Odilon - Desenvolvedor Full-Stack"
         width={450}
         height={450}
         priority={true}
-        className="rounded-2xl w-24 h-24 xs:w-28 xs:h-28 sm:w-40 sm:h-40 md:w-56 md:h-56 lg:w-64 lg:h-64 xl:w-72 xl:h-72 object-cover shadow-2xl border-3 xs:border-4 border-gray-800 hover:scale-105 transition-transform duration-300"
+        className="rounded-2xl w-24 h-24 xs:w-28 xs:h-28 sm:w-40 sm:h-40 md:w-56 md:h-56 lg:w-64 lg:h-64 xl:w-72 xl:h-72 object-cover shadow-2xl border-3 xs:border-4 border-gray-800 "
       />
     </div>
   );

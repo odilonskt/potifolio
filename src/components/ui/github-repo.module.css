@@ -1,0 +1,37 @@
+.language-bar {
+  display: flex;
+  height: 0.5rem;
+  border-radius: 9999px;
+  overflow: hidden;
+  background-color: hsl(var(--muted));
+  transition: all;
+}
+
+.language-bar-segment {
+  height: 100%;
+  transition: brightness 0.2s ease-out;
+}
+
+.language-bar-segment:hover {
+  filter: brightness(1.1);
+}
+
+.language-badge {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.language-dot {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.language-dot-circle {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+}

@@ -214,12 +214,12 @@ export default function Sobre(props: SobreProps) {
         <div className="group mb-6 sm:mb-8 lg:mb-10">
           <div className="relative">
             {/* Gradient Border Effect */}
-            <div className="absolute -inset-0.5 bg-linear-to-r from-purple-600 via-pink-600 to-rose-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
+            <div className="absolute -inset-0.5 bg-linear-to-r from-purple-600 via-purple-500 to-green-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
 
             <div className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm">
               <div className="flex items-center gap-3 mb-4 sm:mb-5">
-                <div className="w-1.5 h-8 bg-linear-to-b from-purple-500 to-rose-500 rounded-full" />
-                <h3 className="text-lg sm:text-xl md:text-2xl font-bold bg-linear-to-r from-purple-400 to-rose-400 bg-clip-text text-transparent">
+                <div className="w-1.5 h-8 bg-linear-to-b from-purple-500 to-green-500 rounded-full" />
+                <h3 className="text-lg sm:text-xl md:text-2xl font-bold bg-linear-to-r from-purple-400 to-green-400 bg-clip-text text-transparent">
                   Competências Pessoais
                 </h3>
               </div>

@@ -1,16 +1,16 @@
 import { ContactForm } from "@/components/contact-form/page";
 import Header from "@/components/heard/page";
-import ProjectPage from "@/components/iu/page";
 import Sobre from "@/components/sobre/page";
 import Start from "@/components/start/page";
 import InfinityScrollAnimation from "@/components/tecnologia/page";
 import Titan from "@/components/titan/page";
+import { GithubPortfolio } from "@/components/ui/gituhb-portifolio";
 
 export default function Home() {
   return (
     <>
       <link rel="icon" href="/favicon.svg" sizes="any" />
-      <main>
+      <main className="min-h-screen bg-slate-950">
         <Header />
         <Start id="start"></Start>
         <Sobre
@@ -27,18 +27,31 @@ Motivado a contribuir em projetos desafiadores e aprender com profissionais expe
 sou Formando em Desenvolvedor Web pelo programa Programadores do Amanhã, com foco em tecnologia e empregabilidade
 Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecimentos na prática."
         />
-        <section id="Tecnologia" className="pt-8 sm:pt-16">
-          <InfinityScrollAnimation />
-          {/* <Localition id="location" /> */}
+        <section id="Tecnologia" className="py-12 bg-slate-950">
+          <Titan
+            title="Tecnologias"
+            subtitle="Ferramentas e linguagens que domino"
+          />
+          <div className="py-8">
+            <InfinityScrollAnimation />
+          </div>
         </section>
 
-        <section id="Projeto">
-          <ProjectPage />
+        <section id="Projeto" className="bg-slate-950 py-12">
+          <Titan
+            title="Projetos"
+            subtitle="Explore meus repositórios no GitHub"
+          />
+          <div className="py-8">
+            <GithubPortfolio username="odilonskt" />
+          </div>
         </section>
 
-        <section className="py-20 bg-black" id="Contato">
-          <Titan title="Contato: " />
-          <ContactForm />
+        <section className="py-12 bg-slate-950" id="Contato">
+          <Titan title="Contato" subtitle="Vamos trabalhar juntos!" />
+          <div className="py-8">
+            <ContactForm />
+          </div>
         </section>
       </main>
     </>

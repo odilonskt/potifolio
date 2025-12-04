@@ -1,5 +1,7 @@
 "use client";
 
+import styles from "./tech-badge.module.css";
+
 const techConfig: Record<string, { color: string; glow: string }> = {
   TypeScript: { color: "#3178c6", glow: "rgba(49, 120, 198, 0.5)" },
   JavaScript: { color: "#f1e05a", glow: "rgba(241, 224, 90, 0.5)" },
@@ -29,16 +31,22 @@ export function TechBadge({ tech }: { tech: string }) {
     glow: "rgba(110, 118, 129, 0.5)",
   };
 
+  // Apply CSS variables via data attributes
   return (
     <span
-      className="px-2 py-0.5 text-xs font-medium rounded-full transition-all duration-300 hover:scale-110 whitespace-nowrap"
-      style={{
-        backgroundColor: `${config.color}20`,
-        color: config.color,
-        boxShadow: `0 0 8px ${config.glow}, 0 0 16px ${config.glow}`,
-        border: `1px solid ${config.color}60`,
-        textShadow: `0 0 8px ${config.glow}`,
-      }}
+      className={styles.techBadge}
+      data-tech-bg={`${config.color}20`}
+      data-tech-color={config.color}
+      data-tech-border={`${config.color}60`}
+      data-tech-glow={config.glow}
+      style={
+        {
+          "--tech-bg": `${config.color}20`,
+          "--tech-color": config.color,
+          "--tech-border": `${config.color}60`,
+          "--tech-glow": config.glow,
+        } as React.CSSProperties
+      }
     >
       {tech}
     </span>

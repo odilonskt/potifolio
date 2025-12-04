@@ -1,0 +1,19 @@
+.techBadge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border-radius: 9999px;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  background-color: var(--tech-bg);
+  color: var(--tech-color);
+  border: 1px solid var(--tech-border);
+  text-shadow: 0 0 8px var(--tech-glow);
+  box-shadow: 0 0 8px var(--tech-glow), 0 0 16px var(--tech-glow);
+}
+
+.techBadge:hover {
+  transform: scale(1.1);
+}

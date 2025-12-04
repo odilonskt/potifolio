@@ -1,17 +1,30 @@
 .scrollContainer {
   position: relative;
   overflow: hidden;
-  padding: 1rem;
-  border-radius: 1rem;
+  padding: 1.5rem;
+  border-radius: 1.5rem;
 
-  /* efeito glass */
-  background: rgba(15, 15, 20, 0.6);
-  backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  box-shadow: 0 0 40px rgba(0, 0, 0, 0.4);
+  /* Enhanced neon glass effect */
+  background: linear-gradient(
+    135deg,
+    rgba(15, 23, 42, 0.4),
+    rgba(30, 41, 59, 0.3)
+  );
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
+  border: 1.5px solid rgba(0, 229, 255, 0.2);
+  box-shadow: 0 0 30px rgba(0, 229, 255, 0.1), 0 0 60px rgba(217, 70, 239, 0.05),
+    inset 0 0 30px rgba(0, 229, 255, 0.05);
+  transition: all 0.3s ease;
 
   /* Responsividade */
   margin: 0 1rem;
+}
+
+.scrollContainer:hover {
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 0 40px rgba(0, 229, 255, 0.2), 0 0 80px rgba(217, 70, 239, 0.1),
+    inset 0 0 40px rgba(0, 229, 255, 0.08);
 }
 
 /* blur laterais - ajuste responsivo */
