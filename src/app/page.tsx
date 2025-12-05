@@ -15,16 +15,18 @@ export default function Home() {
         <Start id="start"></Start>
         <Sobre
           id="meio"
-          descrition_hardSkill="Desenvolvedor Full-Stack com foco em JavaScript/TypeScript, Node.js (Express/Nest.js) e React/Next.js
+          descrition_hardSkill="Desenvolvedor Full-Stack com foco em JavaScript/TypeScript, Node.js (Express/Nest.js) e React/Next.js.
+
 Experiência prática na criação de APIs RESTful e Single-Page Applications (SPA)
-Proficiência em MySQL/PostgreSQL e Git/GitHub
+Proficiência em MySQL/PostgreSQL e Git/GitHub.
 Interesse contínuo em aprimorar habilidades técnicas e explorar novas tecnologias."
           descrition_softSkill="Profissional curioso, proativo e comunicativo
-Facilidade de aprendizado e adaptação a novas ferramentas
-Boa capacidade de trabalho em equipe
+Facilidade de aprendizado e adaptação a novas ferramentas.
+Boa capacidade de trabalho em equipe.
 Motivado a contribuir em projetos desafiadores e aprender com profissionais experientes."
           descrition_estudo="Cursando Análise e Desenvolvimento de Sistemas na PUC Minas
-sou Formando em Desenvolvedor Web pelo programa Programadores do Amanhã, com foco em tecnologia e empregabilidade
+sou Formando em Desenvolvedor Web pelo programa Programadores do Amanhã, com foco em tecnologia e empregabilidade.
+
 Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecimentos na prática."
         />
         <section id="Tecnologia" className="py-12 bg-slate-950">

@@ -1,14 +1,9 @@
 "use client";
 
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-} from "@/components/ui/card";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -24,24 +19,20 @@ import { ReadmeViewer } from "@/components/ui/readme-viewer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
-import { TechBadge } from "@/components/ui/tech-badge";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { AnimatePresence, motion } from "framer-motion";
 import {
+  AlertCircle,
   BookOpen,
   ExternalLink,
   Filter,
   GitFork,
-  Github,
   Grid3X3,
   LayoutList,
+  RefreshCw,
   Star,
+  Watch,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
@@ -53,7 +44,7 @@ interface Repo {
   html_url: string;
   homepage: string | null;
   stargazers_count: number;
-  forks_count: number;
+  GitForks_count: number;
   watchers_count: number;
   language: string | null;
   topics: string[];
@@ -66,27 +57,188 @@ interface Languages {
   [key: string]: number;
 }
 
-const fetcher = async (url: string) => {
+interface ApiError {
+  status: number;
+  message: string;
+  documentation_url?: string;
+}
+
+// Função fetcher com tipo específico
+const fetcher = async <T,>(url: string): Promise<T> => {
   const res = await fetch(url);
+
   if (!res.ok) {
-    throw new Error(`Failed to fetch: ${res.status}`);
+    const errorData: ApiError = await res.json().catch(() => ({
+      status: res.status,
+      message: `HTTP ${res.status}: ${res.statusText}`,
+    }));
+
+    throw new Error(
+      `API Error ${errorData.status}: ${errorData.message || res.statusText}`
+    );
   }
-  return res.json();
+
+  return res.json() as Promise<T>;
 };
+
+// Adicione um tipo para a resposta da API de repositórios
+interface RepoApiResponse extends Repo {
+  message?: string;
+  documentation_url?: string;
+}
+
+// Componente RepoCard
+interface RepoCardProps {
+  repo: Repo;
+  viewMode: string;
+  index: number;
+  onSelectRepo: (repo: Repo) => void;
+}
+
+function RepoCard({ repo, viewMode, index, onSelectRepo }: RepoCardProps) {
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString("pt-BR", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const cardContent = (
+    <Card
+      className={`group relative overflow-hidden transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/10 hover:border-cyan-500/30 cursor-pointer ${
+        viewMode === "list" ? "p-6" : "p-5 h-full"
+      }`}
+      onClick={() => onSelectRepo(repo)}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: index * 0.05 }}
+        className="h-full flex flex-col"
+      >
+        {/* Language Badge */}
+        {repo.language && (
+          <div className="mb-4 flex justify-between items-start">
+            <Badge
+              variant="outline"
+              className="bg-cyan-500/10 text-cyan-500 border-cyan-500/30"
+            >
+              {repo.language}
+            </Badge>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <span className="flex items-center gap-1">
+                <Star className="h-3 w-3" />
+                {repo.stargazers_count}
+              </span>
+              <span className="flex items-center gap-1">
+                <GitFork className="h-3 w-3" />
+                {repo.GitForks_count}
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Title & Description */}
+        <div className="flex-grow">
+          <h3 className="text-xl font-bold mb-2 group-hover:text-cyan-500 transition-colors">
+            {repo.name}
+          </h3>
+          {repo.description && (
+            <p className="text-muted-foreground mb-4 line-clamp-2">
+              {repo.description}
+            </p>
+          )}
+        </div>
+
+        {/* Topics */}
+        {repo.topics && repo.topics.length > 0 && (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {repo.topics.slice(0, 3).map((topic) => (
+              <Badge
+                key={topic}
+                variant="secondary"
+                className="text-xs bg-gray-100 dark:bg-gray-800"
+              >
+                {topic}
+              </Badge>
+            ))}
+            {repo.topics.length > 3 && (
+              <Badge variant="outline" className="text-xs">
+                +{repo.topics.length - 3}
+              </Badge>
+            )}
+          </div>
+        )}
+
+        {/* Footer */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-auto pt-4 border-t">
+          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+            <span className="flex items-center gap-1">
+              <Watch className="h-3 w-3" />
+              {repo.watchers_count}
+            </span>
+            <span className="hidden sm:inline">•</span>
+            <span>Atualizado {formatDate(repo.updated_at)}</span>
+          </div>
+
+          <Button
+            size="sm"
+            variant="ghost"
+            className="gap-2 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-500/10"
+            onClick={(e) => {
+              e.stopPropagation();
+              window.open(repo.html_url, "_blank");
+            }}
+          >
+            <ExternalLink className="h-3 w-3" />
+            GitHub
+          </Button>
+        </div>
+
+        {/* Hover Effect */}
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none" />
+      </motion.div>
+    </Card>
+  );
+
+  if (viewMode === "list") {
+    return (
+      <motion.div
+        initial={{ opacity: 0, x: -20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: index * 0.05 }}
+      >
+        {cardContent}
+      </motion.div>
+    );
+  }
+
+  return cardContent;
+}
 
 export function GithubPortfolio({ username }: { username: string }) {
   const [viewMode, setViewMode] = useState<string>("grid");
   const [filterLanguage, setFilterLanguage] = useState<string | null>(null);
   const [selectedRepo, setSelectedRepo] = useState<Repo | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
 
   const {
     data: repos,
     error,
     isLoading,
-  } = useSWR<Repo[]>(
+    mutate,
+  } = useSWR<RepoApiResponse[]>(
     `https://api.github.com/users/${username}/repos?sort=updated&per_page=100`,
     fetcher,
-    { revalidateOnFocus: false }
+    {
+      revalidateOnFocus: false,
+      shouldRetryOnError: false,
+      onErrorRetry: () => {
+        return;
+      },
+    }
   );
 
   // Garantir que repos é sempre um array
@@ -95,6 +247,12 @@ export function GithubPortfolio({ username }: { username: string }) {
     [repos]
   );
 
+  // Função para tratar retentativa
+  const handleRetry = () => {
+    setRetryCount((prev) => prev + 1);
+    mutate();
+  };
+
   // Debug
   useEffect(() => {
     console.log("GithubPortfolio Debug:", {
@@ -102,8 +260,24 @@ export function GithubPortfolio({ username }: { username: string }) {
       error,
       reposCount: reposArray.length,
       repos: reposArray.slice(0, 2),
+      retryCount,
     });
-  }, [isLoading, error, reposArray]);
+  }, [isLoading, error, reposArray, retryCount]);
+
+  // Verificar se é um erro de rate limit
+  const isRateLimitError =
+    error?.message?.includes("403") ||
+    error?.message?.toLowerCase().includes("rate limit");
+
+  // Verificar se usuário não foi encontrado
+  const isUserNotFound =
+    error?.message?.includes("404") ||
+    error?.message?.toLowerCase().includes("not found");
+
+  // Verificar se é erro de autenticação
+  const isAuthError =
+    error?.message?.includes("401") ||
+    error?.message?.toLowerCase().includes("unauthorized");
 
   const languages = reposArray.reduce(
     (acc: Record<string, number>, repo: Repo) => {
@@ -119,7 +293,7 @@ export function GithubPortfolio({ username }: { username: string }) {
     ? reposArray.filter((repo: Repo) => repo.language === filterLanguage)
     : reposArray;
 
-  if (isLoading) {
+  if (isLoading && retryCount === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
         <Spinner className="h-12 w-12 text-cyan-500" />
@@ -132,17 +306,115 @@ export function GithubPortfolio({ username }: { username: string }) {
 
   if (error) {
     console.error("GithubPortfolio Error:", error);
+
+    return (
+      <div className="flex items-center justify-center min-h-screen p-4">
+        <Card className="p-8 text-center max-w-md w-full">
+          <div className="mb-4">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
+          </div>
+
+          <Alert variant="destructive" className="mb-4">
+            <AlertTitle className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              Erro ao carregar repositórios
+            </AlertTitle>
+            <AlertDescription>
+              {isRateLimitError && (
+                <div className="text-left mt-2">
+                  <p className="font-semibold">Rate Limit Excedido:</p>
+                  <p className="text-sm mt-1">
+                    A API do GitHub tem limite de requisições. Tente novamente
+                    em alguns minutos ou adicione um token de acesso.
+                  </p>
+                </div>
+              )}
+
+              {isUserNotFound && (
+                <div className="text-left mt-2">
+                  <p className="font-semibold">Usuário não encontrado:</p>
+                  <p className="text-sm mt-1">
+                    O usuário {username} não foi encontrado no GitHub. Verifique
+                    se o nome de usuário está correto.
+                  </p>
+                </div>
+              )}
+
+              {isAuthError && (
+                <div className="text-left mt-2">
+                  <p className="font-semibold">Erro de Autenticação:</p>
+                  <p className="text-sm mt-1">
+                    Problema com as credenciais de acesso à API do GitHub.
+                  </p>
+                </div>
+              )}
+
+              {!isRateLimitError && !isUserNotFound && !isAuthError && (
+                <div className="text-left mt-2">
+                  <p className="font-semibold">Detalhes do erro:</p>
+                  <p className="text-sm mt-1 font-mono bg-black/20 p-2 rounded">
+                    {error.message}
+                  </p>
+                </div>
+              )}
+            </AlertDescription>
+          </Alert>
+
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              {isRateLimitError
+                ? "A API do GitHub tem limite de 60 requisições por hora para usuários não autenticados."
+                : "Verifique sua conexão com a internet ou tente novamente."}
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+              <Button onClick={handleRetry} variant="default" className="gap-2">
+                <RefreshCw className="h-4 w-4" />
+                Tentar Novamente {retryCount > 0 && `(${retryCount})`}
+              </Button>
+
+              <Button variant="outline" asChild>
+                <a
+                  href="https://docs.github.com/en/rest"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  Documentação da API
+                </a>
+              </Button>
+            </div>
+
+            {retryCount > 2 && (
+              <Alert className="mt-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Muitas tentativas falhas</AlertTitle>
+                <AlertDescription>
+                  Recomendamos esperar alguns minutos antes de tentar novamente.
+                </AlertDescription>
+              </Alert>
+            )}
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  // Se não há repositórios após carregar (mas não é erro)
+  if (!isLoading && reposArray.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Card className="p-8 text-center max-w-md">
-          <p className="text-destructive mb-2">Erro ao carregar repositórios</p>
-          <p className="text-sm text-muted-foreground">
-            {error?.message ||
-              "Ocorreu um erro ao buscar os dados da API do GitHub"}
-          </p>
-          <p className="text-xs text-muted-foreground mt-4">
-            Verifique a conexão com a internet ou tente novamente mais tarde.
-          </p>
+          <Alert className="mb-4">
+            <AlertTitle>Nenhum repositório encontrado</AlertTitle>
+            <AlertDescription>
+              O usuário {username} não possui repositórios públicos ou a conta
+              está vazia.
+            </AlertDescription>
+          </Alert>
+          <Button variant="outline" onClick={handleRetry} className="gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Verificar Novamente
+          </Button>
         </Card>
       </div>
     );
@@ -160,14 +432,29 @@ export function GithubPortfolio({ username }: { username: string }) {
           <div className="flex items-center justify-center gap-3 mb-4">
             <div className="relative"></div>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              <span className="bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent"></span>
+              <span className="bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
+                {username}
+              </span>
             </h1>
           </div>
         </motion.header>
 
-        {/* Stats Carousel */}
-
-        {/* Language Chart */}
+        {/* Stats Info */}
+        {isLoading && retryCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mb-6"
+          >
+            <Alert>
+              <RefreshCw className="h-4 w-4 animate-spin" />
+              <AlertTitle>Recarregando dados...</AlertTitle>
+              <AlertDescription>
+                Tentativa {retryCount + 1} - Buscando repositórios atualizados
+              </AlertDescription>
+            </Alert>
+          </motion.div>
+        )}
 
         <Separator className="my-8" />
 
@@ -191,51 +478,66 @@ export function GithubPortfolio({ username }: { username: string }) {
             </ToggleGroupItem>
           </ToggleGroup>
 
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="gap-2 bg-transparent"
-              >
-                <Filter className="h-4 w-4" />
-                {filterLanguage || "Filtrar"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-48 p-2">
-              <ScrollArea className="h-48">
-                <div className="space-y-1">
-                  <Button
-                    variant={filterLanguage === null ? "secondary" : "ghost"}
-                    size="sm"
-                    className="w-full justify-start"
-                    onClick={() => setFilterLanguage(null)}
-                  >
-                    Todos
-                  </Button>
-                  {languages &&
-                    (Object.entries(languages) as [string, number][])
-                      .sort((a, b) => b[1] - a[1])
-                      .map(([lang, count]) => (
-                        <Button
-                          key={lang}
-                          variant={
-                            filterLanguage === lang ? "secondary" : "ghost"
-                          }
-                          size="sm"
-                          className="w-full justify-between"
-                          onClick={() => setFilterLanguage(lang)}
-                        >
-                          <span>{lang}</span>
-                          <Badge variant="secondary" className="ml-2">
-                            {count}
-                          </Badge>
-                        </Button>
-                      ))}
-                </div>
-              </ScrollArea>
-            </PopoverContent>
-          </Popover>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRetry}
+              disabled={isLoading}
+              className="gap-2"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
+              Atualizar
+            </Button>
+
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-2 bg-transparent"
+                >
+                  <Filter className="h-4 w-4" />
+                  {filterLanguage || "Filtrar"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-48 p-2">
+                <ScrollArea className="h-48">
+                  <div className="space-y-1">
+                    <Button
+                      variant={filterLanguage === null ? "secondary" : "ghost"}
+                      size="sm"
+                      className="w-full justify-start"
+                      onClick={() => setFilterLanguage(null)}
+                    >
+                      Todos
+                    </Button>
+                    {languages &&
+                      (Object.entries(languages) as [string, number][])
+                        .sort((a, b) => b[1] - a[1])
+                        .map(([lang, count]) => (
+                          <Button
+                            key={lang}
+                            variant={
+                              filterLanguage === lang ? "secondary" : "ghost"
+                            }
+                            size="sm"
+                            className="w-full justify-between"
+                            onClick={() => setFilterLanguage(lang)}
+                          >
+                            <span>{lang}</span>
+                            <Badge variant="secondary" className="ml-2">
+                              {count}
+                            </Badge>
+                          </Button>
+                        ))}
+                  </div>
+                </ScrollArea>
+              </PopoverContent>
+            </Popover>
+          </div>
         </motion.div>
 
         {/* Repos Grid/List */}
@@ -263,11 +565,18 @@ export function GithubPortfolio({ username }: { username: string }) {
               ))
             ) : (
               <div className="col-span-full text-center py-12">
-                <p className="text-muted-foreground">
-                  {filterLanguage
-                    ? `Nenhum repositório encontrado para ${filterLanguage}`
-                    : "Carregando repositórios..."}
-                </p>
+                <Alert>
+                  <AlertTitle>
+                    {filterLanguage
+                      ? `Nenhum repositório encontrado para ${filterLanguage}`
+                      : "Nenhum repositório encontrado"}
+                  </AlertTitle>
+                  <AlertDescription>
+                    {filterLanguage
+                      ? "Tente remover o filtro de linguagem ou verificar se há repositórios com esta linguagem."
+                      : "Verifique se o usuário possui repositórios públicos."}
+                  </AlertDescription>
+                </Alert>
               </div>
             )}
           </motion.div>
@@ -293,291 +602,4 @@ export function GithubPortfolio({ username }: { username: string }) {
       </div>
     </TooltipProvider>
   );
-}
-
-function RepoCard({
-  repo,
-  viewMode,
-  index,
-  onSelectRepo,
-}: {
-  repo: Repo;
-  viewMode: string;
-  index: number;
-  onSelectRepo: (repo: Repo) => void;
-}) {
-  const [languages, setLanguages] = useState<Languages | null>(null);
-
-  useEffect(() => {
-    fetch(repo.languages_url)
-      .then((res) => res.json())
-      .then(setLanguages)
-      .catch(() => {});
-  }, [repo.languages_url]);
-
-  const totalBytes = languages
-    ? Object.values(languages).reduce((a, b) => a + b, 0)
-    : 0;
-
-  if (viewMode === "list") {
-    return (
-      <motion.div
-        initial={{ opacity: 0, x: -20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.05 }}
-      >
-        <Card className="hover:border-cyan-500/50 transition-all duration-300 group">
-          <CardContent className="p-4 flex flex-col md:flex-row md:items-center gap-4">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <h3 className="font-semibold truncate group-hover:text-cyan-400 transition-colors">
-                  {repo.name}
-                </h3>
-                {repo.language && <TechBadge tech={repo.language} />}
-              </div>
-              <p className="text-sm text-muted-foreground line-clamp-1">
-                {repo.description || "Sem descrição"}
-              </p>
-            </div>
-            <div className="flex items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Star className="h-4 w-4" /> {repo.stargazers_count}
-              </span>
-              <span className="flex items-center gap-1">
-                <GitFork className="h-4 w-4" /> {repo.forks_count}
-              </span>
-            </div>
-            <div className="flex gap-2">
-              <ActionButtons repo={repo} onSelectRepo={onSelectRepo} />
-            </div>
-          </CardContent>
-        </Card>
-      </motion.div>
-    );
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: index * 0.05 }}
-      whileHover={{ y: -4 }}
-    >
-      <Card className="h-full flex flex-col overflow-hidden hover:border-cyan-500/50 hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 group bg-slate-900/50 border-slate-700/50 backdrop-blur-sm">
-        <CardHeader className="p-0">
-          <AspectRatio ratio={16 / 9}>
-            <div className="w-full h-full bg-linear-to-br from-muted to-muted/50 flex items-center justify-center relative overflow-hidden">
-              <div className="absolute inset-0 bg-linear-to-br from-cyan-500/10 via-transparent to-purple-500/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`https://opengraph.githubassets.com/1/${repo.html_url.replace(
-                  "https://github.com/",
-                  ""
-                )}`}
-                alt={repo.name}
-                className="w-full h-full object-cover"
-                onError={(e) => {
-                  e.currentTarget.style.display = "none";
-                }}
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <Github className="h-16 w-16 text-muted-foreground/30" />
-              </div>
-            </div>
-          </AspectRatio>
-        </CardHeader>
-        <CardContent className="flex-1 p-4">
-          <div className="flex items-start justify-between gap-2 mb-2">
-            <h3 className="font-semibold text-lg truncate group-hover:text-cyan-400 transition-colors">
-              {repo.name}
-            </h3>
-            {repo.language && <TechBadge tech={repo.language} />}
-          </div>
-          <p className="text-sm text-muted-foreground line-clamp-2 mb-3">
-            {repo.description || "Sem descrição disponível"}
-          </p>
-
-          {/* Tech Tags */}
-          {repo.topics.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-3">
-              {repo.topics.slice(0, 4).map((topic) => (
-                <Badge key={topic} variant="outline" className="text-xs">
-                  {topic}
-                </Badge>
-              ))}
-              {repo.topics.length > 4 && (
-                <Badge variant="outline" className="text-xs">
-                  +{repo.topics.length - 4}
-                </Badge>
-              )}
-            </div>
-          )}
-
-          {/* Language Stats */}
-          {languages && totalBytes > 0 && (
-            <div className="space-y-2">
-              <div className="flex h-2 rounded-full overflow-hidden bg-muted">
-                {Object.entries(languages)
-                  .sort(
-                    (a: [string, number], b: [string, number]) => b[1] - a[1]
-                  )
-                  .slice(0, 5)
-                  .map(([lang, bytes]) => {
-                    const percentage = (bytes / totalBytes) * 100;
-                    return (
-                      <div
-                        key={lang}
-                        className="h-full flex-1 transition-all hover:brightness-110"
-                        style={
-                          {
-                            width: `${percentage}%`,
-                            backgroundColor: getLanguageColor(lang),
-                            flex: `${percentage} 1 0%`,
-                          } as React.CSSProperties
-                        }
-                        title={`${lang}: ${percentage.toFixed(1)}%`}
-                      />
-                    );
-                  })}
-              </div>
-              <div className="flex flex-wrap gap-2 text-xs text-muted-foreground">
-                {Object.entries(languages)
-                  .sort((a, b) => b[1] - a[1])
-                  .slice(0, 3)
-                  .map(([lang, bytes]) => (
-                    <span key={lang} className="flex items-center gap-1">
-                      <span
-                        className="w-2 h-2 rounded-full"
-                        style={{ backgroundColor: getLanguageColor(lang) }}
-                      />
-                      {lang} {((bytes / totalBytes) * 100).toFixed(0)}%
-                    </span>
-                  ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-
-        <CardFooter className="p-4 pt-0 border-t border-border/50 mt-auto">
-          <div className="w-full flex items-center justify-between">
-            <div className="flex items-center gap-3 text-sm text-muted-foreground">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="flex items-center gap-1 hover:text-cyan-400 transition-colors cursor-default">
-                    <Star className="h-4 w-4" /> {repo.stargazers_count}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>Stars</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <span className="flex items-center gap-1 hover:text-purple-400 transition-colors cursor-default">
-                    <GitFork className="h-4 w-4" /> {repo.forks_count}
-                  </span>
-                </TooltipTrigger>
-                <TooltipContent>Forks</TooltipContent>
-              </Tooltip>
-            </div>
-            <ActionButtons repo={repo} onSelectRepo={onSelectRepo} />
-          </div>
-        </CardFooter>
-      </Card>
-    </motion.div>
-  );
-}
-
-function ActionButtons({
-  repo,
-  onSelectRepo,
-}: {
-  repo: Repo;
-  onSelectRepo: (repo: Repo) => void;
-}) {
-  return (
-    <div className="flex gap-2">
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:text-cyan-400 hover:bg-cyan-400/10"
-            onClick={() => onSelectRepo(repo)}
-          >
-            <BookOpen className="h-4 w-4" />
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Ver README</TooltipContent>
-      </Tooltip>
-
-      <Tooltip>
-        <TooltipTrigger asChild>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8 hover:text-foreground hover:bg-foreground/10"
-            asChild
-          >
-            <a
-              href={repo.html_url}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Ver Repositório"
-            >
-              <Github className="h-4 w-4" />
-            </a>
-          </Button>
-        </TooltipTrigger>
-        <TooltipContent>Ver Repositório</TooltipContent>
-      </Tooltip>
-
-      {repo.homepage && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8 hover:text-green-400 hover:bg-green-400/10"
-              asChild
-            >
-              <a
-                href={repo.homepage}
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Ver Deploy"
-              >
-                <ExternalLink className="h-4 w-4" />
-              </a>
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Ver Deploy</TooltipContent>
-        </Tooltip>
-      )}
-    </div>
-  );
-}
-
-function getLanguageColor(language: string): string {
-  const colors: Record<string, string> = {
-    TypeScript: "#3178c6",
-    JavaScript: "#f1e05a",
-    Python: "#3572A5",
-    Java: "#b07219",
-    "C++": "#f34b7d",
-    C: "#555555",
-    "C#": "#178600",
-    Go: "#00ADD8",
-    Rust: "#dea584",
-    Ruby: "#701516",
-    PHP: "#4F5D95",
-    Swift: "#ffac45",
-    Kotlin: "#A97BFF",
-    Dart: "#00B4AB",
-    HTML: "#e34c26",
-    CSS: "#563d7c",
-    SCSS: "#c6538c",
-    Vue: "#41b883",
-    Shell: "#89e051",
-    Dockerfile: "#384d54",
-  };
-  return colors[language] || "#6e7681";
 }
