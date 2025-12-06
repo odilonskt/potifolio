@@ -28,12 +28,14 @@ import {
   ExternalLink,
   Filter,
   GitFork,
+  Globe,
   Grid3X3,
+  Image as ImageIcon,
   LayoutList,
   RefreshCw,
   Star,
-  Watch,
 } from "lucide-react";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import useSWR from "swr";
 
@@ -87,15 +89,118 @@ interface RepoApiResponse extends Repo {
   documentation_url?: string;
 }
 
-// Componente RepoCard
+// Componente de barra de progresso para linguagens
+interface LanguageBarProps {
+  languages: Record<string, number>;
+  repoName: string;
+}
+
+function LanguageBar({ languages, repoName }: LanguageBarProps) {
+  const total = Object.values(languages).reduce((sum, val) => sum + val, 0);
+  const sortedLanguages = Object.entries(languages).sort((a, b) => b[1] - a[1]);
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center text-xs text-muted-foreground">
+        <span>Linguagens</span>
+        <span className="font-medium">{repoName}</span>
+      </div>
+
+      {/* Barra de progresso composta */}
+      <div className="flex h-2 rounded-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+        {sortedLanguages.map(([lang, bytes]) => {
+          const percentage = (bytes / total) * 100;
+          const colors: Record<string, string> = {
+            JavaScript: "bg-yellow-400",
+            TypeScript: "bg-blue-500",
+            HTML: "bg-red-500",
+            CSS: "bg-purple-500",
+            Python: "bg-green-500",
+            Java: "bg-orange-500",
+            "C++": "bg-pink-500",
+            Go: "bg-cyan-500",
+            Rust: "bg-orange-600",
+            PHP: "bg-indigo-500",
+            Ruby: "bg-red-600",
+            Shell: "bg-green-400",
+            Vue: "bg-emerald-500",
+            Dart: "bg-blue-400",
+            Swift: "bg-orange-400",
+            Kotlin: "bg-purple-600",
+            Default: "bg-gray-400",
+          };
+
+          return (
+            <div
+              key={lang}
+              className="h-full"
+              style={{ width: `${percentage}%` }}
+              title={`${lang}: ${percentage.toFixed(1)}%`}
+            >
+              <div className={`h-full ${colors[lang] || colors.Default}`} />
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Legenda */}
+      <div className="flex flex-wrap gap-2 mt-2">
+        {sortedLanguages.slice(0, 3).map(([lang, bytes]) => {
+          const percentage = (bytes / total) * 100;
+          const colors: Record<string, string> = {
+            JavaScript: "bg-yellow-400",
+            TypeScript: "bg-blue-500",
+            HTML: "bg-red-500",
+            CSS: "bg-purple-500",
+            Python: "bg-green-500",
+            Default: "bg-gray-400",
+          };
+
+          return (
+            <div key={lang} className="flex items-center gap-1">
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  colors[lang] || colors.Default
+                }`}
+              />
+              <span className="text-xs font-medium">{lang}</span>
+              <span className="text-xs text-muted-foreground">
+                ({percentage.toFixed(0)}%)
+              </span>
+            </div>
+          );
+        })}
+        {sortedLanguages.length > 3 && (
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-3 rounded-full bg-gray-300" />
+            <span className="text-xs text-muted-foreground">
+              +{sortedLanguages.length - 3} outras
+            </span>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Componente RepoCard atualizado
 interface RepoCardProps {
   repo: Repo;
   viewMode: string;
   index: number;
   onSelectRepo: (repo: Repo) => void;
+  repoLanguages: Record<string, number>;
+  repoImage?: string; // URL da imagem do projeto
 }
 
-function RepoCard({ repo, viewMode, index, onSelectRepo }: RepoCardProps) {
+function RepoCard({
+  repo,
+  viewMode,
+  index,
+  onSelectRepo,
+  repoLanguages,
+  repoImage,
+}: RepoCardProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("pt-BR", {
@@ -104,6 +209,57 @@ function RepoCard({ repo, viewMode, index, onSelectRepo }: RepoCardProps) {
       year: "numeric",
     });
   };
+
+  // URL da imagem padrão baseada no nome ou linguagem do projeto
+  const getProjectImage = () => {
+    if (repoImage) return repoImage;
+
+    // Mapeamento de imagens baseadas em tópicos ou linguagens
+    const imageMap: Record<string, string> = {
+      react:
+        "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h-300&fit=crop",
+      node: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=300&fit=crop",
+      typescript:
+        "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&h=300&fit=crop",
+      javascript:
+        "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=300&fit=crop",
+      python:
+        "https://images.unsplash.com/photo-1526379879527-8559ecfcaec7?w=400&h=300&fit=crop",
+      nextjs:
+        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop",
+      web: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop",
+      api: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop",
+      mobile:
+        "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=300&fit=crop",
+      ui: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop",
+      ux: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop",
+    };
+
+    // Verifica se algum tópico corresponde a uma imagem
+    for (const topic of repo.topics || []) {
+      if (imageMap[topic.toLowerCase()]) {
+        return imageMap[topic.toLowerCase()];
+      }
+    }
+
+    // Verifica pela linguagem principal
+    if (repo.language && imageMap[repo.language.toLowerCase()]) {
+      return imageMap[repo.language.toLowerCase()];
+    }
+
+    // Imagem padrão baseada no ID do repositório
+    const defaultImages = [
+      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1526379879527-8559ecfcaec7?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=300&fit=crop",
+      "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop",
+    ];
+
+    return defaultImages[repo.id % defaultImages.length];
+  };
+
+  const projectImage = getProjectImage();
 
   const cardContent = (
     <Card
@@ -118,27 +274,34 @@ function RepoCard({ repo, viewMode, index, onSelectRepo }: RepoCardProps) {
         transition={{ delay: index * 0.05 }}
         className="h-full flex flex-col"
       >
-        {/* Language Badge */}
-        {repo.language && (
-          <div className="mb-4 flex justify-between items-start">
-            <Badge
-              variant="outline"
-              className="bg-cyan-500/10 text-cyan-500 border-cyan-500/30"
-            >
-              {repo.language}
-            </Badge>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
-                <Star className="h-3 w-3" />
-                {repo.stargazers_count}
-              </span>
-              <span className="flex items-center gap-1">
-                <GitFork className="h-3 w-3" />
-                {repo.GitForks_count}
-              </span>
+        {/* Imagem do Projeto */}
+        <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
+          <Image
+            src={projectImage}
+            alt={repo.name}
+            fill
+            className="object-cover group-hover:scale-105 transition-transform duration-300"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+          {/* Badge de linguagem sobre a imagem */}
+          {repo.language && (
+            <div className="absolute top-3 left-3">
+              <Badge
+                variant="outline"
+                className="bg-black/70 text-white border-white/30 backdrop-blur-sm"
+              >
+                {repo.language}
+              </Badge>
             </div>
+          )}
+
+          {/* Ícone de visualização */}
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+            <ImageIcon className="h-5 w-5 text-white" />
           </div>
-        )}
+        </div>
 
         {/* Title & Description */}
         <div className="flex-grow">
@@ -151,6 +314,13 @@ function RepoCard({ repo, viewMode, index, onSelectRepo }: RepoCardProps) {
             </p>
           )}
         </div>
+
+        {/* Barra de porcentagem de linguagens */}
+        {Object.keys(repoLanguages).length > 0 && (
+          <div className="mb-4">
+            <LanguageBar languages={repoLanguages} repoName={repo.name} />
+          </div>
+        )}
 
         {/* Topics */}
         {repo.topics && repo.topics.length > 0 && (
@@ -172,29 +342,52 @@ function RepoCard({ repo, viewMode, index, onSelectRepo }: RepoCardProps) {
           </div>
         )}
 
-        {/* Footer */}
+        {/* Footer com botões de ação */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-auto pt-4 border-t">
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
-              <Watch className="h-3 w-3" />
-              {repo.watchers_count}
+              <Star className="h-3 w-3" />
+              {repo.stargazers_count}
+            </span>
+            <span className="flex items-center gap-1">
+              <GitFork className="h-3 w-3" />
+              {repo.GitForks_count}
             </span>
             <span className="hidden sm:inline">•</span>
             <span>Atualizado {formatDate(repo.updated_at)}</span>
           </div>
 
-          <Button
-            size="sm"
-            variant="ghost"
-            className="gap-2 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-500/10"
-            onClick={(e) => {
-              e.stopPropagation();
-              window.open(repo.html_url, "_blank");
-            }}
-          >
-            <ExternalLink className="h-3 w-3" />
-            GitHub
-          </Button>
+          <div className="flex gap-2">
+            {/* Botão Deploy (se homepage existir) */}
+            {repo.homepage && (
+              <Button
+                size="sm"
+                variant="default"
+                className="gap-2 bg-green-600 hover:bg-green-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(repo.homepage!, "_blank");
+                }}
+              >
+                <Globe className="h-3 w-3" />
+                Deploy
+              </Button>
+            )}
+
+            {/* Botão GitHub */}
+            <Button
+              size="sm"
+              variant="outline"
+              className="gap-2 border-cyan-500/30 text-cyan-600 hover:text-cyan-700 hover:bg-cyan-500/10"
+              onClick={(e) => {
+                e.stopPropagation();
+                window.open(repo.html_url, "_blank");
+              }}
+            >
+              <ExternalLink className="h-3 w-3" />
+              GitHub
+            </Button>
+          </div>
         </div>
 
         {/* Hover Effect */}
@@ -209,8 +402,22 @@ function RepoCard({ repo, viewMode, index, onSelectRepo }: RepoCardProps) {
         initial={{ opacity: 0, x: -20 }}
         animate={{ opacity: 1, x: 0 }}
         transition={{ delay: index * 0.05 }}
+        className="flex gap-4"
       >
-        {cardContent}
+        {/* Imagem na visualização lista */}
+        <div className="hidden md:block w-48 flex-shrink-0">
+          <div className="relative h-32 w-full rounded-lg overflow-hidden">
+            <Image
+              src={projectImage}
+              alt={repo.name}
+              fill
+              className="object-cover"
+              sizes="192px"
+            />
+          </div>
+        </div>
+
+        <div className="flex-grow">{cardContent}</div>
       </motion.div>
     );
   }
@@ -223,7 +430,11 @@ export function GithubPortfolio({ username }: { username: string }) {
   const [filterLanguage, setFilterLanguage] = useState<string | null>(null);
   const [selectedRepo, setSelectedRepo] = useState<Repo | null>(null);
   const [retryCount, setRetryCount] = useState(0);
+  const [languagesData, setLanguagesData] = useState<
+    Record<string, Record<string, number>>
+  >({});
 
+  // Buscar repositórios
   const {
     data: repos,
     error,
@@ -247,6 +458,34 @@ export function GithubPortfolio({ username }: { username: string }) {
     [repos]
   );
 
+  // Buscar linguagens para cada repositório
+  useEffect(() => {
+    if (reposArray.length > 0) {
+      const fetchAllLanguages = async () => {
+        const languages: Record<string, Record<string, number>> = {};
+
+        for (const repo of reposArray) {
+          try {
+            const response = await fetch(repo.languages_url);
+            if (response.ok) {
+              const data = await response.json();
+              languages[repo.name] = data;
+            }
+          } catch (error) {
+            console.error(`Error fetching languages for ${repo.name}:`, error);
+            languages[repo.name] = repo.language
+              ? { [repo.language]: 100 }
+              : {};
+          }
+        }
+
+        setLanguagesData(languages);
+      };
+
+      fetchAllLanguages();
+    }
+  }, [reposArray]);
+
   // Função para tratar retentativa
   const handleRetry = () => {
     setRetryCount((prev) => prev + 1);
@@ -261,8 +500,9 @@ export function GithubPortfolio({ username }: { username: string }) {
       reposCount: reposArray.length,
       repos: reposArray.slice(0, 2),
       retryCount,
+      languagesDataCount: Object.keys(languagesData).length,
     });
-  }, [isLoading, error, reposArray, retryCount]);
+  }, [isLoading, error, reposArray, retryCount, languagesData]);
 
   // Verificar se é um erro de rate limit
   const isRateLimitError =
@@ -437,24 +677,43 @@ export function GithubPortfolio({ username }: { username: string }) {
               </span>
             </h1>
           </div>
+          <p className="text-muted-foreground text-lg">
+            Portfólio de projetos do GitHub com estatísticas detalhadas
+          </p>
         </motion.header>
 
-        {/* Stats Info */}
-        {isLoading && retryCount > 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="mb-6"
-          >
-            <Alert>
-              <RefreshCw className="h-4 w-4 animate-spin" />
-              <AlertTitle>Recarregando dados...</AlertTitle>
-              <AlertDescription>
-                Tentativa {retryCount + 1} - Buscando repositórios atualizados
-              </AlertDescription>
-            </Alert>
-          </motion.div>
-        )}
+        {/* Stats */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+        >
+          <Card className="p-4 text-center">
+            <div className="text-2xl font-bold text-cyan-500">
+              {reposArray.length}
+            </div>
+            <div className="text-sm text-muted-foreground">Projetos</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-2xl font-bold text-green-500">
+              {Object.keys(languages).length}
+            </div>
+            <div className="text-sm text-muted-foreground">Linguagens</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-2xl font-bold text-yellow-500">
+              {reposArray.reduce((sum, repo) => sum + repo.stargazers_count, 0)}
+            </div>
+            <div className="text-sm text-muted-foreground">Stars</div>
+          </Card>
+          <Card className="p-4 text-center">
+            <div className="text-2xl font-bold text-purple-500">
+              {reposArray.filter((repo) => repo.homepage).length}
+            </div>
+            <div className="text-sm text-muted-foreground">Deploys</div>
+          </Card>
+        </motion.div>
 
         <Separator className="my-8" />
 
@@ -465,32 +724,19 @@ export function GithubPortfolio({ username }: { username: string }) {
           transition={{ delay: 0.3 }}
           className="flex flex-wrap items-center justify-between gap-4 mb-8"
         >
-          <ToggleGroup
-            type="single"
-            value={viewMode}
-            onValueChange={(v) => v && setViewMode(v)}
-          >
-            <ToggleGroupItem value="grid" aria-label="Grid view">
-              <Grid3X3 className="h-4 w-4" />
-            </ToggleGroupItem>
-            <ToggleGroupItem value="list" aria-label="List view">
-              <LayoutList className="h-4 w-4" />
-            </ToggleGroupItem>
-          </ToggleGroup>
-
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleRetry}
-              disabled={isLoading}
-              className="gap-2"
+            <ToggleGroup
+              type="single"
+              value={viewMode}
+              onValueChange={(v) => v && setViewMode(v)}
             >
-              <RefreshCw
-                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
-              />
-              Atualizar
-            </Button>
+              <ToggleGroupItem value="grid" aria-label="Grid view">
+                <Grid3X3 className="h-4 w-4" />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="list" aria-label="List view">
+                <LayoutList className="h-4 w-4" />
+              </ToggleGroupItem>
+            </ToggleGroup>
 
             <Popover>
               <PopoverTrigger asChild>
@@ -500,7 +746,7 @@ export function GithubPortfolio({ username }: { username: string }) {
                   className="gap-2 bg-transparent"
                 >
                   <Filter className="h-4 w-4" />
-                  {filterLanguage || "Filtrar"}
+                  {filterLanguage || "Filtrar Linguagem"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-48 p-2">
@@ -512,7 +758,7 @@ export function GithubPortfolio({ username }: { username: string }) {
                       className="w-full justify-start"
                       onClick={() => setFilterLanguage(null)}
                     >
-                      Todos
+                      Todas as Linguagens
                     </Button>
                     {languages &&
                       (Object.entries(languages) as [string, number][])
@@ -538,6 +784,21 @@ export function GithubPortfolio({ username }: { username: string }) {
               </PopoverContent>
             </Popover>
           </div>
+
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRetry}
+              disabled={isLoading}
+              className="gap-2"
+            >
+              <RefreshCw
+                className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
+              />
+              Atualizar Dados
+            </Button>
+          </div>
         </motion.div>
 
         {/* Repos Grid/List */}
@@ -550,7 +811,7 @@ export function GithubPortfolio({ username }: { username: string }) {
             className={
               viewMode === "grid"
                 ? "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
-                : "flex flex-col gap-4"
+                : "flex flex-col gap-6"
             }
           >
             {filteredRepos && filteredRepos.length > 0 ? (
@@ -561,6 +822,9 @@ export function GithubPortfolio({ username }: { username: string }) {
                   viewMode={viewMode}
                   index={index}
                   onSelectRepo={setSelectedRepo}
+                  repoLanguages={languagesData[repo.name] || {}}
+                  // Você pode passar uma imagem específica para cada repositório aqui
+                  // repoImage="https://sua-imagem.com/projeto.jpg"
                 />
               ))
             ) : (
