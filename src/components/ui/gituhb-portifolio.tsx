@@ -15,7 +15,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { ReadmeViewer } from "@/components/ui/readme-viewer";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Spinner } from "@/components/ui/spinner";
@@ -37,6 +36,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import useSWR from "swr";
 
 interface Repo {
@@ -46,13 +47,15 @@ interface Repo {
   html_url: string;
   homepage: string | null;
   stargazers_count: number;
-  GitForks_count: number;
+  forks_count: number;
   watchers_count: number;
   language: string | null;
   topics: string[];
   created_at: string;
   updated_at: string;
   languages_url: string;
+  default_branch: string;
+  has_pages?: boolean;
 }
 
 interface Languages {
@@ -63,6 +66,220 @@ interface ApiError {
   status: number;
   message: string;
   documentation_url?: string;
+}
+
+interface GitHubFile {
+  name: string;
+  path: string;
+  type: string;
+  download_url: string | null;
+}
+
+// Componente ReadmeViewer atualizado
+interface ReadmeViewerProps {
+  repo: Repo;
+  username: string;
+}
+
+function ReadmeViewer({ repo, username }: ReadmeViewerProps) {
+  const [readmeContent, setReadmeContent] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchReadme = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // Tentar diferentes nomes de README
+        const readmeNames = [
+          "README.md",
+          "readme.md",
+          "Readme.md",
+          "README.MD",
+          "README",
+        ];
+
+        for (const name of readmeNames) {
+          const readmeUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${repo.default_branch}/${name}`;
+
+          try {
+            const response = await fetch(readmeUrl);
+            if (response.ok) {
+              const content = await response.text();
+              setReadmeContent(content);
+              setLoading(false);
+              return;
+            }
+          } catch (err) {
+            continue;
+          }
+        }
+
+        // Se não encontrar README
+        setError("README não encontrado para este repositório.");
+        setReadmeContent(
+          `# ${repo.name}\n\n${repo.description || "Sem descrição disponível."}`
+        );
+      } catch (err) {
+        console.error("Error fetching README:", err);
+        setError("Erro ao carregar README.");
+        setReadmeContent(
+          `# ${repo.name}\n\n${repo.description || "Sem descrição disponível."}`
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchReadme();
+  }, [repo, username]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Spinner className="h-8 w-8 text-cyan-500" />
+        <span className="ml-2">Carregando README...</span>
+      </div>
+    );
+  }
+
+  if (error && !readmeContent) {
+    return (
+      <div className="p-4">
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Erro</AlertTitle>
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      </div>
+    );
+  }
+
+  return (
+    <div className="prose prose-invert max-w-none p-4">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          h1: ({ children }) => (
+            <h1 className="text-3xl font-bold mb-4 text-cyan-400">
+              {children}
+            </h1>
+          ),
+          h2: ({ children }) => (
+            <h2 className="text-2xl font-bold mb-3 text-cyan-300">
+              {children}
+            </h2>
+          ),
+          h3: ({ children }) => (
+            <h3 className="text-xl font-bold mb-2 text-cyan-200">{children}</h3>
+          ),
+          p: ({ children }) => <p className="mb-4 text-gray-300">{children}</p>,
+          a: ({ href, children }) => (
+            <a
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-cyan-400 hover:text-cyan-300 underline"
+            >
+              {children}
+            </a>
+          ),
+          code: ({ children, className }) => {
+            const isInline = !className?.includes("language-");
+            return isInline ? (
+              <code className="bg-gray-800 text-cyan-300 px-1 py-0.5 rounded text-sm">
+                {children}
+              </code>
+            ) : (
+              <pre className="bg-gray-900 p-4 rounded-lg overflow-x-auto my-4">
+                <code className={className}>{children}</code>
+              </pre>
+            );
+          },
+          ul: ({ children }) => (
+            <ul className="list-disc pl-5 mb-4 text-gray-300">{children}</ul>
+          ),
+          ol: ({ children }) => (
+            <ol className="list-decimal pl-5 mb-4 text-gray-300">{children}</ol>
+          ),
+          li: ({ children }) => <li className="mb-1">{children}</li>,
+          blockquote: ({ children }) => (
+            <blockquote className="border-l-4 border-cyan-500 pl-4 italic my-4 text-gray-400">
+              {children}
+            </blockquote>
+          ),
+          // CORREÇÃO AQUI: Definir tipo explícito para src e tratar Blob
+          img: ({ src, alt }: { src?: string | Blob; alt?: string }) => {
+            // Se não tiver src, usar placeholder
+            if (!src) {
+              return (
+                <div className="my-4">
+                  <Image
+                    src="/placeholder.png"
+                    alt={alt || "Imagem do README"}
+                    width={800}
+                    height={400}
+                    className="rounded-lg max-w-full h-auto"
+                  />
+                </div>
+              );
+            }
+
+            // Converter Blob para string URL se necessário
+            let srcString: string;
+            if (typeof src === "string") {
+              srcString = src;
+            } else {
+              // Se for Blob, criar URL temporária
+              srcString = URL.createObjectURL(src);
+            }
+
+            // Se for uma imagem relativa, converter para URL absoluta
+            let imageUrl = srcString;
+            if (
+              srcString &&
+              !srcString.startsWith("http") &&
+              !srcString.startsWith("data:")
+            ) {
+              imageUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${repo.default_branch}/${srcString}`;
+            }
+
+            const isSvg =
+              imageUrl?.includes(".svg") || imageUrl?.includes("image/svg+xml");
+
+            return (
+              <div className="my-4">
+                <Image
+                  src={imageUrl || "/placeholder.png"}
+                  alt={alt || "Imagem do README"}
+                  width={800}
+                  height={400}
+                  className="rounded-lg max-w-full h-auto"
+                  unoptimized={isSvg}
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).style.display = "none";
+                  }}
+                  onLoad={() => {
+                    // Limpar URL temporária se for Blob
+                    if (typeof src !== "string") {
+                      URL.revokeObjectURL(srcString);
+                    }
+                  }}
+                />
+              </div>
+            );
+          },
+        }}
+      >
+        {readmeContent ||
+          `# ${repo.name}\n\n${
+            repo.description || "Sem descrição disponível."
+          }`}
+      </ReactMarkdown>
+    </div>
+  );
 }
 
 // Função fetcher com tipo específico
@@ -190,7 +407,7 @@ interface RepoCardProps {
   index: number;
   onSelectRepo: (repo: Repo) => void;
   repoLanguages: Record<string, number>;
-  repoImage?: string; // URL da imagem do projeto
+  username: string;
 }
 
 function RepoCard({
@@ -199,7 +416,7 @@ function RepoCard({
   index,
   onSelectRepo,
   repoLanguages,
-  repoImage,
+  username,
 }: RepoCardProps) {
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -210,56 +427,237 @@ function RepoCard({
     });
   };
 
-  // URL da imagem padrão baseada no nome ou linguagem do projeto
-  const getProjectImage = () => {
-    if (repoImage) return repoImage;
+  // Estado para imagem do projeto
+  const [projectImage, setProjectImage] = useState<string | null>(null);
+  const [loadingImage, setLoadingImage] = useState(true);
 
-    // Mapeamento de imagens baseadas em tópicos ou linguagens
-    const imageMap: Record<string, string> = {
-      react:
-        "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=400&h-300&fit=crop",
-      node: "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=300&fit=crop",
-      typescript:
-        "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&h=300&fit=crop",
-      javascript:
-        "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=300&fit=crop",
-      python:
-        "https://images.unsplash.com/photo-1526379879527-8559ecfcaec7?w=400&h=300&fit=crop",
-      nextjs:
-        "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop",
-      web: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop",
-      api: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=400&h=300&fit=crop",
-      mobile:
-        "https://images.unsplash.com/photo-1512941937669-90a1b58e7e9c?w=400&h=300&fit=crop",
-      ui: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop",
-      ux: "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop",
+  useEffect(() => {
+    const fetchRepoImage = async () => {
+      try {
+        // Estratégia 1: Verificar por arquivos de imagem específicos na raiz
+        const imageExtensions = [
+          ".png",
+          ".jpg",
+          ".jpeg",
+          ".gif",
+          ".webp",
+          ".svg",
+        ];
+        const imageNames = [
+          "screenshot",
+          "preview",
+          "demo",
+          "example",
+          "banner",
+          "cover",
+          "thumbnail",
+          "logo",
+          "project",
+          "app",
+          "home",
+          "main",
+          repo.name.toLowerCase().replace(/[-_]/g, ""),
+        ];
+
+        // Verificar por arquivos de imagem específicos primeiro
+        for (const name of imageNames) {
+          for (const ext of imageExtensions) {
+            const potentialImage = `${name}${ext}`;
+            const imageUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${repo.default_branch}/${potentialImage}`;
+
+            try {
+              const response = await fetch(imageUrl, { method: "HEAD" });
+              if (response.ok) {
+                setProjectImage(imageUrl);
+                setLoadingImage(false);
+                return;
+              }
+            } catch (error) {
+              continue;
+            }
+          }
+        }
+
+        // Estratégia 2: Buscar README e extrair imagens
+        const readmeUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${repo.default_branch}/README.md`;
+        const readmeResponse = await fetch(readmeUrl);
+
+        if (readmeResponse.ok) {
+          const readmeContent = await readmeResponse.text();
+          const imageRegex = /!\[.*?\]\((.*?)\)/g;
+          const matches = Array.from(readmeContent.matchAll(imageRegex));
+
+          for (const match of matches) {
+            const imgUrl = match[1];
+            // Verificar se é uma URL absoluta
+            if (imgUrl.startsWith("http")) {
+              setProjectImage(imgUrl);
+              setLoadingImage(false);
+              return;
+            } else if (!imgUrl.startsWith("data:")) {
+              // URL relativa - construir URL completa
+              const baseUrl = `https://raw.githubusercontent.com/${username}/${repo.name}/${repo.default_branch}/`;
+              try {
+                const fullImageUrl = new URL(imgUrl, baseUrl).href;
+                const response = await fetch(fullImageUrl, { method: "HEAD" });
+                if (response.ok) {
+                  setProjectImage(fullImageUrl);
+                  setLoadingImage(false);
+                  return;
+                }
+              } catch (error) {
+                continue;
+              }
+            }
+          }
+        }
+
+        // Estratégia 3: Buscar lista de arquivos no repositório
+        const filesResponse = await fetch(
+          `https://api.github.com/repos/${username}/${repo.name}/contents/`
+        );
+
+        if (filesResponse.ok) {
+          const files: GitHubFile[] = await filesResponse.json();
+
+          // Procurar por imagens na raiz
+          const imageFile = files.find((file) =>
+            imageExtensions.some((ext) => file.name.toLowerCase().endsWith(ext))
+          );
+
+          if (imageFile?.download_url) {
+            setProjectImage(imageFile.download_url);
+            setLoadingImage(false);
+            return;
+          }
+        }
+
+        // Fallback: Imagem baseada na linguagem/tópicos
+        const fallbackImage = getFallbackImage(repo);
+        setProjectImage(fallbackImage);
+      } catch (error) {
+        console.error(`Error fetching image for ${repo.name}:`, error);
+        const fallbackImage = getFallbackImage(repo);
+        setProjectImage(fallbackImage);
+      } finally {
+        setLoadingImage(false);
+      }
     };
 
-    // Verifica se algum tópico corresponde a uma imagem
-    for (const topic of repo.topics || []) {
-      if (imageMap[topic.toLowerCase()]) {
-        return imageMap[topic.toLowerCase()];
-      }
-    }
+    fetchRepoImage();
+  }, [repo, username]);
 
-    // Verifica pela linguagem principal
-    if (repo.language && imageMap[repo.language.toLowerCase()]) {
-      return imageMap[repo.language.toLowerCase()];
-    }
+  // Função para gerar imagem de fallback
+  const getFallbackImage = (repoData: Repo): string => {
+    // Mapeamento de cores para linguagens
+    const languageColors: Record<string, string> = {
+      JavaScript: "rgb(247, 223, 30)",
+      TypeScript: "rgb(49, 120, 198)",
+      HTML: "rgb(227, 76, 38)",
+      CSS: "rgb(86, 61, 124)",
+      Python: "rgb(53, 114, 165)",
+      Java: "rgb(176, 114, 25)",
+      "C++": "rgb(243, 75, 125)",
+      Go: "rgb(0, 173, 216)",
+      Rust: "rgb(222, 165, 132)",
+      PHP: "rgb(136, 146, 190)",
+      Ruby: "rgb(204, 52, 45)",
+      Shell: "rgb(137, 224, 81)",
+      Vue: "rgb(65, 184, 131)",
+      Dart: "rgb(0, 180, 171)",
+      Swift: "rgb(255, 172, 69)",
+      Kotlin: "rgb(127, 82, 255)",
+    };
 
-    // Imagem padrão baseada no ID do repositório
-    const defaultImages = [
-      "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=400&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1526379879527-8559ecfcaec7?w=400&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1516116216624-53e697fedbea?w=400&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1627398242454-45a1465c2479?w=400&h=300&fit=crop",
-      "https://images.unsplash.com/photo-1551650975-87deedd944c3?w=400&h=300&fit=crop",
-    ];
+    const language = repoData.language || "Code";
+    const bgColor = languageColors[language] || "rgb(75, 85, 99)";
 
-    return defaultImages[repo.id % defaultImages.length];
+    // Criar SVG personalizado com as informações do projeto
+    const svgContent = `
+      <svg width="400" height="300" xmlns="http://www.w3.org/2000/svg">
+        <!-- Fundo gradiente -->
+        <defs>
+          <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" style="stop-color:#0f172a;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#1e293b;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+        
+        <rect width="400" height="300" fill="url(#grad1)" rx="8"/>
+        <rect width="400" height="80" fill="#111827" rx="8"/>
+        
+        <!-- Ícone do projeto baseado na linguagem -->
+        <g transform="translate(20, 100)">
+          <rect width="80" height="80" rx="12" fill="${bgColor}"/>
+          <text x="40" y="45" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="24">
+            ${language.charAt(0).toUpperCase()}
+          </text>
+        </g>
+        
+        <!-- Nome do projeto -->
+        <text x="120" y="130" fill="white" font-family="Arial, sans-serif" font-weight="bold" font-size="18">
+          ${
+            repoData.name.length > 20
+              ? repoData.name.substring(0, 20) + "..."
+              : repoData.name
+          }
+        </text>
+        
+        <!-- Linguagem -->
+        <text x="120" y="160" fill="#9ca3af" font-family="Arial, sans-serif" font-size="14">
+          ${language}
+        </text>
+        
+        <!-- Stats -->
+        <g transform="translate(120, 185)">
+          <!-- Stars -->
+          <circle cx="8" cy="8" r="6" fill="#fbbf24"/>
+          <text x="25" y="12" fill="white" font-family="Arial, sans-serif" font-size="11">
+            ${repoData.stargazers_count}
+          </text>
+          
+          <!-- Forks -->
+          <circle cx="65" cy="8" r="6" fill="#60a5fa"/>
+          <text x="82" y="12" fill="white" font-family="Arial, sans-serif" font-size="11">
+            ${repoData.forks_count}
+          </text>
+        </g>
+        
+        <!-- Tópicos (se existirem) -->
+        <g transform="translate(20, 220)">
+          ${
+            repoData.topics
+              ?.slice(0, 3)
+              .map(
+                (topic, i) => `
+            <rect x="${
+              i * 80
+            }" y="0" width="70" height="24" rx="12" fill="#1f2937"/>
+            <text x="${
+              i * 80 + 35
+            }" y="15" text-anchor="middle" fill="#3b82f6" font-family="Arial, sans-serif" font-size="10" font-weight="bold">
+              ${topic.length > 8 ? topic.substring(0, 8) + "..." : topic}
+            </text>
+          `
+              )
+              .join("") || ""
+          }
+        </g>
+      </svg>
+    `;
+
+    return `data:image/svg+xml;base64,${btoa(svgContent)}`;
   };
 
-  const projectImage = getProjectImage();
+  // Função para verificar se a imagem é SVG
+  const isSvgImage = (url: string | null): boolean => {
+    if (!url) return false;
+    return (
+      url.includes(".svg") ||
+      url.includes("image/svg+xml") ||
+      url.startsWith("data:image/svg")
+    );
+  };
 
   const cardContent = (
     <Card
@@ -275,22 +673,45 @@ function RepoCard({
         className="h-full flex flex-col"
       >
         {/* Imagem do Projeto */}
-        <div className="relative h-48 mb-4 rounded-lg overflow-hidden">
-          <Image
-            src={projectImage}
-            alt={repo.name}
-            fill
-            className="object-cover group-hover:scale-105 transition-transform duration-300"
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="relative h-48 mb-4 rounded-lg overflow-hidden bg-gray-900">
+          {loadingImage ? (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Spinner className="h-8 w-8 text-cyan-500" />
+            </div>
+          ) : projectImage ? (
+            <>
+              <Image
+                src={projectImage}
+                alt={repo.name}
+                fill
+                className="object-cover group-hover:scale-105 transition-transform duration-300"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                unoptimized={isSvgImage(projectImage)}
+                onError={(e) => {
+                  // Se a imagem falhar ao carregar, usar fallback
+                  const fallback = getFallbackImage(repo);
+                  setProjectImage(fallback);
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            </>
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <ImageIcon className="h-12 w-12 text-gray-400 mx-auto mb-2" />
+                <span className="text-sm text-gray-500">
+                  Carregando imagem...
+                </span>
+              </div>
+            </div>
+          )}
 
           {/* Badge de linguagem sobre a imagem */}
           {repo.language && (
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-3 left-3 z-10">
               <Badge
                 variant="outline"
-                className="bg-black/70 text-white border-white/30 backdrop-blur-sm"
+                className="bg-black/80 text-white border-white/40 backdrop-blur-sm hover:bg-black/90"
               >
                 {repo.language}
               </Badge>
@@ -298,14 +719,14 @@ function RepoCard({
           )}
 
           {/* Ícone de visualização */}
-          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-            <ImageIcon className="h-5 w-5 text-white" />
+          <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-10">
+            <BookOpen className="h-5 w-5 text-white" />
           </div>
         </div>
 
         {/* Title & Description */}
         <div className="flex-grow">
-          <h3 className="text-xl font-bold mb-2 group-hover:text-cyan-500 transition-colors">
+          <h3 className="text-xl font-bold mb-2 group-hover:text-cyan-500 transition-colors line-clamp-1">
             {repo.name}
           </h3>
           {repo.description && (
@@ -329,7 +750,7 @@ function RepoCard({
               <Badge
                 key={topic}
                 variant="secondary"
-                className="text-xs bg-gray-100 dark:bg-gray-800"
+                className="text-xs bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700"
               >
                 {topic}
               </Badge>
@@ -343,7 +764,7 @@ function RepoCard({
         )}
 
         {/* Footer com botões de ação */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-auto pt-4 border-t">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-auto pt-4 border-t border-gray-800">
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <span className="flex items-center gap-1">
               <Star className="h-3 w-3" />
@@ -351,15 +772,17 @@ function RepoCard({
             </span>
             <span className="flex items-center gap-1">
               <GitFork className="h-3 w-3" />
-              {repo.GitForks_count}
+              {repo.forks_count}
             </span>
             <span className="hidden sm:inline">•</span>
-            <span>Atualizado {formatDate(repo.updated_at)}</span>
+            <span className="text-xs">
+              Atualizado {formatDate(repo.updated_at)}
+            </span>
           </div>
 
           <div className="flex gap-2">
-            {/* Botão Deploy (se homepage existir) */}
-            {repo.homepage && (
+            {/* Operador ternário para mostrar apenas um botão */}
+            {repo.homepage ? (
               <Button
                 size="sm"
                 variant="default"
@@ -372,9 +795,25 @@ function RepoCard({
                 <Globe className="h-3 w-3" />
                 Deploy
               </Button>
-            )}
+            ) : repo.has_pages ? (
+              <Button
+                size="sm"
+                variant="default"
+                className="gap-2 bg-blue-600 hover:bg-blue-700"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  window.open(
+                    `https://${username}.github.io/${repo.name}`,
+                    "_blank"
+                  );
+                }}
+              >
+                <Globe className="h-3 w-3" />
+                Pages
+              </Button>
+            ) : null}
 
-            {/* Botão GitHub */}
+            {/* Botão GitHub (sempre visível) */}
             <Button
               size="sm"
               variant="outline"
@@ -385,7 +824,7 @@ function RepoCard({
               }}
             >
               <ExternalLink className="h-3 w-3" />
-              GitHub
+              Code
             </Button>
           </div>
         </div>
@@ -406,14 +845,21 @@ function RepoCard({
       >
         {/* Imagem na visualização lista */}
         <div className="hidden md:block w-48 flex-shrink-0">
-          <div className="relative h-32 w-full rounded-lg overflow-hidden">
-            <Image
-              src={projectImage}
-              alt={repo.name}
-              fill
-              className="object-cover"
-              sizes="192px"
-            />
+          <div className="relative h-32 w-full rounded-lg overflow-hidden bg-gray-900">
+            {projectImage && !loadingImage ? (
+              <Image
+                src={projectImage}
+                alt={repo.name}
+                fill
+                className="object-cover"
+                sizes="192px"
+                unoptimized={isSvgImage(projectImage)}
+              />
+            ) : (
+              <div className="absolute inset-0 flex items-center justify-center">
+                <ImageIcon className="h-8 w-8 text-gray-400" />
+              </div>
+            )}
           </div>
         </div>
 
@@ -464,12 +910,17 @@ export function GithubPortfolio({ username }: { username: string }) {
       const fetchAllLanguages = async () => {
         const languages: Record<string, Record<string, number>> = {};
 
-        for (const repo of reposArray) {
+        // Usar Promise.all para buscar todas as linguagens em paralelo
+        const languagePromises = reposArray.map(async (repo) => {
           try {
             const response = await fetch(repo.languages_url);
             if (response.ok) {
               const data = await response.json();
               languages[repo.name] = data;
+            } else {
+              languages[repo.name] = repo.language
+                ? { [repo.language]: 100 }
+                : {};
             }
           } catch (error) {
             console.error(`Error fetching languages for ${repo.name}:`, error);
@@ -477,8 +928,9 @@ export function GithubPortfolio({ username }: { username: string }) {
               ? { [repo.language]: 100 }
               : {};
           }
-        }
+        });
 
+        await Promise.all(languagePromises);
         setLanguagesData(languages);
       };
 
@@ -491,18 +943,6 @@ export function GithubPortfolio({ username }: { username: string }) {
     setRetryCount((prev) => prev + 1);
     mutate();
   };
-
-  // Debug
-  useEffect(() => {
-    console.log("GithubPortfolio Debug:", {
-      isLoading,
-      error,
-      reposCount: reposArray.length,
-      repos: reposArray.slice(0, 2),
-      retryCount,
-      languagesDataCount: Object.keys(languagesData).length,
-    });
-  }, [isLoading, error, reposArray, retryCount, languagesData]);
 
   // Verificar se é um erro de rate limit
   const isRateLimitError =
@@ -535,10 +975,10 @@ export function GithubPortfolio({ username }: { username: string }) {
 
   if (isLoading && retryCount === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
         <Spinner className="h-12 w-12 text-cyan-500" />
         <p className="text-muted-foreground animate-pulse">
-          Carregando projetos...
+          Carregando projetos do GitHub...
         </p>
       </div>
     );
@@ -548,7 +988,7 @@ export function GithubPortfolio({ username }: { username: string }) {
     console.error("GithubPortfolio Error:", error);
 
     return (
-      <div className="flex items-center justify-center min-h-screen p-4">
+      <div className="flex items-center justify-center min-h-[400px] p-4">
         <Card className="p-8 text-center max-w-md w-full">
           <div className="mb-4">
             <AlertCircle className="h-12 w-12 text-destructive mx-auto" />
@@ -565,7 +1005,7 @@ export function GithubPortfolio({ username }: { username: string }) {
                   <p className="font-semibold">Rate Limit Excedido:</p>
                   <p className="text-sm mt-1">
                     A API do GitHub tem limite de requisições. Tente novamente
-                    em alguns minutos ou adicione um token de acesso.
+                    em alguns minutos.
                   </p>
                 </div>
               )}
@@ -574,8 +1014,7 @@ export function GithubPortfolio({ username }: { username: string }) {
                 <div className="text-left mt-2">
                   <p className="font-semibold">Usuário não encontrado:</p>
                   <p className="text-sm mt-1">
-                    O usuário {username} não foi encontrado no GitHub. Verifique
-                    se o nome de usuário está correto.
+                    O usuário {username} não foi encontrado no GitHub.
                   </p>
                 </div>
               )}
@@ -642,13 +1081,12 @@ export function GithubPortfolio({ username }: { username: string }) {
   // Se não há repositórios após carregar (mas não é erro)
   if (!isLoading && reposArray.length === 0) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
+      <div className="flex items-center justify-center min-h-[400px]">
         <Card className="p-8 text-center max-w-md">
           <Alert className="mb-4">
             <AlertTitle>Nenhum repositório encontrado</AlertTitle>
             <AlertDescription>
-              O usuário {username} não possui repositórios públicos ou a conta
-              está vazia.
+              O usuário {username} não possui repositórios públicos.
             </AlertDescription>
           </Alert>
           <Button variant="outline" onClick={handleRetry} className="gap-2">
@@ -662,61 +1100,7 @@ export function GithubPortfolio({ username }: { username: string }) {
 
   return (
     <TooltipProvider>
-      <div className="container mx-auto px-4 py-8 max-w-7xl">
-        {/* Header */}
-        <motion.header
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-center mb-12"
-        >
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="relative"></div>
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              <span className="bg-linear-to-r from-cyan-400 via-blue-500 to-purple-500 bg-clip-text text-transparent">
-                {username}
-              </span>
-            </h1>
-          </div>
-          <p className="text-muted-foreground text-lg">
-            Portfólio de projetos do GitHub com estatísticas detalhadas
-          </p>
-        </motion.header>
-
-        {/* Stats */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
-        >
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-cyan-500">
-              {reposArray.length}
-            </div>
-            <div className="text-sm text-muted-foreground">Projetos</div>
-          </Card>
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-green-500">
-              {Object.keys(languages).length}
-            </div>
-            <div className="text-sm text-muted-foreground">Linguagens</div>
-          </Card>
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-yellow-500">
-              {reposArray.reduce((sum, repo) => sum + repo.stargazers_count, 0)}
-            </div>
-            <div className="text-sm text-muted-foreground">Stars</div>
-          </Card>
-          <Card className="p-4 text-center">
-            <div className="text-2xl font-bold text-purple-500">
-              {reposArray.filter((repo) => repo.homepage).length}
-            </div>
-            <div className="text-sm text-muted-foreground">Deploys</div>
-          </Card>
-        </motion.div>
-
-        <Separator className="my-8" />
-
+      <div className="container mx-auto px-4 py-8">
         {/* Controls */}
         <motion.div
           initial={{ opacity: 0 }}
@@ -796,10 +1180,45 @@ export function GithubPortfolio({ username }: { username: string }) {
               <RefreshCw
                 className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`}
               />
-              Atualizar Dados
+              Atualizar
             </Button>
           </div>
         </motion.div>
+
+        {/* Stats */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
+          className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8"
+        >
+          <Card className="p-4 text-center bg-gray-900/50 border-gray-800">
+            <div className="text-2xl font-bold text-cyan-500">
+              {reposArray.length}
+            </div>
+            <div className="text-sm text-gray-400">Projetos</div>
+          </Card>
+          <Card className="p-4 text-center bg-gray-900/50 border-gray-800">
+            <div className="text-2xl font-bold text-green-500">
+              {Object.keys(languages).length}
+            </div>
+            <div className="text-sm text-gray-400">Linguagens</div>
+          </Card>
+          <Card className="p-4 text-center bg-gray-900/50 border-gray-800">
+            <div className="text-2xl font-bold text-yellow-500">
+              {reposArray.reduce((sum, repo) => sum + repo.stargazers_count, 0)}
+            </div>
+            <div className="text-sm text-gray-400">Stars</div>
+          </Card>
+          <Card className="p-4 text-center bg-gray-900/50 border-gray-800">
+            <div className="text-2xl font-bold text-purple-500">
+              {reposArray.filter((repo) => repo.homepage).length}
+            </div>
+            <div className="text-sm text-gray-400">Deploys</div>
+          </Card>
+        </motion.div>
+
+        <Separator className="my-8 bg-gray-800" />
 
         {/* Repos Grid/List */}
         <AnimatePresence mode="wait">
@@ -823,8 +1242,7 @@ export function GithubPortfolio({ username }: { username: string }) {
                   index={index}
                   onSelectRepo={setSelectedRepo}
                   repoLanguages={languagesData[repo.name] || {}}
-                  // Você pode passar uma imagem específica para cada repositório aqui
-                  // repoImage="https://sua-imagem.com/projeto.jpg"
+                  username={username}
                 />
               ))
             ) : (
@@ -837,7 +1255,7 @@ export function GithubPortfolio({ username }: { username: string }) {
                   </AlertTitle>
                   <AlertDescription>
                     {filterLanguage
-                      ? "Tente remover o filtro de linguagem ou verificar se há repositórios com esta linguagem."
+                      ? "Tente remover o filtro de linguagem."
                       : "Verifique se o usuário possui repositórios públicos."}
                   </AlertDescription>
                 </Alert>
@@ -859,7 +1277,9 @@ export function GithubPortfolio({ username }: { username: string }) {
               </DialogTitle>
             </DialogHeader>
             <ScrollArea className="h-[70vh]">
-              {selectedRepo && <ReadmeViewer repo={selectedRepo} />}
+              {selectedRepo && (
+                <ReadmeViewer repo={selectedRepo} username={username} />
+              )}
             </ScrollArea>
           </DialogContent>
         </Dialog>
