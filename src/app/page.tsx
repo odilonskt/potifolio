@@ -1,10 +1,10 @@
 import { ContactForm } from "@/components/contact-form/page";
+import GithubRepos from "@/components/Github-repos/gituhb-portifolio";
 import Header from "@/components/heard/page";
 import Sobre from "@/components/sobre/page";
 import Start from "@/components/start/page";
 import InfinityScrollAnimation from "@/components/tecnologia/page";
 import Titan from "@/components/titan/page";
-import { GithubPortfolio } from "@/components/ui/gituhb-portifolio";
 
 export default function Home() {
   return (
@@ -45,7 +45,7 @@ Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecim
             subtitle="Explore meus repositórios no GitHub"
           />
           <div className="py-8">
-            <GithubPortfolio username="odilonskt" />
+            <GithubRepos />
           </div>
         </section>
 
