@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ExternalLink, GitFork, Rocket, Star } from "lucide-react";
+import { ExternalLink, Rocket } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 
@@ -32,7 +32,7 @@ const GITHUB_USERNAME = "odilonskt";
 const customImages: Record<string, string> = {
   // No Next.js, arquivos na pasta public são servidos da raiz
   // Use "/nome-da-imagem.png" em vez de "/public/nome-da-imagem.png"
-  "CRUD-M2": "/CRUD-M2.png",
+  // "CRUD-M2": "/CRUD-M2.png",
   "calculadora-em-POO": "/calculadora-em-POO.png",
   portfolio: "/portfolio.png",
   "M4-API-Futebol": "/M4-API-Futebol.png",
@@ -129,11 +129,11 @@ export default function GithubRepos() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-zinc-900 border-zinc-800">
-                <Skeleton className="h-40 w-full bg-zinc-800" />
+              <Card key={i} className="bg-zinc-950 border-zinc-900">
+                <Skeleton className="h-40 w-full bg-zinc-900" />
                 <div className="p-4 space-y-3">
-                  <Skeleton className="h-5 w-32 bg-zinc-800" />
-                  <Skeleton className="h-4 w-full bg-zinc-800" />
+                  <Skeleton className="h-5 w-32 bg-zinc-900" />
+                  <Skeleton className="h-4 w-full bg-zinc-900" />
                 </div>
               </Card>
             ))
@@ -148,9 +148,9 @@ export default function GithubRepos() {
               return (
                 <Card
                   key={repo.id}
-                  className="bg-zinc-900 border-zinc-800 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all overflow-hidden group"
+                  className="bg-zinc-950 border-zinc-900 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all overflow-hidden group"
                 >
-                  <div className="relative h-40 w-full bg-zinc-800 overflow-hidden">
+                  <div className="relative h-40 w-full bg-zinc-900 overflow-hidden">
                     <Image
                       src={imageUrl || "/placeholder.svg"}
                       alt={repo.name}
@@ -180,7 +180,7 @@ export default function GithubRepos() {
 
                     {langPercentages.length > 0 && (
                       <div className="space-y-2">
-                        <div className="flex h-2 rounded-full overflow-hidden bg-zinc-800">
+                        <div className="flex h-2 rounded-full overflow-hidden bg-zinc-900">
                           {langPercentages.map((lang, i) => (
                             <div
                               key={i}
@@ -209,22 +209,11 @@ export default function GithubRepos() {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3 text-zinc-500 text-xs">
-                      <span className="flex items-center gap-1">
-                        <Star className="h-3.5 w-3.5" />
-                        {repo.stargazers_count}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <GitFork className="h-3.5 w-3.5" />
-                        {repo.forks_count}
-                      </span>
-                    </div>
-
                     <div className="flex gap-2 pt-2">
                       <Button
                         asChild
                         size="sm"
-                        className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-zinc-100 border-0"
+                        className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border-0"
                       >
                         <a
                           href={repo.html_url}
@@ -235,25 +224,22 @@ export default function GithubRepos() {
                           Repositório
                         </a>
                       </Button>
-                      <Button
-                        asChild
-                        size="sm"
-                        className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white border-0 shadow-[0_0_10px_rgba(6,182,212,0.3)] hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]"
-                      >
-                        <a
-                          href={
-                            repo.homepage ||
-                            `https://vercel.com/new/clone?repository-url=${encodeURIComponent(
-                              repo.html_url
-                            )}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
+                      {repo.homepage && (
+                        <Button
+                          asChild
+                          size="sm"
+                          className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white border-0 shadow-[0_0_10px_rgba(6,182,212,0.3)] hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]"
                         >
-                          <Rocket className="h-3.5 w-3.5 mr-1.5" />
-                          {repo.homepage ? "Ver Projeto" : "Deploy"}
-                        </a>
-                      </Button>
+                          <a
+                            href={repo.homepage}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <Rocket className="h-3.5 w-3.5 mr-1.5" />
+                            Hospedagem
+                          </a>
+                        </Button>
+                      )}
                     </div>
                   </CardContent>
                 </Card>
