@@ -2,6 +2,17 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  reactStrictMode: true,
+  // Next.js 15 vem com otimizações automáticas
+  experimental: {
+    // Se quiser usar server actions puros
+    serverActions: {
+      bodySizeLimit: "2mb",
+    },
+  },
+  // Melhor suporte para PWA e cache
+  cacheHandler: process.env.NEXT_CACHE_HANDLER,
+  cacheMaxMemorySize: 50, // MB
   reactCompiler: true,
   images: {
     remotePatterns: [

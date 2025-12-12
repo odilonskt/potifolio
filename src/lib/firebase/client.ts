@@ -1,3 +1,5 @@
+//lib/firebase/client.ts
+
 // Este arquivo SÓ deve ser usado no cliente
 "use client";
 

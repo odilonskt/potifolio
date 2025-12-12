@@ -3,9 +3,9 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ExternalLink, Rocket } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
+import { MdOpenInNew, MdRocket } from "react-icons/md";
 
 interface Repository {
   id: number;
@@ -220,7 +220,7 @@ export default function GithubRepos() {
                           target="_blank"
                           rel="noopener noreferrer"
                         >
-                          <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+                          <MdOpenInNew className="h-3.5 w-3.5 mr-1.5" />
                           Repositório
                         </a>
                       </Button>
@@ -235,7 +235,7 @@ export default function GithubRepos() {
                             target="_blank"
                             rel="noopener noreferrer"
                           >
-                            <Rocket className="h-3.5 w-3.5 mr-1.5" />
+                            <MdRocket className="h-3.5 w-3.5 mr-1.5" />
                             Hospedagem
                           </a>
                         </Button>

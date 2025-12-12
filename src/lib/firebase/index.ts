@@ -1,3 +1,4 @@
+//lib/firebase/index.ts
 import { ContactFormData } from "../schemas/contact-form";
 
 // Configuração vazia para evitar erros no build
