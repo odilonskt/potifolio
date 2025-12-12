@@ -1,9 +1,17 @@
+// app/api/contact/route.ts
+import { saveContactForm } from "@/lib/firebase";
+import {
+  deleteContact,
+  markAsRead,
+  markAsUnread,
+} from "@/lib/firebase-contacts";
 import { contactFormSchema } from "@/lib/schemas/contact-form";
 import { NextRequest, NextResponse } from "next/server";
 
 // Marcar como dinâmico para não ser otimizado durante build
 export const dynamic = "force-dynamic";
 
+// POST - Criar novo contato ou atualizar status
 export async function POST(request: NextRequest) {
   try {
     // Verificar se o Firebase está configurado
@@ -30,7 +38,36 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validar
+    const action = request.nextUrl.searchParams.get("action");
+
+    // Ação: marcar como lido
+    if (action === "mark-read") {
+      const { id } = body;
+      if (!id) {
+        return NextResponse.json(
+          { success: false, error: "ID obrigatório" },
+          { status: 400 }
+        );
+      }
+      const result = await markAsRead(id);
+      return NextResponse.json(result);
+    }
+
+    // Ação: marcar como não lido
+    if (action === "mark-unread") {
+      const { id } = body;
+      if (!id) {
+        return NextResponse.json(
+          { success: false, error: "ID obrigatório" },
+          { status: 400 }
+        );
+      }
+      const result = await markAsUnread(id);
+      return NextResponse.json(result);
+    }
+
+    // Padrão: criar novo contato
+    // Validar com Zod
     const validatedData = contactFormSchema.safeParse(body);
 
     if (!validatedData.success) {
@@ -38,63 +75,91 @@ export async function POST(request: NextRequest) {
         {
           success: false,
           error: "Dados inválidos",
+          details: validatedData.error.issues,
         },
         { status: 400 }
       );
     }
 
-    const data = validatedData.data;
-
-    // Importar apenas quando necessário (runtime)
-    let saveContactForm;
-    try {
-      const firebaseModule = await import("@/lib/firebase");
-      saveContactForm = firebaseModule.saveContactForm;
-    } catch (error) {
-      console.error("Erro ao carregar módulo Firebase:", error);
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Erro ao processar sua solicitação",
-        },
-        { status: 500 }
-      );
-    }
+    // Criar dados completos para o Firebase
+    const contactData = validatedData.data;
 
     // Salvar no Firebase
-    const result = await saveContactForm(data);
+    const result = await saveContactForm(contactData);
 
     if (!result.success) {
       return NextResponse.json(
         {
           success: false,
-          error: result.error || "Erro ao processar sua solicitação",
+          error: result.error || "Erro ao salvar contato",
         },
         { status: 500 }
       );
     }
 
-    return NextResponse.json(
-      {
-        success: true,
-        id: result.id,
-        message: "Formulário enviado com sucesso!",
-      },
-      { status: 200 }
-    );
+    // Sucesso
+    return NextResponse.json({
+      success: true,
+      id: result.id || contactData.id,
+      message: "Contato salvo com sucesso",
+    });
   } catch (error) {
-    console.error("Erro na API:", error);
+    console.error("Erro na API de contato:", error);
+
+    // Extrair a mensagem de erro de forma segura
+    let errorMessage = "Erro interno do servidor";
+
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
 
     return NextResponse.json(
       {
         success: false,
-        error: "Erro interno do servidor",
+        error: errorMessage,
       },
       { status: 500 }
     );
   }
 }
 
+// DELETE - Deletar contato
+export async function DELETE(request: NextRequest) {
+  try {
+    // Verificar se o Firebase está configurado
+    if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Serviço temporariamente indisponível",
+        },
+        { status: 503 }
+      );
+    }
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get("id");
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "ID obrigatório" },
+        { status: 400 }
+      );
+    }
+
+    const result = await deleteContact(id);
+    return NextResponse.json(result);
+  } catch (error) {
+    console.error("Erro ao deletar contato:", error);
+
+    return NextResponse.json(
+      { success: false, error: "Erro ao deletar contato" },
+      { status: 500 }
+    );
+  }
+}
+
+// GET - Verificar status da API
 export async function GET() {
   // Verificação simples de saúde da API
   const isFirebaseConfigured = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
