@@ -5,6 +5,7 @@ import Sobre from "@/components/sobre/page";
 import Start from "@/components/start/page";
 import InfinityScrollAnimation from "@/components/tecnologia/page";
 import Titan from "@/components/titan/page";
+import Hover3DCard from "../components/HoverCard3D/page";
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <main className="min-h-screen bg-slate-950">
         <Header />
         <Start id="start"></Start>
+
         <Sobre
           id="meio"
           descrition_hardSkill="Desenvolvedor Full-Stack com foco em JavaScript/TypeScript, Node.js (Express/Nest.js) e React/Next.js.
@@ -38,7 +40,33 @@ Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecim
             <InfinityScrollAnimation />
           </div>
         </section>
+        <section
+          id="Destaque"
+          className="w-full bg-slate-950 py-8 xs:py-12 sm:py-16 md:py-20 px-3 xs:px-4 sm:px-6 md:px-8"
+          suppressHydrationWarning
+        >
+          <div className="flex flex-col items-center justify-center gap-8 xs:gap-10 sm:gap-12 md:gap-16 max-w-7xl mx-auto">
+            <Titan title="Destaque Visual" subtitle="Efeito 3D interativo" />
 
+            <div className="w-full">
+              <div className="flex flex-col lg:flex-row justify-center gap-4 xs:gap-6 sm:gap-8 md:gap-10 max-w-6xl mx-auto px-2">
+                {/* Card Grande - Desktop */}
+                <div className="w-full lg:w-2/3 h-40 xs:h-48 sm:h-56 md:h-64 lg:h-80">
+                  <Hover3DCard
+                    src="https://i.pinimg.com/originals/d2/30/e9/d230e9383c6ddf256e583b5228e2bfb7.gif"
+                    alt="Efeito 3D interativo"
+                  />
+                </div>
+                <div className="w-full lg:w-2/3 h-40 xs:h-48 sm:h-56 md:h-64 lg:h-80">
+                  <Hover3DCard
+                    src="https://i.pinimg.com/originals/27/d6/ac/27d6ac185cd2c655fcd667d7938b37e4.gif"
+                    alt="Efeito 3D interativo"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
         <section id="Projeto" className="bg-slate-950 py-12">
           <Titan
             title="Projetos"

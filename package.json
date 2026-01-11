@@ -75,6 +75,7 @@
     "autoprefixer": "^10.4.22",
     "babel-plugin-react-compiler": "1.0.0",
     "baseline-browser-mapping": "^2.8.32",
+    "daisyui": "^5.5.14",
     "eslint": "^9",
     "eslint-config-next": "16.0.0",
     "postcss": "^8.5.6",
