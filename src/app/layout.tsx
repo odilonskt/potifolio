@@ -38,7 +38,8 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  await new Promise((resolve) => setTimeout(resolve, 5000));
+  // 45 segundos de tela carregando
+  await new Promise((resolve) => setTimeout(resolve, 45000));
   return (
     <html lang="pt-BR" className="scroll-smooth dark">
       <body
