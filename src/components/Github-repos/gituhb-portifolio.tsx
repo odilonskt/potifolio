@@ -118,14 +118,14 @@ export default function GithubRepos() {
 
   if (error) {
     return (
-      <div className="text-center py-12 text-red-400">
+      <div className="text-center py-12 text-red-400 ">
         <p>Erro: {error}</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4">
+    <div className="  max-w-6xl mx-auto px-4">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
@@ -160,7 +160,7 @@ export default function GithubRepos() {
                     />
                   </div>
 
-                  <CardContent className="p-4 space-y-3">
+                  <CardContent className="p-4 space-y-3 skeleton">
                     <div className="flex items-center gap-2">
                       <Image
                         src={repo.owner.avatar_url || "/placeholder.svg"}
@@ -236,7 +236,7 @@ export default function GithubRepos() {
                             rel="noopener noreferrer"
                           >
                             <MdRocket className="h-3.5 w-3.5 mr-1.5" />
-                            Hospedagem
+                            Deploy
                           </a>
                         </Button>
                       )}
