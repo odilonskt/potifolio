@@ -151,7 +151,6 @@ export function ContactForm() {
                   <FormItem className="sm:col-span-1">
                     <FormLabel className="text-sm font-medium text-gray-300">
                       Telefone{" "}
-                      <span className="text-gray-500 text-xs">(opcional)</span>
                     </FormLabel>
                     <FormControl>
                       <Input
