@@ -47,7 +47,7 @@ export default function InfinityScrollAnimation({
         id="Tecnologia"
       >
         <div className="w-full max-w-6xl mx-auto" id={id}>
-          <div className={styles.scrollContainer}>
+          <div className={styles.scrollContainer} suppressHydrationWarning>
             {/* efeito blur lateral */}
             <div className={styles.leftBlur}></div>
             <div className={styles.rightBlur}></div>
