@@ -85,7 +85,7 @@ const handleHttpError = (status: number): FetchError => {
 
 const fetchWithRetry = async (
   url: string,
-  retries = MAX_RETRIES
+  retries = MAX_RETRIES,
 ): Promise<Response> => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
@@ -104,7 +104,7 @@ const fetchWithRetry = async (
       const error = handleHttpError(response.status);
       if (error.retryable && retries > 0) {
         await new Promise((resolve) =>
-          setTimeout(resolve, RETRY_DELAY * (MAX_RETRIES - retries + 1))
+          setTimeout(resolve, RETRY_DELAY * (MAX_RETRIES - retries + 1)),
         );
         return fetchWithRetry(url, retries - 1);
       }
@@ -119,12 +119,12 @@ const fetchWithRetry = async (
       if (err.name === "AbortError") {
         if (retries > 0) {
           await new Promise((resolve) =>
-            setTimeout(resolve, RETRY_DELAY * (MAX_RETRIES - retries + 1))
+            setTimeout(resolve, RETRY_DELAY * (MAX_RETRIES - retries + 1)),
           );
           return fetchWithRetry(url, retries - 1);
         }
         throw new Error(
-          "Requisição expirou. Verifica sua conexão com a internet."
+          "Requisição expirou. Verifica sua conexão com a internet.",
         );
       }
       throw err;
@@ -166,7 +166,7 @@ const languageColors: Record<string, string> = {
 export default function GithubRepos() {
   const [repos, setRepos] = useState<Repository[]>([]);
   const [languages, setLanguages] = useState<Record<number, LanguageBreakdown>>(
-    {}
+    {},
   );
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -175,7 +175,7 @@ export default function GithubRepos() {
     async function fetchRepos() {
       try {
         const response = await fetchWithRetry(
-          `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=12`
+          `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=12`,
         );
         const data: Repository[] = await response.json();
         setRepos(data);
@@ -184,7 +184,7 @@ export default function GithubRepos() {
           try {
             const langResponse = await fetchWithRetry(
               `https://api.github.com/repos/${GITHUB_USERNAME}/${repo.name}/languages`,
-              2
+              2,
             );
             const langData = await langResponse.json();
             return { id: repo.id, languages: langData };
@@ -260,48 +260,69 @@ export default function GithubRepos() {
             ))
           : repos.map((repo) => {
               const langPercentages = getLanguagePercentages(
-                languages[repo.id] || {}
+                languages[repo.id] || {},
               );
               const imageUrl =
                 customImages[repo.name] ||
                 getGithubSocialImage(GITHUB_USERNAME, repo.name);
 
               return (
-                <Card
+                <article
                   key={repo.id}
-                  className="bg-zinc-950 border-zinc-900 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.15)] transition-all overflow-hidden group"
+                  className="group bg-black border border-zinc-800 rounded-lg overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-white/20"
+                  aria-labelledby={`repo-${repo.id}-title`}
                 >
-                  <div className="relative h-40 w-full bg-zinc-900 overflow-hidden">
+                  <div className="relative h-40 sm:h-44 md:h-48 lg:h-56 w-full bg-zinc-900 overflow-hidden">
                     <Image
                       src={imageUrl || "/placeholder.svg"}
-                      alt={repo.name}
+                      alt={`Preview do repositório ${repo.name}`}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
                       unoptimized
                     />
                   </div>
 
-                  <CardContent className="p-4 space-y-3 skeleton">
-                    <div className="flex items-center gap-2">
-                      <Image
-                        src={repo.owner.avatar_url || "/placeholder.svg"}
-                        alt={repo.owner.login}
-                        width={20}
-                        height={20}
-                        className="rounded-full"
-                      />
-                      <span className="font-medium text-zinc-100 truncate">
-                        {repo.name}
-                      </span>
-                    </div>
+                  <CardContent className="p-4 space-y-3 text-white">
+                    <header className="flex items-start justify-between gap-3">
+                      <div className="flex items-center gap-3">
+                        <Image
+                          src={repo.owner.avatar_url || "/placeholder.svg"}
+                          alt={`Avatar de ${repo.owner.login}`}
+                          width={32}
+                          height={32}
+                          className="rounded-full flex-shrink-0"
+                        />
+                        <h3
+                          id={`repo-${repo.id}-title`}
+                          className="font-semibold text-sm truncate"
+                        >
+                          {repo.name}
+                        </h3>
+                      </div>
+                      <time
+                        dateTime={repo.updated_at}
+                        className="text-xs text-zinc-400"
+                        aria-label={`Última atualização ${new Date(
+                          repo.updated_at,
+                        ).toLocaleDateString()}`}
+                      >
+                        {new Date(repo.updated_at).toLocaleDateString()}
+                      </time>
+                    </header>
 
-                    <p className="text-sm text-zinc-400 line-clamp-2 min-h-[2.5rem]">
+                    <p className="text-sm text-zinc-300 line-clamp-2 min-h-[2.5rem]">
                       {repo.description || "Sem descrição"}
                     </p>
 
                     {langPercentages.length > 0 && (
                       <div className="space-y-2">
-                        <div className="flex h-2 rounded-full overflow-hidden bg-zinc-900">
+                        <div
+                          className="flex h-2 rounded-full overflow-hidden bg-zinc-900"
+                          role="img"
+                          aria-label={`Linguagens: ${langPercentages
+                            .map((l) => `${l.language} ${l.percentage}%`)
+                            .join(", ")}`}
+                        >
                           {langPercentages.map((lang, i) => (
                             <div
                               key={i}
@@ -310,20 +331,26 @@ export default function GithubRepos() {
                                 backgroundColor: lang.color,
                               }}
                               className="h-full"
+                              aria-hidden
                             />
                           ))}
                         </div>
-                        <div className="flex flex-wrap gap-x-3 gap-y-1 text-xs">
+                        <div className="flex flex-wrap gap-2 text-xs">
                           {langPercentages.slice(0, 3).map((lang, i) => (
                             <span
                               key={i}
-                              className="flex items-center gap-1 text-zinc-400"
+                              className="flex items-center gap-2 text-zinc-300"
                             >
                               <span
                                 className="w-2 h-2 rounded-full"
                                 style={{ backgroundColor: lang.color }}
+                                aria-hidden
                               />
-                              {lang.language} {lang.percentage}%
+                              <span className="sr-only">Linguagem: </span>
+                              {lang.language}{" "}
+                              <span className="text-zinc-400">
+                                {lang.percentage}%
+                              </span>
                             </span>
                           ))}
                         </div>
@@ -334,36 +361,44 @@ export default function GithubRepos() {
                       <Button
                         asChild
                         size="sm"
-                        className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-zinc-100 border-0"
+                        className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                       >
                         <a
                           href={repo.html_url}
                           target="_blank"
                           rel="noopener noreferrer"
+                          aria-label={`Abrir repositório ${repo.name}`}
                         >
-                          <MdOpenInNew className="h-3.5 w-3.5 mr-1.5" />
-                          Repositório
+                          <MdOpenInNew
+                            className="h-4 w-4 mr-2 inline"
+                            aria-hidden
+                          />
+                          <span>Repositório</span>
                         </a>
                       </Button>
                       {repo.homepage && (
                         <Button
                           asChild
                           size="sm"
-                          className="flex-1 bg-cyan-600 hover:bg-cyan-500 text-white border-0 shadow-[0_0_10px_rgba(6,182,212,0.3)] hover:shadow-[0_0_15px_rgba(6,182,212,0.5)]"
+                          className="flex-1 bg-white/5 hover:bg-white/10 text-white border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
                         >
                           <a
                             href={repo.homepage}
                             target="_blank"
                             rel="noopener noreferrer"
+                            aria-label={`Abrir deploy do ${repo.name}`}
                           >
-                            <MdRocket className="h-3.5 w-3.5 mr-1.5" />
-                            Deploy
+                            <MdRocket
+                              className="h-4 w-4 mr-2 inline"
+                              aria-hidden
+                            />
+                            <span>Deploy</span>
                           </a>
                         </Button>
                       )}
                     </div>
                   </CardContent>
-                </Card>
+                </article>
               );
             })}
       </div>
