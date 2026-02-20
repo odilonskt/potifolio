@@ -450,13 +450,13 @@ export default function Start({ id }: StartProps) {
       <style>{shimmerStyle}</style>
       <main
         id={id}
-        className="text-white w-full bg-black min-h-screen overflow-x-hidden relative"
+        className="text-white w-full bg-black h-screen overflow-hidden relative"
       >
         {/* Decorative Elements */}
         <div className="hidden lg:block absolute top-1/4 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
         <div className="hidden lg:block absolute bottom-1/4 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10" />
 
-        <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen px-3 xs:px-4 sm:px-6 md:px-8 lg:px-12 py-12 xs:py-16 sm:py-20 md:py-24 lg:py-0 gap-6 xs:gap-8 sm:gap-12 md:gap-14 lg:gap-16">
+        <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen px-3 xs:px-4 sm:px-6 md:px-8 lg:px-12 py-12 xs:py-16 sm:py-20 md:pt-48 lg:pt-0 gap-6 xs:gap-8 sm:gap-12 md:gap-14 lg:gap-16">
           {/* Perfil */}
           {loading ? <ProfileImageSkeleton /> : <ProfileImage />}
 
