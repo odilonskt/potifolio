@@ -7,7 +7,7 @@ import {
   contactFormSchema,
 } from "@/lib/schemas/contact-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { AlertCircle, CheckCircle, Loader2 } from "lucide-react";
+import { AlertCircle, CheckCircle, Loader2, Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 import { Button } from "../ui/button";
@@ -67,7 +67,7 @@ export function ContactForm() {
         {/* Header responsivo */}
         <div className="text-center mb-8 md:mb-10">
           <div className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 mb-4 md:mb-6">
-            <svg
+            {/* <svg
               className="w-7 h-7 md:w-8 md:h-8 text-primary"
               fill="none"
               stroke="currentColor"
@@ -79,7 +79,11 @@ export function ContactForm() {
                 strokeWidth={2}
                 d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
               />
-            </svg>
+            </svg> */}
+            <Mail
+              className="w-7 h-7 md:w-8 md:h-8 text-primary"
+              color="white"
+            />
           </div>
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent mb-3">
             Envie sua Mensagem
