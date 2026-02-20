@@ -1,9 +1,9 @@
 "use client";
+import { useGitHubUser } from "@/hooks/useGitHubUser";
 import { Download, Github, Linkedin } from "@deemlol/next-icons";
 import { Mail } from "lucide-react";
 import Image from "next/image";
 import { default as Link, default as NextLink } from "next/link";
-import { useEffect, useState } from "react";
 
 interface StartProps {
   id: string;
@@ -80,7 +80,6 @@ function ProfileImage() {
   );
 }
 
-// Skeleton para a foto de perfil
 // Skeleton para a foto de perfil (ajustado)
 function ProfileImageSkeleton() {
   return (
@@ -89,13 +88,30 @@ function ProfileImageSkeleton() {
       suppressHydrationWarning
     >
       <div
-        className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-600/20 to-green-500/20 rounded-2xl blur-2xl opacity-50 -z-10"
+        className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-600/20 to-green-500/20 rounded-2xl blur-2xl opacity-50 -z-10 animate-pulse"
         suppressHydrationWarning
       />
-      <div className="rounded-2xl w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 border-3 xs:border-4 border-gray-800 animate-pulse" />
+      <div className="rounded-2xl w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 border-3 xs:border-4 border-gray-800 animate-shimmer" />
     </div>
   );
 }
+
+// Adicionando animação shimmer global
+const shimmerStyle = `
+  @keyframes shimmer {
+    0%, 100% {
+      background-position: -1000px 0;
+    }
+    100% {
+      background-position: 1000px 0;
+    }
+  }
+  .animate-shimmer {
+    animation: shimmer 2s infinite;
+    background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+    background-size: 1000px 100%;
+  }
+`;
 
 // Componente: Cabeçalho (Nome e Título)
 function Header() {
@@ -119,9 +135,15 @@ function HeaderSkeleton() {
       className="space-y-2 xs:space-y-3 sm:space-y-4 w-full"
       suppressHydrationWarning
     >
-      <div className="h-10 xs:h-12 sm:h-16 md:h-20 lg:h-20 w-48 xs:w-56 sm:w-72 md:w-96 lg:w-96 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-pulse" />
-      <div className="h-1 xs:h-1.5 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full mx-auto lg:mx-0 animate-pulse" />
-      <div className="h-5 xs:h-6 sm:h-8 md:h-10 lg:h-10 w-32 xs:w-40 sm:w-56 md:w-64 lg:w-64 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-pulse" />
+      <div className="h-10 xs:h-12 sm:h-16 md:h-20 lg:h-20 w-48 xs:w-56 sm:w-72 md:w-96 lg:w-96 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-shimmer" />
+      <div
+        className="h-1 xs:h-1.5 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full mx-auto lg:mx-0 animate-shimmer"
+        style={{ animationDelay: "0.1s" }}
+      />
+      <div
+        className="h-5 xs:h-6 sm:h-8 md:h-10 lg:h-10 w-32 xs:w-40 sm:w-56 md:w-64 lg:w-64 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-shimmer"
+        style={{ animationDelay: "0.2s" }}
+      />
     </div>
   );
 }
@@ -134,7 +156,7 @@ function BioSection({ location }: { location?: string }) {
         Criando soluções digitais inovadoras com tecnologias modernas.
         Apaixonado por código limpo, performance e experiência do usuário.
       </p>
-      {location && (
+      {location && location.trim() && (
         <p className="text-xs xs:text-sm sm:text-base text-gray-400 flex items-center justify-center lg:justify-start gap-2">
           <span>📍</span>
           <span>{location}</span>
@@ -152,13 +174,22 @@ function BioSectionSkeleton() {
       suppressHydrationWarning
     >
       <div className="space-y-2">
-        <div className="h-5 xs:h-6 sm:h-7 w-full max-w-2xl bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
-        <div className="h-5 xs:h-6 sm:h-7 w-5/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
-        <div className="h-5 xs:h-6 sm:h-7 w-4/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+        <div className="h-5 xs:h-6 sm:h-7 w-full max-w-2xl bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer" />
+        <div
+          className="h-5 xs:h-6 sm:h-7 w-5/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer"
+          style={{ animationDelay: "0.1s" }}
+        />
+        <div
+          className="h-5 xs:h-6 sm:h-7 w-4/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer"
+          style={{ animationDelay: "0.2s" }}
+        />
       </div>
       <div className="flex items-center justify-center lg:justify-start gap-2 pt-2">
-        <div className="w-4 h-4 xs:w-5 xs:h-5 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
-        <div className="h-4 xs:h-5 w-24 xs:w-28 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+        <div className="w-4 h-4 xs:w-5 xs:h-5 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer" />
+        <div
+          className="h-4 xs:h-5 w-24 xs:w-28 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer"
+          style={{ animationDelay: "0.1s" }}
+        />
       </div>
     </div>
   );
@@ -187,8 +218,11 @@ function StatCardSkeleton() {
       className="bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5"
       suppressHydrationWarning
     >
-      <div className="h-8 xs:h-10 sm:h-12 w-12 xs:w-16 sm:w-20 mb-2 xs:mb-3 sm:mb-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
-      <div className="h-3 xs:h-4 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+      <div className="h-8 xs:h-10 sm:h-12 w-12 xs:w-16 sm:w-20 mb-2 xs:mb-3 sm:mb-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer" />
+      <div
+        className="h-3 xs:h-4 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer"
+        style={{ animationDelay: "0.1s" }}
+      />
     </div>
   );
 }
@@ -355,38 +389,25 @@ function ActionButtonsSkeleton() {
       suppressHydrationWarning
     >
       <div className="flex gap-4">
-        <div className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
-        <div className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
-        <div className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
+        <div className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer" />
+        <div
+          className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer"
+          style={{ animationDelay: "0.1s" }}
+        />
+        <div
+          className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer"
+          style={{ animationDelay: "0.2s" }}
+        />
       </div>
 
-      <div className="h-10 xs:h-12 sm:h-14 w-full xs:w-auto px-4 xs:px-6 sm:px-8 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg xs:rounded-xl animate-pulse" />
+      <div className="h-10 xs:h-12 sm:h-14 w-full xs:w-auto px-4 xs:px-6 sm:px-8 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg xs:rounded-xl animate-shimmer" />
     </div>
   );
 }
 
 // Componente Principal
 export default function Start({ id }: StartProps) {
-  const [githubData, setGithubData] = useState<GitHubUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchGitHubData = async () => {
-      try {
-        const response = await fetch("https://api.github.com/users/odilonskt");
-        if (response.ok) {
-          const data = await response.json();
-          setGithubData(data);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar dados do GitHub:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGitHubData();
-  }, []);
+  const { githubData, loading } = useGitHubUser("odilonskt");
 
   const handleDownload = () => {
     const link = document.createElement("a");
@@ -425,37 +446,40 @@ export default function Start({ id }: StartProps) {
     : [];
 
   return (
-    <main
-      id={id}
-      className="text-white w-full bg-black min-h-screen overflow-x-hidden relative"
-    >
-      {/* Decorative Elements */}
-      <div className="hidden lg:block absolute top-1/4 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
-      <div className="hidden lg:block absolute bottom-1/4 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10" />
+    <>
+      <style>{shimmerStyle}</style>
+      <main
+        id={id}
+        className="text-white w-full bg-black min-h-screen overflow-x-hidden relative"
+      >
+        {/* Decorative Elements */}
+        <div className="hidden lg:block absolute top-1/4 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
+        <div className="hidden lg:block absolute bottom-1/4 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10" />
 
-      <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen px-3 xs:px-4 sm:px-6 md:px-8 lg:px-12 py-12 xs:py-16 sm:py-20 md:py-24 lg:py-0 gap-6 xs:gap-8 sm:gap-12 md:gap-14 lg:gap-16">
-        {/* Perfil */}
-        {loading ? <ProfileImageSkeleton /> : <ProfileImage />}
+        <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen px-3 xs:px-4 sm:px-6 md:px-8 lg:px-12 py-12 xs:py-16 sm:py-20 md:py-24 lg:py-0 gap-6 xs:gap-8 sm:gap-12 md:gap-14 lg:gap-16">
+          {/* Perfil */}
+          {loading ? <ProfileImageSkeleton /> : <ProfileImage />}
 
-        {/* Conteúdo Principal */}
-        <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-4 xs:gap-5 sm:gap-6 md:gap-7 lg:gap-8 max-w-3xl w-full">
-          {loading ? (
-            <>
-              <HeaderSkeleton />
-              <BioSectionSkeleton />
-              <StatsGrid stats={[]} loading={loading} />
-              <ActionButtonsSkeleton />
-            </>
-          ) : (
-            <>
-              <Header />
-              <BioSection location={githubData?.location} />
-              <StatsGrid stats={stats} loading={loading} />
-              <ActionButtons onDownload={handleDownload} />
-            </>
-          )}
+          {/* Conteúdo Principal */}
+          <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-4 xs:gap-5 sm:gap-6 md:gap-7 lg:gap-8 max-w-3xl w-full">
+            {loading ? (
+              <>
+                <HeaderSkeleton />
+                <BioSectionSkeleton />
+                <StatsGrid stats={[]} loading={loading} />
+                <ActionButtonsSkeleton />
+              </>
+            ) : (
+              <>
+                <Header />
+                <BioSection location={githubData?.location} />
+                <StatsGrid stats={stats} loading={loading} />
+                <ActionButtons onDownload={handleDownload} />
+              </>
+            )}
+          </div>
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }
