@@ -2,9 +2,8 @@
 import { Download, Github, Linkedin } from "@deemlol/next-icons";
 import { Mail } from "lucide-react";
 import Image from "next/image";
-import NextLink from "next/link";
+import { default as Link, default as NextLink } from "next/link";
 import { useEffect, useState } from "react";
-import { Button } from "../ui/button";
 
 interface StartProps {
   id: string;
@@ -34,47 +33,46 @@ function ProfileImage() {
   const hasExtraImages = true; // Mude para false se não tiver as imagens extras
 
   return (
-    <div className="flex items-center justify-center shrink-0 relative group w-full lg:w-auto">
-      <div className="absolute inset-0 bg-linear-to-r from-blue-500 via-purple-600 to-green-500 rounded-2xl blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-300 -z-10" />
+    <div className="flex items-center justify-center shrink-0 relative group w-32 h-32 xs:w-40 xs:h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
+      <div
+        className="absolute inset-0 bg-linear-to-r from-blue-500 via-purple-600 to-green-500 rounded-2xl blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-300 -z-10"
+        suppressHydrationWarning
+      />
 
       {hasExtraImages ? (
-        // Versão com hover-gallery
-        <figure className="hover-gallery relative w-24 h-24 xs:w-28 xs:h-28 sm:w-40 sm:h-40 md:w-56 md:h-56 lg:w-64 lg:h-64 xl:w-72 xl:h-72">
+        <figure className="hover-gallery relative w-32 h-32 xs:w-40 xs:h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
           <Image
             src="/perfil.svg"
             alt="Foto de perfil de Odilon - Desenvolvedor Full-Stack"
             width={450}
             height={450}
-            priority={true}
-            className="rounded-xl object-cover shadow-2xl border-3 xs:border-4 border-gray-800"
+            priority
+            className="rounded-xl object-cover shadow-2xl border-3 xs:border-4 border-gray-800 w-full h-full"
           />
           <Image
             src="/perfil-3.jpeg"
             alt="Odilon trabalhando em projeto"
             width={450}
             height={450}
-            className="rounded-xl object-cover shadow-2xl border-3 xs:border-4 border-gray-800"
+            className="rounded-xl object-cover shadow-2xl border-3 xs:border-4 border-gray-800 w-full h-full"
           />
           <Image
             src="/perfil-4.jpeg"
             alt="Odilon em reunião ou apresentação"
             width={450}
             height={450}
-            className="rounded-xl object-cover shadow-2xl border-3 xs:border-4 border-gray-800"
+            className="rounded-xl object-cover shadow-2xl border-3 xs:border-4 border-gray-800 w-full h-full"
           />
-
-          {/* Indicador de que é uma galeria */}
         </figure>
       ) : (
-        // Versão simples sem hover-gallery (fallback)
-        <div className="relative">
+        <div className="relative w-32 h-32 xs:w-40 xs:h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
           <Image
             src="/perfil.svg"
             alt="Foto de perfil de Odilon - Desenvolvedor Full-Stack"
             width={450}
             height={450}
-            priority={true}
-            className="  rounded-xl w-24 h-24 xs:w-28 xs:h-28 sm:w-40 sm:h-40 md:w-56 md:h-56 lg:w-64 lg:h-64 xl:w-72 xl:h-72 object-cover shadow-2xl border-3 xs:border-4 border-gray-800"
+            priority
+            className="rounded-xl w-full h-full object-cover shadow-2xl border-3 xs:border-4 border-gray-800"
           />
         </div>
       )}
@@ -83,11 +81,18 @@ function ProfileImage() {
 }
 
 // Skeleton para a foto de perfil
+// Skeleton para a foto de perfil (ajustado)
 function ProfileImageSkeleton() {
   return (
-    <div className="flex items-center justify-center shrink-0 relative group w-full lg:w-auto">
-      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-600/20 to-green-500/20 rounded-2xl blur-2xl opacity-50 -z-10" />
-      <div className="rounded-xl w-24 h-24 xs:w-28 xs:h-28 sm:w-40 sm:h-40 md:w-56 md:h-56 lg:w-64 lg:h-64 xl:w-72 xl:h-72 bg-gradient-to-br from-gray-800 to-gray-900 border-3 xs:border-4 border-gray-800 animate-pulse" />
+    <div
+      className="flex items-center justify-center shrink-0 relative group w-32 h-32 xs:w-40 xs:h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80"
+      suppressHydrationWarning
+    >
+      <div
+        className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-600/20 to-green-500/20 rounded-2xl blur-2xl opacity-50 -z-10"
+        suppressHydrationWarning
+      />
+      <div className="rounded-2xl w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 border-3 xs:border-4 border-gray-800 animate-pulse" />
     </div>
   );
 }
@@ -95,12 +100,12 @@ function ProfileImageSkeleton() {
 // Componente: Cabeçalho (Nome e Título)
 function Header() {
   return (
-    <div className="space-y-2 xs:space-y-2.5 sm:space-y-3">
-      <h1 className="text-2xl xs:text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black text-white leading-tight drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+    <div className="space-y-2 xs:space-y-3 sm:space-y-4">
+      <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-7xl font-black text-white leading-tight drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">
         Odilon de Campos
       </h1>
       <div className="h-1 xs:h-1.5 w-16 xs:w-20 bg-linear-to-r from-blue-400 to-green-400 rounded-full mx-auto lg:mx-0" />
-      <h2 className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold bg-linear-to-r from-blue-400 via-cyan-400 to-green-400 bg-clip-text text-transparent">
+      <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold bg-linear-to-r from-blue-400 via-cyan-400 to-green-400 bg-clip-text text-transparent">
         Full-Stack Developer
       </h2>
     </div>
@@ -110,10 +115,13 @@ function Header() {
 // Skeleton para o cabeçalho
 function HeaderSkeleton() {
   return (
-    <div className="space-y-2 xs:space-y-2.5 sm:space-y-3 w-full">
-      <div className="h-8 xs:h-9 sm:h-11 md:h-14 lg:h-16 xl:h-20 w-48 xs:w-56 sm:w-64 md:w-72 lg:w-80 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-pulse" />
+    <div
+      className="space-y-2 xs:space-y-3 sm:space-y-4 w-full"
+      suppressHydrationWarning
+    >
+      <div className="h-10 xs:h-12 sm:h-16 md:h-20 lg:h-20 w-48 xs:w-56 sm:w-72 md:w-96 lg:w-96 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-pulse" />
       <div className="h-1 xs:h-1.5 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full mx-auto lg:mx-0 animate-pulse" />
-      <div className="h-6 xs:h-7 sm:h-8 md:h-10 lg:h-12 w-32 xs:w-36 sm:w-40 md:w-48 lg:w-56 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-pulse" />
+      <div className="h-5 xs:h-6 sm:h-8 md:h-10 lg:h-10 w-32 xs:w-40 sm:w-56 md:w-64 lg:w-64 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-pulse" />
     </div>
   );
 }
@@ -121,13 +129,13 @@ function HeaderSkeleton() {
 // Componente: Bio e Localização
 function BioSection({ location }: { location?: string }) {
   return (
-    <div className="space-y-1.5 xs:space-y-2 sm:space-y-2.5 w-full px-1 xs:px-0">
-      <p className="text-xs xs:text-sm sm:text-base md:text-lg lg:text-xl text-gray-300 max-w-2xl leading-relaxed">
+    <div className="space-y-2 xs:space-y-3 sm:space-y-4 w-full px-0">
+      <p className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-xl text-gray-300 max-w-3xl leading-relaxed">
         Criando soluções digitais inovadoras com tecnologias modernas.
         Apaixonado por código limpo, performance e experiência do usuário.
       </p>
       {location && (
-        <p className="text-xs xs:text-sm sm:text-base text-gray-400 flex items-center justify-center lg:justify-start gap-1.5 xs:gap-2">
+        <p className="text-xs xs:text-sm sm:text-base text-gray-400 flex items-center justify-center lg:justify-start gap-2">
           <span>📍</span>
           <span>{location}</span>
         </p>
@@ -139,15 +147,18 @@ function BioSection({ location }: { location?: string }) {
 // Skeleton para Bio e Localização
 function BioSectionSkeleton() {
   return (
-    <div className="space-y-1.5 xs:space-y-2 sm:space-y-2.5 w-full px-1 xs:px-0">
-      <div className="space-y-1">
-        <div className="h-3 xs:h-3.5 sm:h-4 w-full bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
-        <div className="h-3 xs:h-3.5 sm:h-4 w-5/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
-        <div className="h-3 xs:h-3.5 sm:h-4 w-4/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+    <div
+      className="space-y-2 xs:space-y-3 sm:space-y-4 w-full px-0"
+      suppressHydrationWarning
+    >
+      <div className="space-y-2">
+        <div className="h-5 xs:h-6 sm:h-7 w-full max-w-2xl bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+        <div className="h-5 xs:h-6 sm:h-7 w-5/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+        <div className="h-5 xs:h-6 sm:h-7 w-4/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
       </div>
-      <div className="flex items-center justify-center lg:justify-start gap-1.5 xs:gap-2 pt-2">
-        <div className="w-4 h-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
-        <div className="h-4 w-24 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+      <div className="flex items-center justify-center lg:justify-start gap-2 pt-2">
+        <div className="w-4 h-4 xs:w-5 xs:h-5 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
+        <div className="h-4 xs:h-5 w-24 xs:w-28 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
       </div>
     </div>
   );
@@ -156,13 +167,13 @@ function BioSectionSkeleton() {
 // Componente: Card de Estatística
 function StatCard({ stat }: { stat: StatItem }) {
   return (
-    <div className="bg-linear-to-br from-gray-900 to-gray-950 border border-gray-800 hover:border-gray-700 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 group ">
+    <div className="bg-linear-to-br from-gray-900 to-gray-950 border border-gray-800 hover:border-gray-700 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 group">
       <div
-        className={`text-xl xs:text-2xl sm:text-3xl md:text-4xl font-black bg-linear-to-r ${stat.color} bg-clip-text text-transparent mb-1 xs:mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform`}
+        className={`text-2xl xs:text-3xl sm:text-4xl font-black bg-linear-to-r ${stat.color} bg-clip-text text-transparent mb-2 xs:mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}
       >
         {stat.value}
       </div>
-      <p className="text-xs text-gray-400 font-medium line-clamp-2">
+      <p className="text-xs xs:text-sm text-gray-400 font-medium line-clamp-2">
         {stat.label}
       </p>
     </div>
@@ -172,9 +183,12 @@ function StatCard({ stat }: { stat: StatItem }) {
 // Skeleton para Card de Estatística
 function StatCardSkeleton() {
   return (
-    <div className="bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5">
-      <div className="h-8 xs:h-9 sm:h-10 md:h-12 w-12 xs:w-14 sm:w-16 mb-1 xs:mb-1.5 sm:mb-2 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
-      <div className="h-3 xs:h-3.5 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+    <div
+      className="bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5"
+      suppressHydrationWarning
+    >
+      <div className="h-8 xs:h-10 sm:h-12 w-12 xs:w-16 sm:w-20 mb-2 xs:mb-3 sm:mb-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+      <div className="h-3 xs:h-4 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
     </div>
   );
 }
@@ -189,7 +203,10 @@ function StatsGrid({
 }) {
   if (loading) {
     return (
-      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-4 w-full mt-2 xs:mt-3 sm:mt-4 md:mt-6">
+      <div
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-4 w-full mt-3 xs:mt-4 sm:mt-6 md:mt-8"
+        suppressHydrationWarning
+      >
         {[...Array(4)].map((_, index) => (
           <StatCardSkeleton key={index} />
         ))}
@@ -200,7 +217,7 @@ function StatsGrid({
   if (stats.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-4 w-full mt-2 xs:mt-3 sm:mt-4 md:mt-6">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-4 w-full mt-3 xs:mt-4 sm:mt-6 md:mt-8">
       {stats.map((stat) => (
         <StatCard key={stat.label} stat={stat} />
       ))}
@@ -222,11 +239,15 @@ function SocialButton({
 }) {
   return (
     <NextLink href={href} target="_blank" className="group">
-      <div className="relative">
+      <div className="relative" suppressHydrationWarning>
         <div
           className={`absolute inset-0 bg-linear-to-r ${gradientFrom} ${gradientTo} rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300 -z-10`}
+          suppressHydrationWarning
         />
-        <div className="relative bg-black rounded-full p-2 xs:p-2.5 sm:p-3">
+        <div
+          className="relative bg-black rounded-full p-2 xs:p-2.5 sm:p-3"
+          suppressHydrationWarning
+        >
           <Icon
             size={24}
             className="xs:w-8 xs:h-8 sm:w-8 sm:h-8 group-hover:scale-110 transition-transform duration-200"
@@ -254,11 +275,15 @@ function ActionIconButton({
 }) {
   return (
     <button onClick={onClick} className="group" aria-label={label}>
-      <div className="relative">
+      <div className="relative" suppressHydrationWarning>
         <div
           className={`absolute inset-0 bg-linear-to-r ${gradientFrom} ${gradientTo} rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300 -z-10`}
+          suppressHydrationWarning
         />
-        <div className="relative bg-black rounded-full p-2 xs:p-2.5 sm:p-3">
+        <div
+          className="relative bg-black rounded-full p-2 xs:p-2.5 sm:p-3"
+          suppressHydrationWarning
+        >
           <Icon
             size={24}
             className="xs:w-8 xs:h-8 sm:w-8 sm:h-8 group-hover:scale-110 transition-transform duration-200"
@@ -278,8 +303,8 @@ function ActionButtons({ onDownload }: { onDownload: () => void }) {
   };
 
   return (
-    <div className="flex flex-col xs:flex-row items-center justify-center lg:justify-start gap-3 xs:gap-4 sm:gap-5 md:gap-6 mt-4 xs:mt-5 sm:mt-6 md:mt-8 w-full">
-      <div className="flex gap-4 ">
+    <div className="flex flex-col xs:flex-row items-center justify-center lg:justify-start gap-3 xs:gap-4 sm:gap-5 md:gap-6 mt-4 xs:mt-6 sm:mt-8 md:mt-10 w-full">
+      <div className="flex gap-4">
         <div className="tooltip" data-tip="LinkedIn">
           <SocialButton
             href="https://www.linkedin.com/in/odilon-dev/"
@@ -309,16 +334,15 @@ function ActionButtons({ onDownload }: { onDownload: () => void }) {
           />
         </div>
       </div>
-      <div>
-        <Button
-          onClick={onDownload}
-          className="flex gap-1 xs:gap-1.5 sm:gap-2 items-center text-xs xs:text-xs sm:text-sm font-bold px-3 xs:px-4 sm:px-6 py-2 xs:py-2 sm:py-3 bg-linear-to-r from-green-600 to-blue-600 hover:from-blue-600 hover:to-green-600 text-black rounded-lg xs:rounded-xl border-0 shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105 active:scale-95 w-full xs:w-auto justify-center whitespace-nowrap  tooltip  tooltip-bottom"
-          data-tip="Baixar currículo"
-        >
-          <Download size={16} className="xs:w-4 xs:h-4 sm:w-5 sm:h-5" />
-          <span>Currículo</span>
-        </Button>
-      </div>
+      <Link
+        href="https://docs.google.com/document/d/1p8Dg2LF-acbwpfGUGaTkE2P543XlWjN9Bu5pX3V18Ts/edit?usp=sharing"
+        target="_blank"
+        className="flex gap-2 items-center text-xs xs:text-sm font-bold px-4 xs:px-6 sm:px-8 py-2 xs:py-3 sm:py-4 bg-linear-to-r from-green-600 to-blue-600 hover:from-blue-600 hover:to-green-600 text-black rounded-lg xs:rounded-xl border-0 shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105 active:scale-95 w-full xs:w-auto justify-center whitespace-nowrap tooltip tooltip-bottom"
+        data-tip="Baixar currículo"
+      >
+        <Download size={16} className="xs:w-5 xs:h-5 sm:w-5 sm:h-5" />
+        <span>Currículo</span>
+      </Link>
     </div>
   );
 }
@@ -326,14 +350,17 @@ function ActionButtons({ onDownload }: { onDownload: () => void }) {
 // Skeleton para Botões de Ação
 function ActionButtonsSkeleton() {
   return (
-    <div className="flex flex-col xs:flex-row items-center justify-center lg:justify-start gap-3 xs:gap-4 sm:gap-5 md:gap-6 mt-4 xs:mt-5 sm:mt-6 md:mt-8 w-full">
+    <div
+      className="flex flex-col xs:flex-row items-center justify-center lg:justify-start gap-3 xs:gap-4 sm:gap-5 md:gap-6 mt-4 xs:mt-6 sm:mt-8 md:mt-10 w-full"
+      suppressHydrationWarning
+    >
       <div className="flex gap-4">
-        <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
-        <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
-        <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
+        <div className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
+        <div className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
+        <div className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
       </div>
 
-      <div className="h-10 xs:h-11 sm:h-12 w-full xs:w-32 sm:w-36 md:w-40 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg xs:rounded-xl animate-pulse" />
+      <div className="h-10 xs:h-12 sm:h-14 w-full xs:w-auto px-4 xs:px-6 sm:px-8 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg xs:rounded-xl animate-pulse" />
     </div>
   );
 }
@@ -400,15 +427,13 @@ export default function Start({ id }: StartProps) {
   return (
     <main
       id={id}
-      className="text-white w-full bg-black min-h-screen overflow-x-hidden relative "
+      className="text-white w-full bg-black min-h-screen overflow-x-hidden relative"
     >
       {/* Decorative Elements */}
-      <div className="hidden md:block absolute top-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10 " />
-      <div className="hidden md:block absolute bottom-0 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10" />
-      <div className="block md:hidden absolute -top-40 -right-40 w-80 h-80 bg-blue-500/5 rounded-full blur-3xl -z-10" />
-      <div className="block md:hidden absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl -z-10" />
+      <div className="hidden lg:block absolute top-1/4 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
+      <div className="hidden lg:block absolute bottom-1/4 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10" />
 
-      <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen px-3 xs:px-4 sm:px-6 md:px-8 lg:px-12 xl:px-8 py-8 xs:py-10 sm:py-12 md:py-16 lg:py-0 gap-6 xs:gap-8 sm:gap-10 md:gap-12 lg:gap-16">
+      <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen px-3 xs:px-4 sm:px-6 md:px-8 lg:px-12 py-12 xs:py-16 sm:py-20 md:py-24 lg:py-0 gap-6 xs:gap-8 sm:gap-12 md:gap-14 lg:gap-16">
         {/* Perfil */}
         {loading ? <ProfileImageSkeleton /> : <ProfileImage />}
 
