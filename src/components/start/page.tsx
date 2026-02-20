@@ -85,8 +85,9 @@ function ProfileImage() {
 // Skeleton para a foto de perfil
 function ProfileImageSkeleton() {
   return (
-    <div className="flex items-center justify-center shrink-0 relative w-full lg:w-auto">
-      <div className="skeleton rounded-2xl w-24 h-24 xs:w-28 xs:h-28 sm:w-40 sm:h-40 md:w-56 md:h-56 lg:w-64 lg:h-64 xl:w-72 xl:h-72"></div>
+    <div className="flex items-center justify-center shrink-0 relative group w-full lg:w-auto">
+      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-600/20 to-green-500/20 rounded-2xl blur-2xl opacity-50 -z-10" />
+      <div className="rounded-xl w-24 h-24 xs:w-28 xs:h-28 sm:w-40 sm:h-40 md:w-56 md:h-56 lg:w-64 lg:h-64 xl:w-72 xl:h-72 bg-gradient-to-br from-gray-800 to-gray-900 border-3 xs:border-4 border-gray-800 animate-pulse" />
     </div>
   );
 }
@@ -110,9 +111,9 @@ function Header() {
 function HeaderSkeleton() {
   return (
     <div className="space-y-2 xs:space-y-2.5 sm:space-y-3 w-full">
-      <div className="skeleton h-8 xs:h-9 sm:h-11 md:h-14 lg:h-16 xl:h-20 w-48 xs:w-56 sm:w-64 md:w-72 lg:w-80 rounded-lg"></div>
-      <div className="skeleton h-1 xs:h-1.5 w-16 xs:w-20 rounded-full mx-auto lg:mx-0"></div>
-      <div className="skeleton h-6 xs:h-7 sm:h-8 md:h-10 lg:h-12 w-32 xs:w-36 sm:w-40 md:w-48 lg:w-56 rounded-lg"></div>
+      <div className="h-8 xs:h-9 sm:h-11 md:h-14 lg:h-16 xl:h-20 w-48 xs:w-56 sm:w-64 md:w-72 lg:w-80 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-pulse" />
+      <div className="h-1 xs:h-1.5 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full mx-auto lg:mx-0 animate-pulse" />
+      <div className="h-6 xs:h-7 sm:h-8 md:h-10 lg:h-12 w-32 xs:w-36 sm:w-40 md:w-48 lg:w-56 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-pulse" />
     </div>
   );
 }
@@ -140,13 +141,13 @@ function BioSectionSkeleton() {
   return (
     <div className="space-y-1.5 xs:space-y-2 sm:space-y-2.5 w-full px-1 xs:px-0">
       <div className="space-y-1">
-        <div className="skeleton h-3 xs:h-3.5 sm:h-4 w-full rounded"></div>
-        <div className="skeleton h-3 xs:h-3.5 sm:h-4 w-5/6 rounded"></div>
-        <div className="skeleton h-3 xs:h-3.5 sm:h-4 w-4/6 rounded"></div>
+        <div className="h-3 xs:h-3.5 sm:h-4 w-full bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+        <div className="h-3 xs:h-3.5 sm:h-4 w-5/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+        <div className="h-3 xs:h-3.5 sm:h-4 w-4/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
       </div>
-      <div className="flex items-center justify-center lg:justify-start gap-1.5 xs:gap-2">
-        <div className="skeleton w-4 h-4 rounded-full"></div>
-        <div className="skeleton h-4 w-24 rounded"></div>
+      <div className="flex items-center justify-center lg:justify-start gap-1.5 xs:gap-2 pt-2">
+        <div className="w-4 h-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
+        <div className="h-4 w-24 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
       </div>
     </div>
   );
@@ -155,7 +156,7 @@ function BioSectionSkeleton() {
 // Componente: Card de Estatística
 function StatCard({ stat }: { stat: StatItem }) {
   return (
-    <div className="bg-linear-to-br from-gray-900 to-gray-950 border border-gray-800 hover:border-gray-700 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 group cursor-pointer">
+    <div className="bg-linear-to-br from-gray-900 to-gray-950 border border-gray-800 hover:border-gray-700 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 group ">
       <div
         className={`text-xl xs:text-2xl sm:text-3xl md:text-4xl font-black bg-linear-to-r ${stat.color} bg-clip-text text-transparent mb-1 xs:mb-1.5 sm:mb-2 group-hover:scale-110 transition-transform`}
       >
@@ -171,9 +172,9 @@ function StatCard({ stat }: { stat: StatItem }) {
 // Skeleton para Card de Estatística
 function StatCardSkeleton() {
   return (
-    <div className="bg-linear-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5">
-      <div className="skeleton h-8 xs:h-9 sm:h-10 md:h-12 w-12 xs:w-14 sm:w-16 mb-1 xs:mb-1.5 sm:mb-2 rounded"></div>
-      <div className="skeleton h-3 xs:h-3.5 w-16 xs:w-20 rounded"></div>
+    <div className="bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5">
+      <div className="h-8 xs:h-9 sm:h-10 md:h-12 w-12 xs:w-14 sm:w-16 mb-1 xs:mb-1.5 sm:mb-2 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
+      <div className="h-3 xs:h-3.5 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-pulse" />
     </div>
   );
 }
@@ -327,11 +328,12 @@ function ActionButtonsSkeleton() {
   return (
     <div className="flex flex-col xs:flex-row items-center justify-center lg:justify-start gap-3 xs:gap-4 sm:gap-5 md:gap-6 mt-4 xs:mt-5 sm:mt-6 md:mt-8 w-full">
       <div className="flex gap-4">
-        <div className="skeleton w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 rounded-full"></div>
-        <div className="skeleton w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 rounded-full"></div>
+        <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
+        <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
+        <div className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-pulse" />
       </div>
 
-      <div className="skeleton h-10 xs:h-11 sm:h-12 w-full xs:w-32 sm:w-36 md:w-40 rounded-lg xs:rounded-xl"></div>
+      <div className="h-10 xs:h-11 sm:h-12 w-full xs:w-32 sm:w-36 md:w-40 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg xs:rounded-xl animate-pulse" />
     </div>
   );
 }
