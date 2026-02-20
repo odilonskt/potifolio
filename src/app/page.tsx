@@ -10,8 +10,8 @@ import Hover3DCard from "../components/HoverCard3D/page";
 export default function Home() {
   return (
     <>
-      <link rel="icon" href="/favicon.svg" sizes="any" />
-      <main className="min-h-screen bg-slate-950">
+      {/* <link rel="icon" href="/favicon.svg" sizes="any" /> */}
+      <main className="bg-slate-950">
         <Header />
         <Start id="start"></Start>
 
