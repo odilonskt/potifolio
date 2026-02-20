@@ -10,27 +10,33 @@ interface TitanProps {
 
 export default function Titan(props: TitanProps) {
   return (
-    <div className={styles.titanContainer}>
+    <div className={styles.titanContainer} suppressHydrationWarning>
       {/* Single Elegant Neon Shadow */}
-      <div className={styles.neonShadowBg} />
+      <div className={styles.neonShadowBg} suppressHydrationWarning></div>
 
-      <div className={styles.contentWrapper}>
+      <div className={styles.contentWrapper} suppressHydrationWarning>
         {/* Neon Shadow Behind Text */}
-        <div className={styles.shadowTextWrapper}>
-          <div className={styles.shadowText}>{props.title}</div>
+        <div className={styles.shadowTextWrapper} suppressHydrationWarning>
+          <div className={styles.shadowText} suppressHydrationWarning>
+            {props.title}
+          </div>
         </div>
 
-        <h1 className={styles.title} id={props.id}>
+        <h1 className={styles.title} id={props.id} suppressHydrationWarning>
           {props.title}
         </h1>
 
-        {props.subtitle && <p className={styles.subtitle}>{props.subtitle}</p>}
+        {props.subtitle && (
+          <p className={styles.subtitle} suppressHydrationWarning>
+            {props.subtitle}
+          </p>
+        )}
 
         {/* Decorative Neon Line */}
-        <div className={styles.decorativeLine}>
-          <div className={styles.lineLeft} />
-          <div className={styles.centerDot} />
-          <div className={styles.lineRight} />
+        <div className={styles.decorativeLine} suppressHydrationWarning>
+          <div className={styles.lineLeft} suppressHydrationWarning />
+          <div className={styles.centerDot} suppressHydrationWarning />
+          <div className={styles.lineRight} suppressHydrationWarning />
         </div>
       </div>
     </div>
