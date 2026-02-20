@@ -67,7 +67,7 @@ export default function Header() {
               className="border-purple-500/50 hover:border-purple-400 hover:text-purple-400 hover:bg-purple-400/10 transition-all duration-300"
             >
               <Link
-                href="https://linkedin.com/in/odilon-santos"
+                href="https://linkedin.com/in/odilon-dev"
                 target="_blank"
                 rel="noopener noreferrer"
               >
