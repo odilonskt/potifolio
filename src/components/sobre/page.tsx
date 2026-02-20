@@ -19,7 +19,7 @@ interface PalavraLink {
 function formatarTextoComLinksENegrito(
   texto: string,
   palavrasLinks: PalavraLink[],
-  palavrasNegrito: string[]
+  palavrasNegrito: string[],
 ) {
   if (!palavrasLinks.length && !palavrasNegrito.length) return texto;
 
@@ -37,7 +37,7 @@ function formatarTextoComLinksENegrito(
 
     // Primeiro verificar se é uma palavra com link
     const palavraLink = palavrasLinks.find(
-      (p) => p.palavra.toLowerCase() === parte.toLowerCase()
+      (p) => p.palavra.toLowerCase() === parte.toLowerCase(),
     );
 
     if (palavraLink) {
@@ -57,7 +57,7 @@ function formatarTextoComLinksENegrito(
 
     // Depois verificar se é uma palavra para negrito (sem link)
     const palavraNegrito = palavrasNegrito.find(
-      (p) => p.toLowerCase() === parte.toLowerCase()
+      (p) => p.toLowerCase() === parte.toLowerCase(),
     );
 
     if (palavraNegrito) {
@@ -187,12 +187,21 @@ export default function Sobre(props: SobreProps) {
       <div className="w-full max-w-5xl mt-6 sm:mt-8 lg:mt-10">
         {/* Hard Skills Section */}
         <div className="group mb-6 sm:mb-8 lg:mb-10">
-          <div className="relative">
+          <div className="relative" suppressHydrationWarning>
             {/* Gradient Border Effect */}
-            <div className="absolute -inset-0.5 bg-linear-to-r from-blue-600 via-blue-700 to-blue-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
+            <div
+              className="absolute -inset-0.5 bg-linear-to-r from-blue-600 via-blue-700 to-blue-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur"
+              suppressHydrationWarning
+            />
 
-            <div className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm">
-              <div className="flex items-center gap-3 mb-4 sm:mb-5">
+            <div
+              className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm"
+              suppressHydrationWarning
+            >
+              <div
+                className="flex items-center gap-3 mb-4 sm:mb-5"
+                suppressHydrationWarning
+              >
                 <div className="w-1.5 h-8 bg-linear-to-b from-blue-500 to-cyan-500 rounded-full" />
                 <h3 className="text-lg sm:text-xl md:text-2xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                   Competências Técnicas
@@ -203,7 +212,7 @@ export default function Sobre(props: SobreProps) {
                 {formatarTextoComLinksENegrito(
                   props.descrition_hardSkill,
                   palavrasComLinks,
-                  palavrasNegritoHardSkills
+                  palavrasNegritoHardSkills,
                 )}
               </p>
             </div>
@@ -212,12 +221,21 @@ export default function Sobre(props: SobreProps) {
 
         {/* Soft Skills Section */}
         <div className="group mb-6 sm:mb-8 lg:mb-10">
-          <div className="relative">
+          <div className="relative" suppressHydrationWarning>
             {/* Gradient Border Effect */}
-            <div className="absolute -inset-0.5 bg-linear-to-r from-purple-600 via-purple-500 to-green-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
+            <div
+              className="absolute -inset-0.5 bg-linear-to-r from-purple-600 via-purple-500 to-green-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur"
+              suppressHydrationWarning
+            />
 
-            <div className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm">
-              <div className="flex items-center gap-3 mb-4 sm:mb-5">
+            <div
+              className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm"
+              suppressHydrationWarning
+            >
+              <div
+                className="flex items-center gap-3 mb-4 sm:mb-5"
+                suppressHydrationWarning
+              >
                 <div className="w-1.5 h-8 bg-linear-to-b from-purple-500 to-green-500 rounded-full" />
                 <h3 className="text-lg sm:text-xl md:text-2xl font-bold bg-linear-to-r from-purple-400 to-green-400 bg-clip-text text-transparent">
                   Competências Pessoais
@@ -228,7 +246,7 @@ export default function Sobre(props: SobreProps) {
                 {formatarTextoComLinksENegrito(
                   props.descrition_softSkill,
                   palavrasComLinks,
-                  palavrasNegritoSoftSkills
+                  palavrasNegritoSoftSkills,
                 )}
               </p>
             </div>
@@ -237,12 +255,21 @@ export default function Sobre(props: SobreProps) {
 
         {/* Education Section */}
         <div className="group">
-          <div className="relative">
+          <div className="relative" suppressHydrationWarning>
             {/* Gradient Border Effect */}
-            <div className="absolute -inset-0.5 bg-linear-to-r from-green-600 via-emerald-600 to-teal-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur" />
+            <div
+              className="absolute -inset-0.5 bg-linear-to-r from-green-600 via-emerald-600 to-teal-600 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300 blur"
+              suppressHydrationWarning
+            />
 
-            <div className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm">
-              <div className="flex items-center gap-3 mb-4 sm:mb-5">
+            <div
+              className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm"
+              suppressHydrationWarning
+            >
+              <div
+                className="flex items-center gap-3 mb-4 sm:mb-5"
+                suppressHydrationWarning
+              >
                 <div className="w-1.5 h-8 bg-linear-to-b from-green-500 to-emerald-500 rounded-full" />
                 <h3 className="text-lg sm:text-xl md:text-2xl font-bold bg-linear-to-r from-green-400 to-emerald-400 bg-clip-text text-transparent">
                   Formação e Certificações
@@ -253,7 +280,7 @@ export default function Sobre(props: SobreProps) {
                 {formatarTextoComLinksENegrito(
                   props.descrition_estudo,
                   palavrasComLinks,
-                  palavrasNegritoEstudo
+                  palavrasNegritoEstudo,
                 )}
               </p>
             </div>
