@@ -28,6 +28,111 @@ interface LanguageBreakdown {
 }
 
 const GITHUB_USERNAME = "odilonskt";
+const MAX_RETRIES = 3;
+const RETRY_DELAY = 1000; // ms
+const REQUEST_TIMEOUT = 8000; // ms
+
+interface FetchError {
+  status: number;
+  message: string;
+  retryable: boolean;
+}
+
+const handleHttpError = (status: number): FetchError => {
+  switch (status) {
+    case 401:
+      return {
+        status,
+        message: "Autenticação necessária para acessar dados do GitHub",
+        retryable: false,
+      };
+    case 403:
+      return {
+        status,
+        message:
+          "Limite de requisições do GitHub excedido. Tente novamente em alguns minutos.",
+        retryable: true,
+      };
+    case 404:
+      return {
+        status,
+        message: "Repositório ou usuário não encontrado",
+        retryable: false,
+      };
+    case 429:
+      return {
+        status,
+        message: "Muitas requisições. Aguarde antes de tentar novamente.",
+        retryable: true,
+      };
+    case 500:
+    case 502:
+    case 503:
+    case 504:
+      return {
+        status,
+        message: "Servidor do GitHub indisponível. Tente novamente mais tarde.",
+        retryable: true,
+      };
+    default:
+      return {
+        status,
+        message: `Erro ao carregar dados (Error ${status})`,
+        retryable: true,
+      };
+  }
+};
+
+const fetchWithRetry = async (
+  url: string,
+  retries = MAX_RETRIES
+): Promise<Response> => {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), REQUEST_TIMEOUT);
+
+  try {
+    const response = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        Accept: "application/vnd.github.v3+json",
+      },
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const error = handleHttpError(response.status);
+      if (error.retryable && retries > 0) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, RETRY_DELAY * (MAX_RETRIES - retries + 1))
+        );
+        return fetchWithRetry(url, retries - 1);
+      }
+      throw new Error(error.message);
+    }
+
+    return response;
+  } catch (err) {
+    clearTimeout(timeoutId);
+
+    if (err instanceof Error) {
+      if (err.name === "AbortError") {
+        if (retries > 0) {
+          await new Promise((resolve) =>
+            setTimeout(resolve, RETRY_DELAY * (MAX_RETRIES - retries + 1))
+          );
+          return fetchWithRetry(url, retries - 1);
+        }
+        throw new Error(
+          "Requisição expirou. Verifica sua conexão com a internet."
+        );
+      }
+      throw err;
+    }
+
+    throw new Error("Erro de rede ao carregar repositórios");
+  }
+};
 
 const customImages: Record<string, string> = {
   // No Next.js, arquivos na pasta public são servidos da raiz
@@ -69,36 +174,41 @@ export default function GithubRepos() {
   useEffect(() => {
     async function fetchRepos() {
       try {
-        const response = await fetch(
+        const response = await fetchWithRetry(
           `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=12`
         );
-        if (!response.ok) throw new Error("Falha ao carregar repositórios");
         const data: Repository[] = await response.json();
         setRepos(data);
 
         const languagePromises = data.map(async (repo) => {
           try {
-            const langResponse = await fetch(
-              `https://api.github.com/repos/${GITHUB_USERNAME}/${repo.name}/languages`
+            const langResponse = await fetchWithRetry(
+              `https://api.github.com/repos/${GITHUB_USERNAME}/${repo.name}/languages`,
+              2
             );
-            if (langResponse.ok) {
-              const langData = await langResponse.json();
-              return { id: repo.id, languages: langData };
-            }
-          } catch {
+            const langData = await langResponse.json();
+            return { id: repo.id, languages: langData };
+          } catch (err) {
+            console.warn(`Failed to fetch languages for ${repo.name}:`, err);
             return { id: repo.id, languages: {} };
           }
-          return { id: repo.id, languages: {} };
         });
 
-        const languageResults = await Promise.all(languagePromises);
+        const languageResults = await Promise.allSettled(languagePromises);
         const languageMap: Record<number, LanguageBreakdown> = {};
         languageResults.forEach((result) => {
-          if (result) languageMap[result.id] = result.languages;
+          if (result.status === "fulfilled" && result.value) {
+            languageMap[result.value.id] = result.value.languages;
+          }
         });
         setLanguages(languageMap);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Erro desconhecido");
+        const errorMessage =
+          err instanceof Error
+            ? err.message
+            : "Erro desconhecido ao carregar repositórios";
+        setError(errorMessage);
+        console.error("Error fetching repos:", err);
       } finally {
         setLoading(false);
       }
@@ -118,8 +228,19 @@ export default function GithubRepos() {
 
   if (error) {
     return (
-      <div className="text-center py-12 text-red-400 ">
-        <p>Erro: {error}</p>
+      <div className="text-center py-12">
+        <div className="inline-block rounded-lg bg-red-500/10 border border-red-500/30 p-4 max-w-md">
+          <p className="text-red-400 font-medium mb-2">
+            ⚠️ Erro ao carregar repositórios
+          </p>
+          <p className="text-red-300/80 text-sm">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-3 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded text-sm transition-colors"
+          >
+            Tentar novamente
+          </button>
+        </div>
       </div>
     );
   }
