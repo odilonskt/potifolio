@@ -15,21 +15,13 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Odilon - Portfólio",
-  description: "Created with v0",
-  generator: "v0.app",
+  description:
+    "Portfólio de Odilon, desenvolvedor full-stack apaixonado por criar soluções inovadoras e impactantes. Explore meus projetos, habilidades e experiência para conhecer meu trabalho e minha jornada na área de desenvolvimento.",
+  generator: "Next.js",
   // <CHANGE> Removed icon.svg reference that was causing 404 errors
   icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-    ],
-    apple: "/apple-icon.png",
+    icon: "/favicon.svg", // ✅ caminho para o favicon
+    shortcut: "/favicon.svg", // opcional, para navegadores que usam shortcut icon
   },
 };
 
