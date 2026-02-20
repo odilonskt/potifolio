@@ -33,14 +33,14 @@ function ProfileImage() {
   const hasExtraImages = true; // Mude para false se não tiver as imagens extras
 
   return (
-    <div className="flex items-center justify-center shrink-0 relative group w-32 h-32 xs:w-40 xs:h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
+    <div className="flex items-center justify-center shrink-0 relative group w-40 h-40 xs:w-48 xs:h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
       <div
         className="absolute inset-0 bg-linear-to-r from-blue-500 via-purple-600 to-green-500 rounded-2xl blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-300 -z-10"
         suppressHydrationWarning
       />
 
       {hasExtraImages ? (
-        <figure className="hover-gallery relative w-32 h-32 xs:w-40 xs:h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
+        <figure className="hover-gallery relative w-40 h-40 xs:w-48 xs:h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
           <Image
             src="/perfil.svg"
             alt="Foto de perfil de Odilon - Desenvolvedor Full-Stack"
@@ -65,7 +65,7 @@ function ProfileImage() {
           />
         </figure>
       ) : (
-        <div className="relative w-32 h-32 xs:w-40 xs:h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
+        <div className="relative w-40 h-40 xs:w-48 xs:h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
           <Image
             src="/perfil.svg"
             alt="Foto de perfil de Odilon - Desenvolvedor Full-Stack"
@@ -84,7 +84,7 @@ function ProfileImage() {
 function ProfileImageSkeleton() {
   return (
     <div
-      className="flex items-center justify-center shrink-0 relative group w-32 h-32 xs:w-40 xs:h-40 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80"
+      className="flex items-center justify-center shrink-0 relative group w-40 h-40 xs:w-48 xs:h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80"
       suppressHydrationWarning
     >
       <div
@@ -116,12 +116,12 @@ const shimmerStyle = `
 // Componente: Cabeçalho (Nome e Título)
 function Header() {
   return (
-    <div className="space-y-2 xs:space-y-3 sm:space-y-4">
-      <h1 className="text-4xl xs:text-5xl sm:text-6xl md:text-7xl lg:text-7xl font-black text-white leading-tight drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">
+    <div className="space-y-3 xs:space-y-4 sm:space-y-4">
+      <h1 className="text-3xl xs:text-4xl sm:text-6xl md:text-7xl lg:text-7xl font-black text-white leading-tight drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">
         Odilon de Campos
       </h1>
       <div className="h-1 xs:h-1.5 w-16 xs:w-20 bg-linear-to-r from-blue-400 to-green-400 rounded-full mx-auto lg:mx-0" />
-      <h2 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-4xl font-bold bg-linear-to-r from-blue-400 via-cyan-400 to-green-400 bg-clip-text text-transparent">
+      <h2 className="text-lg xs:text-xl sm:text-3xl md:text-4xl lg:text-4xl font-bold bg-linear-to-r from-blue-400 via-cyan-400 to-green-400 bg-clip-text text-transparent">
         Full-Stack Developer
       </h2>
     </div>
@@ -151,13 +151,13 @@ function HeaderSkeleton() {
 // Componente: Bio e Localização
 function BioSection({ location }: { location?: string }) {
   return (
-    <div className="space-y-2 xs:space-y-3 sm:space-y-4 w-full px-0">
-      <p className="text-sm xs:text-base sm:text-lg md:text-xl lg:text-xl text-gray-300 max-w-3xl leading-relaxed">
+    <div className="space-y-3 xs:space-y-3 sm:space-y-4 w-full px-0">
+      <p className="text-base xs:text-base sm:text-lg md:text-xl lg:text-xl text-gray-300 max-w-3xl leading-relaxed">
         Criando soluções digitais inovadoras com tecnologias modernas.
         Apaixonado por código limpo, performance e experiência do usuário.
       </p>
       {location && location.trim() && (
-        <p className="text-xs xs:text-sm sm:text-base text-gray-400 flex items-center justify-center lg:justify-start gap-2">
+        <p className="text-sm xs:text-sm sm:text-base text-gray-400 flex items-center justify-center lg:justify-start gap-2">
           <span>📍</span>
           <span>{location}</span>
         </p>
@@ -198,13 +198,13 @@ function BioSectionSkeleton() {
 // Componente: Card de Estatística
 function StatCard({ stat }: { stat: StatItem }) {
   return (
-    <div className="bg-linear-to-br from-gray-900 to-gray-950 border border-gray-800 hover:border-gray-700 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 group">
+    <div className="bg-linear-to-br from-gray-900 to-gray-950 border border-gray-800 hover:border-gray-700 rounded-lg xs:rounded-xl p-4 xs:p-5 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 group">
       <div
-        className={`text-2xl xs:text-3xl sm:text-4xl font-black bg-linear-to-r ${stat.color} bg-clip-text text-transparent mb-2 xs:mb-3 sm:mb-4 group-hover:scale-110 transition-transform`}
+        className={`text-3xl xs:text-4xl sm:text-4xl font-black bg-linear-to-r ${stat.color} bg-clip-text text-transparent mb-3 xs:mb-4 sm:mb-4 group-hover:scale-110 transition-transform`}
       >
         {stat.value}
       </div>
-      <p className="text-xs xs:text-sm text-gray-400 font-medium line-clamp-2">
+      <p className="text-sm xs:text-sm text-gray-400 font-medium line-clamp-2">
         {stat.label}
       </p>
     </div>
@@ -238,7 +238,7 @@ function StatsGrid({
   if (loading) {
     return (
       <div
-        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-4 w-full mt-3 xs:mt-4 sm:mt-6 md:mt-8"
+        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 sm:gap-4 w-full mt-6 xs:mt-6 sm:mt-8 md:mt-8"
         suppressHydrationWarning
       >
         {[...Array(4)].map((_, index) => (
@@ -251,7 +251,7 @@ function StatsGrid({
   if (stats.length === 0) return null;
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 sm:gap-4 w-full mt-3 xs:mt-4 sm:mt-6 md:mt-8">
+    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 sm:gap-4 w-full mt-6 xs:mt-6 sm:mt-8 md:mt-8">
       {stats.map((stat) => (
         <StatCard key={stat.label} stat={stat} />
       ))}
@@ -279,12 +279,12 @@ function SocialButton({
           suppressHydrationWarning
         />
         <div
-          className="relative bg-black rounded-full p-2 xs:p-2.5 sm:p-3"
+          className="relative bg-black rounded-full p-3 xs:p-3 sm:p-3"
           suppressHydrationWarning
         >
           <Icon
             size={24}
-            className="xs:w-8 xs:h-8 sm:w-8 sm:h-8 group-hover:scale-110 transition-transform duration-200"
+            className="w-6 h-6 xs:w-6 xs:h-6 sm:w-7 sm:h-7 group-hover:scale-110 transition-transform duration-200"
             color="white"
           />
         </div>
@@ -315,12 +315,12 @@ function ActionIconButton({
           suppressHydrationWarning
         />
         <div
-          className="relative bg-black rounded-full p-2 xs:p-2.5 sm:p-3"
+          className="relative bg-black rounded-full p-3 xs:p-3 sm:p-3"
           suppressHydrationWarning
         >
           <Icon
             size={24}
-            className="xs:w-8 xs:h-8 sm:w-8 sm:h-8 group-hover:scale-110 transition-transform duration-200"
+            className="w-6 h-6 xs:w-6 xs:h-6 sm:w-7 sm:h-7 group-hover:scale-110 transition-transform duration-200"
             color="white"
           />
         </div>
@@ -337,8 +337,8 @@ function ActionButtons({ onDownload }: { onDownload: () => void }) {
   };
 
   return (
-    <div className="flex flex-col xs:flex-row items-center justify-center lg:justify-start gap-3 xs:gap-4 sm:gap-5 md:gap-6 mt-4 xs:mt-6 sm:mt-8 md:mt-10 w-full">
-      <div className="flex gap-4">
+    <div className="flex flex-col xs:flex-row items-center justify-center lg:justify-start gap-4 xs:gap-5 sm:gap-6 md:gap-6 mt-6 xs:mt-8 sm:mt-8 md:mt-10 w-full">
+      <div className="flex gap-5 xs:gap-5 sm:gap-6">
         <div className="tooltip" data-tip="LinkedIn">
           <SocialButton
             href="https://www.linkedin.com/in/odilon-dev/"
@@ -371,10 +371,10 @@ function ActionButtons({ onDownload }: { onDownload: () => void }) {
       <Link
         href="https://docs.google.com/document/d/1p8Dg2LF-acbwpfGUGaTkE2P543XlWjN9Bu5pX3V18Ts/edit?usp=sharing"
         target="_blank"
-        className="flex gap-2 items-center text-xs xs:text-sm font-bold px-4 xs:px-6 sm:px-8 py-2 xs:py-3 sm:py-4 bg-linear-to-r from-green-600 to-blue-600 hover:from-blue-600 hover:to-green-600 text-black rounded-lg xs:rounded-xl border-0 shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105 active:scale-95 w-full xs:w-auto justify-center whitespace-nowrap tooltip tooltip-bottom"
+        className="flex gap-2 items-center text-base xs:text-base font-bold px-6 xs:px-7 sm:px-8 py-3 xs:py-3 sm:py-4 bg-linear-to-r from-green-600 to-blue-600 hover:from-blue-600 hover:to-green-600 text-black rounded-lg xs:rounded-xl border-0 shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105 active:scale-95 w-full xs:w-auto justify-center whitespace-nowrap tooltip tooltip-bottom"
         data-tip="Baixar currículo"
       >
-        <Download size={16} className="xs:w-5 xs:h-5 sm:w-5 sm:h-5" />
+        <Download size={20} className="w-5 h-5 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
         <span>Currículo</span>
       </Link>
     </div>
@@ -388,19 +388,19 @@ function ActionButtonsSkeleton() {
       className="flex flex-col xs:flex-row items-center justify-center lg:justify-start gap-3 xs:gap-4 sm:gap-5 md:gap-6 mt-4 xs:mt-6 sm:mt-8 md:mt-10 w-full"
       suppressHydrationWarning
     >
-      <div className="flex gap-4">
-        <div className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer" />
+      <div className="flex gap-5 xs:gap-5 sm:gap-6">
+        <div className="w-11 h-11 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer" />
         <div
-          className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer"
+          className="w-11 h-11 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer"
           style={{ animationDelay: "0.1s" }}
         />
         <div
-          className="w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer"
+          className="w-11 h-11 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer"
           style={{ animationDelay: "0.2s" }}
         />
       </div>
 
-      <div className="h-10 xs:h-12 sm:h-14 w-full xs:w-auto px-4 xs:px-6 sm:px-8 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg xs:rounded-xl animate-shimmer" />
+      <div className="h-11 xs:h-12 sm:h-14 w-full xs:w-auto px-6 xs:px-7 sm:px-8 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg xs:rounded-xl animate-shimmer" />
     </div>
   );
 }
@@ -450,18 +450,18 @@ export default function Start({ id }: StartProps) {
       <style>{shimmerStyle}</style>
       <main
         id={id}
-        className="text-white w-full bg-black h-screen overflow-hidden relative"
+        className="text-white w-full bg-black min-h-screen relative"
       >
         {/* Decorative Elements */}
         <div className="hidden lg:block absolute top-1/4 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
         <div className="hidden lg:block absolute bottom-1/4 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10" />
 
-        <div className="flex flex-col lg:flex-row items-center justify-center min-h-screen px-3 xs:px-4 sm:px-6 md:px-8 lg:px-12 py-12 xs:py-16 sm:py-20 md:pt-48 lg:pt-0 gap-6 xs:gap-8 sm:gap-12 md:gap-14 lg:gap-16">
+        <div className="flex flex-col lg:flex-row items-center justify-center px-4 xs:px-4 sm:px-6 md:px-8 lg:px-12 py-8 xs:py-12 sm:py-16 md:py-24 lg:py-0 lg:min-h-screen gap-8 xs:gap-8 sm:gap-10 md:gap-14 lg:gap-16">
           {/* Perfil */}
           {loading ? <ProfileImageSkeleton /> : <ProfileImage />}
 
           {/* Conteúdo Principal */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-4 xs:gap-5 sm:gap-6 md:gap-7 lg:gap-8 max-w-3xl w-full">
+          <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-5 xs:gap-6 sm:gap-6 md:gap-7 lg:gap-8 max-w-3xl w-full">
             {loading ? (
               <>
                 <HeaderSkeleton />
