@@ -1,6 +1,8 @@
 import Footer from "@/components/footer/page";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+
 import type React from "react";
 import "./globals.css";
 
@@ -36,6 +38,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100`}
       >
         {children}
+        <SpeedInsights />
         <Footer />
       </body>
     </html>
