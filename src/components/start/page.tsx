@@ -1,164 +1,221 @@
 "use client";
+
+import { Skeleton } from "@/components/ui/skeleton";
 import { useGitHubUser } from "@/hooks/useGitHubUser";
-import { Download, Github, Linkedin } from "@deemlol/next-icons";
+import { cn } from "@/lib/utils";
+import { Github, Linkedin } from "@deemlol/next-icons";
 import { Mail } from "lucide-react";
 import Image from "next/image";
-import { default as Link, default as NextLink } from "next/link";
+import Link from "next/link";
+import Aurora from "../ui/Aurora";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface StartProps {
   id: string;
 }
 
-interface GitHubUser {
-  name: string;
-  bio: string;
-  location: string;
-  public_repos: number;
-  public_gists: number;
-  followers: number;
-  following: number;
-  created_at: string;
-  avatar_url: string;
-}
-
 interface StatItem {
   label: string;
   value: number;
-  icon: string;
-  color: string;
 }
 
-/// Componente: Foto de Perfil
-function ProfileImage() {
-  const hasExtraImages = true; // Mude para false se não tiver as imagens extras
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-  return (
-    <div className="flex items-center justify-center shrink-0 relative group w-40 h-40 xs:w-48 xs:h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
-      <div
-        className="absolute inset-0 bg-linear-to-r from-blue-500 via-purple-600 to-green-500 rounded-2xl blur-2xl opacity-75 group-hover:opacity-100 transition-opacity duration-300 -z-10"
-        suppressHydrationWarning
-      />
+const GITHUB_USERNAME = "odilonskt";
+const LINKEDIN_URL = "https://www.linkedin.com/in/odilon-dev/";
+const GITHUB_URL = `https://github.com/${GITHUB_USERNAME}`;
+const CURRICULO_URL =
+  "https://docs.google.com/document/d/1p8Dg2LF-acbwpfGUGaTkE2P543XlWjN9Bu5pX3V18Ts/edit?usp=sharing";
+const EMAIL = "odilon123c@gmail.com";
 
-      {hasExtraImages ? (
-        <figure className="hover-gallery relative w-40 h-40 xs:w-48 xs:h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
-          <Image
-            src="/perfil.svg"
-            alt="Foto de perfil de Odilon - Desenvolvedor Full-Stack"
-            width={450}
-            height={450}
-            priority
-            className="rounded-xl object-cover shadow-2xl border-3 xs:border-4 border-gray-800 w-full h-full"
-          />
-          <Image
-            src="/perfil-3.jpeg"
-            alt="Odilon trabalhando em projeto"
-            width={450}
-            height={450}
-            className="rounded-xl object-cover shadow-2xl border-3 xs:border-4 border-gray-800 w-full h-full"
-          />
-          <Image
-            src="/perfil-4.jpeg"
-            alt="Odilon em reunião ou apresentação"
-            width={450}
-            height={450}
-            className="rounded-xl object-cover shadow-2xl border-3 xs:border-4 border-gray-800 w-full h-full"
-          />
-        </figure>
-      ) : (
-        <div className="relative w-40 h-40 xs:w-48 xs:h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80">
-          <Image
-            src="/perfil.svg"
-            alt="Foto de perfil de Odilon - Desenvolvedor Full-Stack"
-            width={450}
-            height={450}
-            priority
-            className="rounded-xl w-full h-full object-cover shadow-2xl border-3 xs:border-4 border-gray-800"
-          />
-        </div>
-      )}
-    </div>
-  );
-}
+const BIO_TEXT =
+  "Criando soluções digitais com tecnologias modernas. Apaixonado por código limpo, performance e experiência do usuário.";
 
-// Skeleton para a foto de perfil (ajustado)
-function ProfileImageSkeleton() {
-  return (
-    <div
-      className="flex items-center justify-center shrink-0 relative group w-40 h-40 xs:w-48 xs:h-48 sm:w-56 sm:h-56 md:w-72 md:h-72 lg:w-80 lg:h-80"
-      suppressHydrationWarning
-    >
-      <div
-        className="absolute inset-0 bg-gradient-to-r from-blue-500/20 via-purple-600/20 to-green-500/20 rounded-2xl blur-2xl opacity-50 -z-10 animate-pulse"
-        suppressHydrationWarning
-      />
-      <div className="rounded-2xl w-full h-full bg-gradient-to-br from-gray-800 to-gray-900 border-3 xs:border-4 border-gray-800 animate-shimmer" />
-    </div>
-  );
-}
+const AURORA_COLORS: [string, string, string] = [
+  "#0ea5e9",
+  "#6366f1",
+  "#22c55e",
+];
 
-// Adicionando animação shimmer global
-const shimmerStyle = `
-  @keyframes shimmer {
-    0%, 100% {
-      background-position: -1000px 0;
-    }
-    100% {
-      background-position: 1000px 0;
-    }
+const SOCIAL_LINKS = [
+  {
+    href: LINKEDIN_URL,
+    icon: Linkedin,
+    label: "Acessar perfil no LinkedIn (abre em nova aba)",
+    glow: "hover:shadow-blue-500/40",
+  },
+  {
+    href: GITHUB_URL,
+    icon: Github,
+    label: "Acessar perfil no GitHub (abre em nova aba)",
+    glow: "hover:shadow-slate-400/30",
+  },
+] as const;
+
+// ─── Rainbow Button CSS ───────────────────────────────────────────────────────
+
+const rainbowStyle = `
+  @keyframes rainbow-shift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
   }
-  .animate-shimmer {
-    animation: shimmer 2s infinite;
-    background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
-    background-size: 1000px 100%;
+  .rainbow-btn::before {
+    content: '';
+    position: absolute;
+    inset: -1.5px;
+    border-radius: 12px;
+    background: linear-gradient(270deg, #0ea5e9, #6366f1, #22c55e, #f59e0b, #0ea5e9);
+    background-size: 300% 300%;
+    animation: rainbow-shift 5s ease infinite;
+    z-index: -1;
   }
 `;
 
-// Componente: Cabeçalho (Nome e Título)
-function Header() {
+// ─── Download Icon ────────────────────────────────────────────────────────────
+
+const DownloadIcon = () => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    width="14"
+    height="14"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden
+  >
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+    <polyline points="7 10 12 15 17 10" />
+    <line x1="12" y1="15" x2="12" y2="3" />
+  </svg>
+);
+
+// ─── Sub-components com skeleton colorido ─────────────────────────────────────
+
+function ProfileImageSkeleton() {
   return (
-    <div className="space-y-3 xs:space-y-4 sm:space-y-4">
-      <h1 className="text-3xl xs:text-4xl sm:text-6xl md:text-7xl lg:text-7xl font-black text-white leading-tight drop-shadow-[0_0_20px_rgba(59,130,246,0.5)]">
-        Odilon de Campos
-      </h1>
-      <div className="h-1 xs:h-1.5 w-16 xs:w-20 bg-linear-to-r from-blue-400 to-green-400 rounded-full mx-auto lg:mx-0" />
-      <h2 className="text-lg xs:text-xl sm:text-3xl md:text-4xl lg:text-4xl font-bold bg-linear-to-r from-blue-400 via-cyan-400 to-green-400 bg-clip-text text-transparent">
-        Full-Stack Developer
-      </h2>
-    </div>
+    <Skeleton
+      className={cn(
+        "shrink-0 w-44 h-44 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-2xl",
+        "bg-zinc-900",
+      )}
+    />
   );
 }
 
-// Skeleton para o cabeçalho
 function HeaderSkeleton() {
   return (
-    <div
-      className="space-y-2 xs:space-y-3 sm:space-y-4 w-full"
-      suppressHydrationWarning
-    >
-      <div className="h-10 xs:h-12 sm:h-16 md:h-20 lg:h-20 w-48 xs:w-56 sm:w-72 md:w-96 lg:w-96 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-shimmer" />
-      <div
-        className="h-1 xs:h-1.5 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full mx-auto lg:mx-0 animate-shimmer"
-        style={{ animationDelay: "0.1s" }}
+    <div className="space-y-2 w-full">
+      <Skeleton className={cn("h-3 w-20 mx-auto lg:mx-0", "bg-zinc-900")} />
+      <Skeleton
+        className={cn(
+          "h-10 sm:h-14 md:h-16 w-64 sm:w-80 mx-auto lg:mx-0",
+          "bg-zinc-900",
+        )}
       />
-      <div
-        className="h-5 xs:h-6 sm:h-8 md:h-10 lg:h-10 w-32 xs:w-40 sm:w-56 md:w-64 lg:w-64 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg animate-shimmer"
-        style={{ animationDelay: "0.2s" }}
+      <Skeleton className={cn("h-5 w-40 mx-auto lg:mx-0", "bg-zinc-900")} />
+    </div>
+  );
+}
+
+function BioSkeleton() {
+  return (
+    <div className="space-y-2 w-full">
+      <Skeleton className={cn("h-4 w-full max-w-lg", "bg-zinc-900")} />
+      <Skeleton
+        className={cn("h-4 w-4/5 max-w-lg mx-auto lg:mx-0", "bg-zinc-900")}
+      />
+      <Skeleton
+        className={cn("h-3 w-24 mx-auto lg:mx-0 mt-1", "bg-zinc-900")}
       />
     </div>
   );
 }
 
-// Componente: Bio e Localização
-function BioSection({ location }: { location?: string }) {
+function StatsGridSkeleton() {
   return (
-    <div className="space-y-3 xs:space-y-3 sm:space-y-4 w-full px-0">
-      <p className="text-base xs:text-base sm:text-lg md:text-xl lg:text-xl text-gray-300 max-w-3xl leading-relaxed">
-        Criando soluções digitais inovadoras com tecnologias modernas.
-        Apaixonado por código limpo, performance e experiência do usuário.
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
+      {Array.from({ length: 4 }).map((_, i) => (
+        <div key={i} className="p-4 rounded-xl border border-white/5 space-y-2">
+          <Skeleton className={cn("h-7 w-10", "bg-zinc-900")} />
+          <Skeleton className={cn("h-3 w-16", "bg-zinc-900")} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ActionButtonsSkeleton() {
+  return (
+    <div
+      className="flex flex-wrap items-center justify-center lg:justify-start gap-3 w-full"
+      aria-hidden="true"
+    >
+      <div className="flex gap-2">
+        <Skeleton className={cn("w-10 h-10 rounded-full", "bg-zinc-900")} />
+        <Skeleton className={cn("w-10 h-10 rounded-full", "bg-zinc-900")} />
+        <Skeleton className={cn("w-10 h-10 rounded-full", "bg-zinc-900")} />
+      </div>
+      <Skeleton className={cn("h-9 w-28 rounded-xl", "bg-zinc-900")} />
+    </div>
+  );
+}
+
+// ─── Componentes que não mudaram (ProfileImage, Header, Bio, StatsCard, etc.) ──
+// (mantenha os originais sem skeleton, apenas importe os skeletons acima)
+
+function ProfileImage() {
+  const images = ["/perfil.svg", "/perfil-3.jpeg", "/perfil-4.jpeg"];
+
+  return (
+    <div className="relative shrink-0 w-44 h-44 sm:w-56 sm:h-56 md:w-64 md:h-64 group">
+      <div className="absolute inset-0 bg-gradient-to-br from-sky-500/20 to-indigo-500/20 rounded-2xl blur-xl -z-10 group-hover:from-sky-500/30 group-hover:to-indigo-500/30 transition-all duration-500" />
+      <figure className="hover-gallery relative w-full h-full">
+        {images.map((src, i) => (
+          <Image
+            key={src}
+            src={src}
+            alt={`Foto de perfil de Odilon ${i + 1}`}
+            width={400}
+            height={400}
+            priority={i === 0}
+            className="rounded-2xl object-cover w-full h-full border border-white/10"
+          />
+        ))}
+      </figure>
+    </div>
+  );
+}
+
+function Header() {
+  return (
+    <header className="space-y-2">
+      <p className="text-xs tracking-[0.3em] text-slate-500 uppercase">
+        Portfólio
       </p>
-      {location && location.trim() && (
-        <p className="text-sm xs:text-sm sm:text-base text-gray-400 flex items-center justify-center lg:justify-start gap-2">
-          <span>📍</span>
+      <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight">
+        Odilon de Campos
+      </h1>
+      <h2 className="text-base sm:text-lg text-slate-400 font-normal">
+        Full-Stack Developer
+      </h2>
+    </header>
+  );
+}
+
+function Bio({ location }: { location?: string }) {
+  return (
+    <div className="space-y-2 w-full">
+      <p className="text-sm sm:text-base text-slate-400 max-w-lg leading-relaxed">
+        {BIO_TEXT}
+      </p>
+      {location?.trim() && (
+        <p className="text-xs text-slate-500 flex items-center justify-center lg:justify-start gap-1.5">
+          <span aria-hidden>📍</span>
           <span>{location}</span>
         </p>
       )}
@@ -166,68 +223,17 @@ function BioSection({ location }: { location?: string }) {
   );
 }
 
-// Skeleton para Bio e Localização
-function BioSectionSkeleton() {
+function StatCard({ label, value }: StatItem) {
   return (
-    <div
-      className="space-y-2 xs:space-y-3 sm:space-y-4 w-full px-0"
-      suppressHydrationWarning
-    >
-      <div className="space-y-2">
-        <div className="h-5 xs:h-6 sm:h-7 w-full max-w-2xl bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer" />
-        <div
-          className="h-5 xs:h-6 sm:h-7 w-5/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer"
-          style={{ animationDelay: "0.1s" }}
-        />
-        <div
-          className="h-5 xs:h-6 sm:h-7 w-4/6 mx-auto lg:mx-0 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer"
-          style={{ animationDelay: "0.2s" }}
-        />
-      </div>
-      <div className="flex items-center justify-center lg:justify-start gap-2 pt-2">
-        <div className="w-4 h-4 xs:w-5 xs:h-5 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer" />
-        <div
-          className="h-4 xs:h-5 w-24 xs:w-28 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer"
-          style={{ animationDelay: "0.1s" }}
-        />
-      </div>
+    <div className="flex flex-col gap-0.5 p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
+      <span className="text-2xl font-bold text-white tabular-nums">
+        {value}
+      </span>
+      <span className="text-xs text-slate-500">{label}</span>
     </div>
   );
 }
 
-// Componente: Card de Estatística
-function StatCard({ stat }: { stat: StatItem }) {
-  return (
-    <div className="bg-linear-to-br from-gray-900 to-gray-950 border border-gray-800 hover:border-gray-700 rounded-lg xs:rounded-xl p-4 xs:p-5 sm:p-5 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 group">
-      <div
-        className={`text-3xl xs:text-4xl sm:text-4xl font-black bg-linear-to-r ${stat.color} bg-clip-text text-transparent mb-3 xs:mb-4 sm:mb-4 group-hover:scale-110 transition-transform`}
-      >
-        {stat.value}
-      </div>
-      <p className="text-sm xs:text-sm text-gray-400 font-medium line-clamp-2">
-        {stat.label}
-      </p>
-    </div>
-  );
-}
-
-// Skeleton para Card de Estatística
-function StatCardSkeleton() {
-  return (
-    <div
-      className="bg-gradient-to-br from-gray-900 to-gray-950 border border-gray-800 rounded-lg xs:rounded-xl p-3 xs:p-4 sm:p-5"
-      suppressHydrationWarning
-    >
-      <div className="h-8 xs:h-10 sm:h-12 w-12 xs:w-16 sm:w-20 mb-2 xs:mb-3 sm:mb-4 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer" />
-      <div
-        className="h-3 xs:h-4 w-16 xs:w-20 bg-gradient-to-r from-gray-800 to-gray-900 rounded animate-shimmer"
-        style={{ animationDelay: "0.1s" }}
-      />
-    </div>
-  );
-}
-
-// Componente: Grid de Estatísticas
 function StatsGrid({
   stats,
   loading,
@@ -235,251 +241,176 @@ function StatsGrid({
   stats: StatItem[];
   loading: boolean;
 }) {
-  if (loading) {
-    return (
-      <div
-        className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 sm:gap-4 w-full mt-6 xs:mt-6 sm:mt-8 md:mt-8"
-        suppressHydrationWarning
-      >
-        {[...Array(4)].map((_, index) => (
-          <StatCardSkeleton key={index} />
-        ))}
-      </div>
-    );
-  }
-
-  if (stats.length === 0) return null;
-
-  return (
-    <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-3 xs:gap-4 sm:gap-4 w-full mt-6 xs:mt-6 sm:mt-8 md:mt-8">
-      {stats.map((stat) => (
-        <StatCard key={stat.label} stat={stat} />
+  return loading ? (
+    <StatsGridSkeleton />
+  ) : (
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
+      {stats.map((s) => (
+        <StatCard key={s.label} {...s} />
       ))}
     </div>
   );
 }
 
-// Componente: Botão de Social
 function SocialButton({
   href,
   icon: Icon,
-  gradientFrom,
-  gradientTo,
+  label,
+  glow,
 }: {
   href: string;
-  icon: typeof Github;
-  gradientFrom: string;
-  gradientTo: string;
+  icon: React.ElementType;
+  label: string;
+  glow: string;
 }) {
   return (
-    <NextLink href={href} target="_blank" className="group">
-      <div className="relative" suppressHydrationWarning>
-        <div
-          className={`absolute inset-0 bg-linear-to-r ${gradientFrom} ${gradientTo} rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300 -z-10`}
-          suppressHydrationWarning
-        />
-        <div
-          className="relative bg-black rounded-full p-3 xs:p-3 sm:p-3"
-          suppressHydrationWarning
-        >
-          <Icon
-            size={24}
-            className="w-6 h-6 xs:w-6 xs:h-6 sm:w-7 sm:h-7 group-hover:scale-110 transition-transform duration-200"
-            color="white"
-          />
-        </div>
-      </div>
-    </NextLink>
+    <Link
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={label}
+      className={cn(
+        "flex items-center justify-center w-10 h-10 rounded-full",
+        "border border-white/10 bg-white/[0.03]",
+        "hover:border-white/20 hover:bg-white/[0.07]",
+        "transition-all duration-200 hover:scale-105 active:scale-95",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
+        `hover:shadow-md ${glow}`,
+      )}
+    >
+      <Icon size={16} color="white" aria-hidden />
+    </Link>
   );
 }
 
-// Componente: Botão de Ação com Ícone (para email)
-function ActionIconButton({
-  onClick,
-  icon: Icon,
-  gradientFrom,
-  gradientTo,
-  label,
-}: {
-  onClick: () => void;
-  icon: typeof Mail;
-  gradientFrom: string;
-  gradientTo: string;
-  label: string;
-}) {
+function EmailButton() {
+  const copyEmail = () => navigator.clipboard.writeText(EMAIL);
+
   return (
-    <button onClick={onClick} className="group" aria-label={label}>
-      <div className="relative" suppressHydrationWarning>
-        <div
-          className={`absolute inset-0 bg-linear-to-r ${gradientFrom} ${gradientTo} rounded-full blur opacity-75 group-hover:opacity-100 transition duration-300 -z-10`}
-          suppressHydrationWarning
-        />
-        <div
-          className="relative bg-black rounded-full p-3 xs:p-3 sm:p-3"
-          suppressHydrationWarning
-        >
-          <Icon
-            size={24}
-            className="w-6 h-6 xs:w-6 xs:h-6 sm:w-7 sm:h-7 group-hover:scale-110 transition-transform duration-200"
-            color="white"
-          />
-        </div>
-      </div>
+    <button
+      onClick={copyEmail}
+      aria-label="Copiar endereço de e-mail"
+      className={cn(
+        "flex items-center justify-center w-10 h-10 rounded-full",
+        "border border-white/10 bg-white/[0.03]",
+        "hover:border-white/20 hover:bg-white/[0.07]",
+        "transition-all duration-200 hover:scale-105 active:scale-95",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
+        "hover:shadow-md hover:shadow-rose-500/30",
+      )}
+    >
+      <Mail size={16} color="white" aria-hidden />
     </button>
   );
 }
-// Componente: Botões de Ação
-function ActionButtons({ onDownload }: { onDownload: () => void }) {
-  const EMAIL = "odilon123c@gmail.com";
 
-  const copyEmail = async () => {
-    await navigator.clipboard.writeText(EMAIL);
-  };
-
-  return (
-    <div className="flex flex-col xs:flex-row items-center justify-center lg:justify-start gap-4 xs:gap-5 sm:gap-6 md:gap-6 mt-6 xs:mt-8 sm:mt-8 md:mt-10 w-full">
-      <div className="flex gap-5 xs:gap-5 sm:gap-6">
-        <div className="tooltip" data-tip="LinkedIn">
-          <SocialButton
-            href="https://www.linkedin.com/in/odilon-dev/"
-            icon={Linkedin}
-            gradientFrom="from-blue-600"
-            gradientTo="to-blue-500"
-            data-tip="click!"
-          />
-        </div>
-        <div className="tooltip" data-tip="GitHub">
-          <SocialButton
-            href="https://github.com/odilonskt"
-            icon={Github}
-            gradientFrom="from-gray-700"
-            gradientTo="to-gray-600"
-            data-tip="click!"
-          />
-        </div>
-        <div className="tooltip" data-tip="Copiar email">
-          <ActionIconButton
-            onClick={copyEmail}
-            icon={Mail}
-            gradientFrom="from-red-600"
-            gradientTo="to-red-500"
-            label="Copiar email"
-            data-tip="click!"
-          />
-        </div>
-      </div>
-      <Link
-        href="https://docs.google.com/document/d/1p8Dg2LF-acbwpfGUGaTkE2P543XlWjN9Bu5pX3V18Ts/edit?usp=sharing"
-        target="_blank"
-        className="flex gap-2 items-center text-base xs:text-base font-bold px-6 xs:px-7 sm:px-8 py-3 xs:py-3 sm:py-4 bg-linear-to-r from-green-600 to-blue-600 hover:from-blue-600 hover:to-green-600 text-black rounded-lg xs:rounded-xl border-0 shadow-lg hover:shadow-blue-500/50 transition-all duration-300 hover:scale-105 active:scale-95 w-full xs:w-auto justify-center whitespace-nowrap tooltip tooltip-bottom"
-        data-tip="Baixar currículo"
-      >
-        <Download size={20} className="w-5 h-5 xs:w-5 xs:h-5 sm:w-6 sm:h-6" />
-        <span>Currículo</span>
-      </Link>
-    </div>
-  );
-}
-
-// Skeleton para Botões de Ação
-function ActionButtonsSkeleton() {
-  return (
-    <div
-      className="flex flex-col xs:flex-row items-center justify-center lg:justify-start gap-3 xs:gap-4 sm:gap-5 md:gap-6 mt-4 xs:mt-6 sm:mt-8 md:mt-10 w-full"
-      suppressHydrationWarning
-    >
-      <div className="flex gap-5 xs:gap-5 sm:gap-6">
-        <div className="w-11 h-11 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer" />
-        <div
-          className="w-11 h-11 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer"
-          style={{ animationDelay: "0.1s" }}
-        />
-        <div
-          className="w-11 h-11 xs:w-12 xs:h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-gray-800 to-gray-900 rounded-full animate-shimmer"
-          style={{ animationDelay: "0.2s" }}
-        />
-      </div>
-
-      <div className="h-11 xs:h-12 sm:h-14 w-full xs:w-auto px-6 xs:px-7 sm:px-8 bg-gradient-to-r from-gray-800 to-gray-900 rounded-lg xs:rounded-xl animate-shimmer" />
-    </div>
-  );
-}
-
-// Componente Principal
-export default function Start({ id }: StartProps) {
-  const { githubData, loading } = useGitHubUser("odilonskt");
-
-  const handleDownload = () => {
-    const link = document.createElement("a");
-    link.href = "/odilon.pdf";
-    link.download = "odilon.pdf";
-    link.click();
-  };
-
-  const stats: StatItem[] = githubData
-    ? [
-        {
-          label: "Repositórios",
-          value: githubData.public_repos,
-          icon: "📦",
-          color: "from-white to-blue-600",
-        },
-        {
-          label: "Seguidores",
-          value: githubData.followers,
-          icon: "👥",
-          color: "from-white to-blue-600",
-        },
-        {
-          label: "Seguindo",
-          value: githubData.following,
-          icon: "🔗",
-          color: "from-white to-blue-600",
-        },
-        {
-          label: "Gists",
-          value: githubData.public_gists,
-          icon: "💾",
-          color: "from-white to-blue-600",
-        },
-      ]
-    : [];
-
+function RainbowButton() {
   return (
     <>
-      <style>{shimmerStyle}</style>
-      <main
-        id={id}
-        className="text-white w-full bg-black min-h-screen relative"
+      <style>{rainbowStyle}</style>
+      <Link
+        href={CURRICULO_URL}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Baixar currículo (abre em nova aba)"
+        className={cn(
+          "rainbow-btn relative inline-flex items-center gap-2",
+          "px-5 py-2.5 rounded-xl text-xs font-semibold text-white",
+          "bg-slate-950 transition-all duration-200",
+          "hover:scale-105 active:scale-95",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
+        )}
       >
-        {/* Decorative Elements */}
-        <div className="hidden lg:block absolute top-1/4 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl -z-10" />
-        <div className="hidden lg:block absolute bottom-1/4 left-0 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl -z-10" />
-
-        <div className="flex flex-col lg:flex-row items-center justify-center px-4 xs:px-4 sm:px-6 md:px-8 lg:px-12 py-8 xs:py-12 sm:py-16 md:py-24 lg:py-0 lg:min-h-screen gap-8 xs:gap-8 sm:gap-10 md:gap-14 lg:gap-16">
-          {/* Perfil */}
-          {loading ? <ProfileImageSkeleton /> : <ProfileImage />}
-
-          {/* Conteúdo Principal */}
-          <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-5 xs:gap-6 sm:gap-6 md:gap-7 lg:gap-8 max-w-3xl w-full">
-            {loading ? (
-              <>
-                <HeaderSkeleton />
-                <BioSectionSkeleton />
-                <StatsGrid stats={[]} loading={loading} />
-                <ActionButtonsSkeleton />
-              </>
-            ) : (
-              <>
-                <Header />
-                <BioSection location={githubData?.location} />
-                <StatsGrid stats={stats} loading={loading} />
-                <ActionButtons onDownload={handleDownload} />
-              </>
-            )}
-          </div>
-        </div>
-      </main>
+        <DownloadIcon />
+        <span>Currículo</span>
+      </Link>
     </>
+  );
+}
+
+function ActionButtons({ loading }: { loading: boolean }) {
+  if (loading) return <ActionButtonsSkeleton />;
+  return (
+    <nav
+      aria-label="Links sociais e currículo"
+      className="flex flex-wrap items-center justify-center lg:justify-start gap-3 w-full"
+    >
+      <div className="flex gap-2" role="list">
+        {SOCIAL_LINKS.map(({ href, icon, label, glow }) => (
+          <div key={href} role="listitem">
+            <SocialButton href={href} icon={icon} label={label} glow={glow} />
+          </div>
+        ))}
+        <div role="listitem">
+          <EmailButton />
+        </div>
+      </div>
+
+      <RainbowButton />
+    </nav>
+  );
+}
+
+// ─── Data helpers ─────────────────────────────────────────────────────────────
+
+function buildStats(data: {
+  public_repos: number;
+  followers: number;
+  following: number;
+  public_gists: number;
+}): StatItem[] {
+  return [
+    { label: "Repositórios", value: data.public_repos },
+    { label: "Seguidores", value: data.followers },
+    { label: "Seguindo", value: data.following },
+    { label: "Gists", value: data.public_gists },
+  ];
+}
+
+// ─── Main Component ───────────────────────────────────────────────────────────
+
+export default function Start({ id }: StartProps) {
+  const { githubData, loading } = useGitHubUser(GITHUB_USERNAME);
+  const stats = githubData ? buildStats(githubData) : [];
+
+  return (
+    <main
+      id={id}
+      className="relative w-full min-h-screen bg-slate-950 overflow-hidden text-white"
+    >
+      {/* Aurora background */}
+      <div className="absolute inset-0 -z-10 opacity-40">
+        <Aurora
+          colorStops={AURORA_COLORS}
+          blend={0.4}
+          amplitude={0.8}
+          speed={0.3}
+        />
+      </div>
+
+      <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_center,_transparent_30%,_#020617_100%)]" />
+
+      <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20 px-6 sm:px-10 lg:px-16 py-20 lg:min-h-screen">
+        {loading ? <ProfileImageSkeleton /> : <ProfileImage />}
+
+        <div className="flex flex-col items-center lg:items-start text-center lg:text-left gap-5 max-w-xl w-full">
+          {loading ? (
+            <>
+              <HeaderSkeleton />
+              <BioSkeleton />
+              <StatsGrid stats={[]} loading />
+              <ActionButtons loading />
+            </>
+          ) : (
+            <>
+              <Header />
+              <Bio location={githubData?.location} />
+              <StatsGrid stats={stats} loading={false} />
+              <ActionButtons loading={false} />
+            </>
+          )}
+        </div>
+      </div>
+    </main>
   );
 }

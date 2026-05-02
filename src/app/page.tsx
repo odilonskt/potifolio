@@ -1,6 +1,6 @@
 import { ContactForm } from "@/components/contact-form/page";
 import GithubRepos from "@/components/Github-repos/gituhb-portifolio";
-import Header from "@/components/heard/page";
+import Header from "../components/heard/page";
 import Sobre from "@/components/sobre/page";
 import Start from "@/components/start/page";
 import InfinityScrollAnimation from "@/components/tecnologia/page";

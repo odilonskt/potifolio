@@ -2,6 +2,10 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
+  // Define the root for turbopack to avoid lockfile detection issues
+  turbopack: {
+    root: __dirname,
+  },
   reactStrictMode: true,
   // Next.js 15 vem com otimizações automáticas
   experimental: {

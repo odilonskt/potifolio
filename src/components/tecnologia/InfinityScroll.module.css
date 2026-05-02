@@ -13,7 +13,9 @@
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
   border: 1.5px solid rgba(0, 229, 255, 0.2);
-  box-shadow: 0 0 30px rgba(0, 229, 255, 0.1), 0 0 60px rgba(217, 70, 239, 0.05),
+  box-shadow:
+    0 0 30px rgba(0, 229, 255, 0.1),
+    0 0 60px rgba(217, 70, 239, 0.05),
     inset 0 0 30px rgba(0, 229, 255, 0.05);
   transition: all 0.3s ease;
 
@@ -23,7 +25,9 @@
 
 .scrollContainer:hover {
   border-color: rgba(0, 229, 255, 0.4);
-  box-shadow: 0 0 40px rgba(0, 229, 255, 0.2), 0 0 80px rgba(217, 70, 239, 0.1),
+  box-shadow:
+    0 0 40px rgba(0, 229, 255, 0.2),
+    0 0 80px rgba(217, 70, 239, 0.1),
     inset 0 0 40px rgba(0, 229, 255, 0.08);
 }
 
@@ -117,7 +121,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.35s ease, filter 0.3s ease;
+  transition:
+    transform 0.35s ease,
+    filter 0.3s ease;
   display: flex;
   flex-direction: column;
   filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));

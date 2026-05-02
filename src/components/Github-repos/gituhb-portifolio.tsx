@@ -253,7 +253,7 @@ export default function GithubRepos() {
               <Card key={i} className="bg-zinc-950 border-zinc-900">
                 <Skeleton className="h-40 w-full bg-zinc-900" />
                 <div className="p-4 space-y-3">
-                  <Skeleton className="h-5 w-32 bg-zinc-900" />
+                  <Skeleton className="h-5 w-32 bg-zinc-900bg-zinc-900" />
                   <Skeleton className="h-4 w-full bg-zinc-900" />
                 </div>
               </Card>
