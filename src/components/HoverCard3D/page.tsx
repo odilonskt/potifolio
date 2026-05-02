@@ -17,6 +17,7 @@ export default function Hover3DCard({ src, alt }: Hover3DCardProps) {
           height={400}
           className="rounded-xl xs:rounded-2xl object-cover w-full h-full"
           priority
+          unoptimized
         />
       </figure>
 
