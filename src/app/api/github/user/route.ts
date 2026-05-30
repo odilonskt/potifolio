@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Esta rota usa parâmetros de URL do `request` e deve ser tratada como dinâmica
+export const dynamic = "force-dynamic";
+
 export const revalidate = 3600;
 
 const PRIVACY_HEADERS = {
@@ -11,7 +14,7 @@ const PRIVACY_HEADERS = {
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
+    const searchParams = request.nextUrl.searchParams;
     const username = searchParams.get("username");
 
     if (
@@ -61,7 +64,7 @@ export async function GET(request: NextRequest) {
       headers: PRIVACY_HEADERS,
     });
   } catch (error) {
-    console.error("Error fetching user data");
+    console.error("Error fetching user data", error);
     return NextResponse.json(
       { error: "Service temporarily unavailable" },
       { status: 503, headers: PRIVACY_HEADERS },
