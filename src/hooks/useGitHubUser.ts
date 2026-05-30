@@ -22,7 +22,7 @@ export function useGitHubUser(username: string) {
       try {
         setLoading(true);
         const response = await fetch(
-          `https://api.github.com/users/${username}`,
+          `/api/github/user?username=${encodeURIComponent(username)}`,
         );
 
         if (response.ok) {

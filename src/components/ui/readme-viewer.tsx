@@ -20,20 +20,20 @@ export function ReadmeViewer({ repo }: { repo: Repo }) {
       setError(null);
 
       const repoPath = repo.html_url.replace("https://github.com/", "");
+      const [owner, repoName] = repoPath.split("/");
 
       try {
         const response = await fetch(
-          `https://api.github.com/repos/${repoPath}/readme`
+          `/api/github/readme?owner=${encodeURIComponent(owner)}&repo=${encodeURIComponent(repoName)}`,
         );
 
         if (!response.ok) {
           throw new Error("README não encontrado");
         }
 
-        const data = await response.json();
-        const content = atob(data.content);
+        const content = await response.text();
 
-        if (data.name.toLowerCase().endsWith(".html")) {
+        if (repoName.toLowerCase().endsWith(".html")) {
           setReadme(content);
         } else {
           const htmlContent = convertMarkdownToHtml(content);
@@ -179,7 +179,7 @@ function convertMarkdownToHtml(markdown: string): string {
     .replace(/`([^`]+)`/g, "<code>$1</code>")
     .replace(
       /\[([^\]]+)\]$$([^)]+)$$/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+      '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>',
     )
     .replace(/!\[([^\]]*)\]$$([^)]+)$$/g, '<img src="$2" alt="$1" />')
     .replace(/^>\s+(.*)$/gm, "<blockquote>$1</blockquote>")

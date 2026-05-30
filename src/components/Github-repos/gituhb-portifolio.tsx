@@ -27,10 +27,11 @@ interface LanguageBreakdown {
   [key: string]: number;
 }
 
-const GITHUB_USERNAME = "odilonskt";
+const GITHUB_USERNAME = process.env.NEXT_PUBLIC_GITHUB_USERNAME || "odilonskt";
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // ms
 const REQUEST_TIMEOUT = 8000; // ms
+const API_BASE_URL = "/api/github";
 
 interface FetchError {
   status: number;
@@ -145,7 +146,8 @@ const customImages: Record<string, string> = {
 };
 
 const getGithubSocialImage = (username: string, repoName: string) => {
-  return `https://opengraph.githubassets.com/1/${username}/${repoName}`;
+  // Retornar imagem vazia para não expor conexão dirета ao GitHub
+  return "";
 };
 
 const languageColors: Record<string, string> = {
@@ -174,16 +176,14 @@ export default function GithubRepos() {
   useEffect(() => {
     async function fetchRepos() {
       try {
-        const response = await fetchWithRetry(
-          `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=12`,
-        );
+        const response = await fetchWithRetry(`${API_BASE_URL}/repos`);
         const data: Repository[] = await response.json();
         setRepos(data);
 
         const languagePromises = data.map(async (repo) => {
           try {
             const langResponse = await fetchWithRetry(
-              `https://api.github.com/repos/${GITHUB_USERNAME}/${repo.name}/languages`,
+              `${API_BASE_URL}/languages?repo=${repo.name}`,
               2,
             );
             const langData = await langResponse.json();

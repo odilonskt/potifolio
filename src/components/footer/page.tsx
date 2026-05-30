@@ -58,7 +58,7 @@ export default function Footer() {
   useEffect(() => {
     const fetchGitHubData = async () => {
       try {
-        const response = await fetch("https://api.github.com/users/odilonskt");
+        const response = await fetch("/api/github/user?username=odilonskt");
         if (response.ok) {
           const data = await response.json();
           setGithubData(data);
