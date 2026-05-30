@@ -136,19 +136,14 @@ const fetchWithRetry = async (
 };
 
 const customImages: Record<string, string> = {
-  // No Next.js, arquivos na pasta public são servidos da raiz
-  // Use "/nome-da-imagem.png" em vez de "/public/nome-da-imagem.png"
-  // "CRUD-M2": "/CRUD-M2.png",
   "calculadora-em-POO": "/calculadora-em-POO.png",
   portfolio: "/portfolio.png",
   "M4-API-Futebol": "/M4-API-Futebol.png",
   portifolio: "/portfolio.png",
 };
 
-const getGithubSocialImage = (username: string, repoName: string) => {
-  // Retornar imagem vazia para não expor conexão dirета ao GitHub
-  return "";
-};
+const fallbackPreviewImage = "/favicon.svg ";
+const fallbackAvatarImage = "/perfil.svg";
 
 const languageColors: Record<string, string> = {
   JavaScript: "#f7df1e",
@@ -262,9 +257,7 @@ export default function GithubRepos() {
               const langPercentages = getLanguagePercentages(
                 languages[repo.id] || {},
               );
-              const imageUrl =
-                customImages[repo.name] ||
-                getGithubSocialImage(GITHUB_USERNAME, repo.name);
+              const imageUrl = customImages[repo.name] || fallbackPreviewImage;
 
               return (
                 <article
@@ -274,7 +267,7 @@ export default function GithubRepos() {
                 >
                   <div className="relative h-40 sm:h-44 md:h-48 lg:h-56 w-full bg-zinc-900 overflow-hidden">
                     <Image
-                      src={imageUrl || "/placeholder.svg"}
+                      src={imageUrl}
                       alt={`Preview do repositório ${repo.name}`}
                       fill
                       className="object-cover group-hover:scale-105 transition-transform duration-300"
@@ -286,7 +279,7 @@ export default function GithubRepos() {
                     <header className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <Image
-                          src={repo.owner.avatar_url || "/placeholder.svg"}
+                          src={repo.owner.avatar_url || fallbackAvatarImage}
                           alt={`Avatar de ${repo.owner.login}`}
                           width={32}
                           height={32}

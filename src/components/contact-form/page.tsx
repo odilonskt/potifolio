@@ -1,11 +1,8 @@
 "use client";
 
 import { useContactForm } from "@/hooks/useContactForm";
-import {
-  ContactFormData,
-  ContactFormInput,
-  contactFormSchema,
-} from "@/lib/schemas/contact-form";
+import type { ContactFormInput } from "@/lib/schemas/contact-form";
+import { contactFormSchema } from "@/lib/schemas/contact-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle, Loader2, Mail } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -45,13 +42,13 @@ export function ContactForm() {
   });
 
   async function onSubmit(inputData: ContactFormInput) {
-    const validatedData = contactFormSchema.parse(inputData);
-
-    const formData: ContactFormData = {
-      ...validatedData,
-      id: validatedData.id || uuidv4(),
+    const formData = contactFormSchema.parse({
+      ...inputData,
+      id: inputData.id || uuidv4(),
+      create: inputData.create ?? new Date().toISOString(),
       update: new Date().toISOString(),
-    };
+      lidor: inputData.lidor ?? false,
+    });
 
     const result = await submitForm(formData);
 
@@ -154,18 +151,22 @@ export function ContactForm() {
                 render={({ field }) => (
                   <FormItem className="sm:col-span-1">
                     <FormLabel className="text-sm font-medium text-gray-300">
-                      Telefone{" "}
+                      Telefone <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
+                        type="tel"
+                        inputMode="tel"
                         placeholder="(11) 99999-9999"
                         {...field}
-                        value={field.value || ""}
                         className="h-11 sm:h-12 bg-gray-900/60 border-gray-700 text-white placeholder:text-gray-500 
                           hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary
                           transition-all duration-200 text-sm sm:text-base"
                       />
                     </FormControl>
+                    <FormDescription className="text-xs text-gray-500 mt-1">
+                      Obrigatório. Use apenas números, parênteses e traços.
+                    </FormDescription>
                     <FormMessage className="text-xs sm:text-sm text-red-400 mt-1" />
                   </FormItem>
                 )}

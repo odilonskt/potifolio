@@ -40,27 +40,6 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "skillicons.dev",
       },
-      {
-        protocol: "https",
-        hostname: "**",
-      },
-
-      {
-        protocol: "https",
-        hostname: "skillicons.dev",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "readme-typing-svg.herokuapp.com",
-        pathname: "/**",
-      },
-      // Add this for GitHub raw content if needed
-      {
-        protocol: "https",
-        hostname: "raw.githubusercontent.com",
-        pathname: "/**",
-      },
     ],
   },
 };
