@@ -30,9 +30,12 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const githubUsername = process.env.NEXT_PUBLIC_GITHUB_USERNAME;
-    const githubApiUrl = process.env.NEXT_PUBLIC_GITHUB_API_URL;
-    const githubToken = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+    const githubUsername =
+      process.env.GITHUB_USERNAME || process.env.NEXT_PUBLIC_GITHUB_USERNAME;
+    const githubApiUrl =
+      process.env.GITHUB_API_URL || process.env.NEXT_PUBLIC_GITHUB_API_URL;
+    const githubToken =
+      process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN;
 
     if (!githubUsername || !githubApiUrl || !githubToken) {
       return NextResponse.json(
@@ -46,7 +49,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(url, {
       headers: {
         Accept: "application/vnd.github.v3+json",
-        Authorization: `token ${githubToken}`,
+        Authorization: `Bearer ${githubToken}`,
         "User-Agent": "NextJS-Portfolio-Server",
       },
       next: { revalidate: 3600, tags: [`github-languages-${repoName}`] },
@@ -65,7 +68,7 @@ export async function GET(request: NextRequest) {
       headers: PRIVACY_HEADERS,
     });
   } catch (error) {
-    console.error("Error fetching languages");
+    console.error("Error fetching languages", error);
     return NextResponse.json(
       { error: "Service temporarily unavailable" },
       { status: 503, headers: PRIVACY_HEADERS },

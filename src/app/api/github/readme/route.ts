@@ -30,8 +30,10 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const githubApiUrl = process.env.NEXT_PUBLIC_GITHUB_API_URL;
-    const githubToken = process.env.NEXT_PUBLIC_GITHUB_TOKEN;
+    const githubApiUrl =
+      process.env.GITHUB_API_URL || process.env.NEXT_PUBLIC_GITHUB_API_URL;
+    const githubToken =
+      process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN;
 
     if (!githubApiUrl || !githubToken) {
       return NextResponse.json(
@@ -45,7 +47,7 @@ export async function GET(request: NextRequest) {
     const response = await fetch(url, {
       headers: {
         Accept: "application/vnd.github.v3.raw+json",
-        Authorization: `token ${githubToken}`,
+        Authorization: `Bearer ${githubToken}`,
         "User-Agent": "NextJS-Portfolio-Server",
       },
       next: { revalidate: 3600, tags: [`github-readme-${owner}-${repo}`] },
@@ -67,7 +69,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching README");
+    console.error("Error fetching README", error);
     return NextResponse.json(
       { error: "Service temporarily unavailable" },
       { status: 503, headers: PRIVACY_HEADERS },
