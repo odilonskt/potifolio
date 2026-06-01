@@ -1,20 +1,30 @@
 import { z } from "zod";
 
-const envSchema = z.object({
-  NEXT_PUBLIC_FIREBASE_API_KEY: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1),
-  NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().min(1),
-  NEXT_PUBLIC_GITHUB_API_URL: z.string().url(),
-  NEXT_PUBLIC_GITHUB_USERNAME: z.string().min(1),
-  NEXT_PUBLIC_GITHUB_TOKEN: z.string().optional(),
-  GITHUB_TOKEN: z.string().min(1),
-  FIREBASE_CLIENT_EMAIL: z.string().optional(),
-  FIREBASE_PRIVATE_KEY: z.string().optional(),
-});
+const envSchema = z
+  .object({
+    NEXT_PUBLIC_FIREBASE_API_KEY: z.string().min(1),
+    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string().min(1),
+    NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().min(1),
+    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: z.string().min(1),
+    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string().min(1),
+    NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1),
+    NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().min(1),
+    NEXT_PUBLIC_GITHUB_API_URL: z.string().url(),
+    NEXT_PUBLIC_GITHUB_USERNAME: z.string().min(1),
+    NEXT_PUBLIC_GITHUB_TOKEN: z.string().min(1).optional(),
+    GITHUB_TOKEN: z.string().min(1).optional(),
+    FIREBASE_CLIENT_EMAIL: z.string().optional(),
+    FIREBASE_PRIVATE_KEY: z.string().optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.GITHUB_TOKEN && !data.NEXT_PUBLIC_GITHUB_TOKEN) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["GITHUB_TOKEN"],
+        message: "GITHUB_TOKEN or NEXT_PUBLIC_GITHUB_TOKEN is required",
+      });
+    }
+  });
 
 export const env = envSchema.parse({
   NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
