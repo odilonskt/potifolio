@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import { NextResponse } from "next/server";
 
 // Cache estático - revalidar a cada 1 hora
@@ -69,18 +70,9 @@ async function fetchAllGitHubRepos(
 
 export async function GET() {
   try {
-    const githubUsername =
-      process.env.GITHUB_USERNAME ||
-      process.env.NEXT_PUBLIC_GITHUB_USERNAME ||
-      "odilonskt";
-    const githubApiUrl = (
-      process.env.GITHUB_API_URL ||
-      process.env.NEXT_PUBLIC_GITHUB_API_URL ||
-      "https://api.github.com"
-    ).replace(/\/+$/, "");
-    const githubToken =
-      process.env.GITHUB_TOKEN?.trim() ||
-      process.env.NEXT_PUBLIC_GITHUB_TOKEN?.trim();
+    const githubUsername = env.NEXT_PUBLIC_GITHUB_USERNAME;
+    const githubApiUrl = env.NEXT_PUBLIC_GITHUB_API_URL.replace(/\/+$/, "");
+    const githubToken = env.GITHUB_TOKEN || env.NEXT_PUBLIC_GITHUB_TOKEN;
 
     const repos = await fetchAllGitHubRepos(
       githubApiUrl,

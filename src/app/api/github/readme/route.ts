@@ -1,3 +1,4 @@
+import { env } from "@/lib/env";
 import { NextRequest, NextResponse } from "next/server";
 
 // Esta rota usa parâmetros de URL do `request` e deve ser tratada como dinâmica
@@ -48,12 +49,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const githubApiUrl = (
-      process.env.GITHUB_API_URL ||
-      process.env.NEXT_PUBLIC_GITHUB_API_URL ||
-      "https://api.github.com"
-    ).replace(/\/+$/, "");
-    const githubToken = process.env.GITHUB_TOKEN?.trim();
+    const githubApiUrl = env.NEXT_PUBLIC_GITHUB_API_URL.replace(/\/+$/, "");
+    const githubToken = env.GITHUB_TOKEN || env.NEXT_PUBLIC_GITHUB_TOKEN;
 
     const url = `${githubApiUrl}/repos/${owner}/${repo}/readme`;
 
