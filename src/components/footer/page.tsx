@@ -74,7 +74,10 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer className="footer sm:footer-horizontal bg-black text-white border-t border-gray-800 p-4 px-4 md:px-20 items-center pb-24 md:pb-4 max-sm:flex-col max-sm:gap-4">
+    <footer
+      className="footer sm:footer-horizontal bg-black text-white border-t border-gray-800 p-4 px-4 md:px-20 items-center pb-24 md:pb-4 max-sm:flex-col max-sm:gap-4"
+      suppressHydrationWarning
+    >
       {/* Lado esquerdo: logo e informações do GitHub */}
       <aside className="flex items-center gap-3 max-xs:flex-col max-xs:text-center">
         <Image

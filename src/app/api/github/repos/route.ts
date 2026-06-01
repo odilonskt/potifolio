@@ -13,41 +13,54 @@ const PRIVACY_HEADERS = {
   "Permissions-Policy": "geolocation=(), microphone=(), camera=()",
 };
 
+const buildGitHubHeaders = (githubToken?: string) => ({
+  Accept: "application/vnd.github.v3+json",
+  ...(githubToken ? { Authorization: `token ${githubToken}` } : {}),
+  "User-Agent": "NextJS-Portfolio-Server",
+});
+
+const respondGitHubError = async (response: Response, context: string) => {
+  const body = await response.text().catch(() => null);
+  console.error(context, response.status, body);
+  return NextResponse.json(
+    { error: "Unable to fetch GitHub data" },
+    { status: response.status, headers: PRIVACY_HEADERS },
+  );
+};
+
 export async function GET() {
   try {
     const githubUsername =
-      process.env.GITHUB_USERNAME || process.env.NEXT_PUBLIC_GITHUB_USERNAME;
-    const githubApiUrl =
-      process.env.GITHUB_API_URL || process.env.NEXT_PUBLIC_GITHUB_API_URL;
-    const githubToken =
-      process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN;
-
-    if (!githubUsername || !githubApiUrl || !githubToken) {
-      return NextResponse.json(
-        { error: "GitHub credentials not configured" },
-        { status: 500, headers: PRIVACY_HEADERS },
-      );
-    }
+      process.env.GITHUB_USERNAME ||
+      process.env.NEXT_PUBLIC_GITHUB_USERNAME ||
+      "odilonskt";
+    const githubApiUrl = (
+      process.env.GITHUB_API_URL ||
+      process.env.NEXT_PUBLIC_GITHUB_API_URL ||
+      "https://api.github.com"
+    ).replace(/\/+$/, "");
+    const githubToken = process.env.GITHUB_TOKEN?.trim();
 
     const url = `${githubApiUrl}/users/${githubUsername}/repos?sort=updated&per_page=12`;
 
     const response = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-        Authorization: `Bearer ${githubToken}`,
-        "User-Agent": "NextJS-Portfolio-Server",
-      },
+      headers: buildGitHubHeaders(githubToken),
       next: { revalidate: 3600, tags: ["github-repos"] },
     });
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: "Failed to fetch repositories" },
-        { status: response.status, headers: PRIVACY_HEADERS },
-      );
+      return respondGitHubError(response, "GitHub repos fetch failed:");
     }
 
     const data = await response.json();
+
+    if (!Array.isArray(data)) {
+      console.error("Unexpected GitHub response for repos:", data);
+      return NextResponse.json(
+        { error: "Unexpected GitHub response" },
+        { status: 502, headers: PRIVACY_HEADERS },
+      );
+    }
 
     return NextResponse.json(data, {
       headers: PRIVACY_HEADERS,

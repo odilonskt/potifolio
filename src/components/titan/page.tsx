@@ -134,6 +134,7 @@ export default function Titan({ title, subtitle, id, className }: TitanProps) {
 
       <section
         aria-labelledby={headingId}
+        suppressHydrationWarning
         className={cn(
           "relative w-full py-12 sm:py-16 overflow-hidden",
           className,

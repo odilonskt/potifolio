@@ -12,6 +12,21 @@ const PRIVACY_HEADERS = {
   "Referrer-Policy": "no-referrer",
 };
 
+const buildGitHubHeaders = (githubToken?: string) => ({
+  Accept: "application/vnd.github.v3+json",
+  ...(githubToken ? { Authorization: `token ${githubToken}` } : {}),
+  "User-Agent": "NextJS-Portfolio-Server",
+});
+
+const respondGitHubError = async (response: Response, context: string) => {
+  const body = await response.text().catch(() => null);
+  console.error(context, response.status, body);
+  return NextResponse.json(
+    { error: "Unable to fetch GitHub data" },
+    { status: response.status, headers: PRIVACY_HEADERS },
+  );
+};
+
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
@@ -28,34 +43,22 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const githubApiUrl =
-      process.env.GITHUB_API_URL || process.env.NEXT_PUBLIC_GITHUB_API_URL;
-    const githubToken =
-      process.env.GITHUB_TOKEN || process.env.NEXT_PUBLIC_GITHUB_TOKEN;
-
-    if (!githubApiUrl || !githubToken) {
-      return NextResponse.json(
-        { error: "GitHub credentials not configured" },
-        { status: 500, headers: PRIVACY_HEADERS },
-      );
-    }
+    const githubApiUrl = (
+      process.env.GITHUB_API_URL ||
+      process.env.NEXT_PUBLIC_GITHUB_API_URL ||
+      "https://api.github.com"
+    ).replace(/\/+$/, "");
+    const githubToken = process.env.GITHUB_TOKEN?.trim();
 
     const url = `${githubApiUrl}/users/${username}`;
 
     const response = await fetch(url, {
-      headers: {
-        Accept: "application/vnd.github.v3+json",
-        Authorization: `Bearer ${githubToken}`,
-        "User-Agent": "NextJS-Portfolio-Server",
-      },
+      headers: buildGitHubHeaders(githubToken),
       next: { revalidate: 3600, tags: [`github-user-${username}`] },
     });
 
     if (!response.ok) {
-      return NextResponse.json(
-        { error: "Failed to fetch user data" },
-        { status: response.status, headers: PRIVACY_HEADERS },
-      );
+      return respondGitHubError(response, "GitHub user fetch failed:");
     }
 
     const data = await response.json();
