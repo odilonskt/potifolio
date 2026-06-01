@@ -49,8 +49,16 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const githubUsername = env.NEXT_PUBLIC_GITHUB_USERNAME;
-    const githubApiUrl = env.NEXT_PUBLIC_GITHUB_API_URL.replace(/\/+$/, "");
+    const githubUsername =
+      env.GITHUB_USERNAME || env.NEXT_PUBLIC_GITHUB_USERNAME;
+    if (!githubUsername) {
+      return NextResponse.json(
+        { error: "GitHub username is not configured" },
+        { status: 500, headers: PRIVACY_HEADERS },
+      );
+    }
+
+    const githubApiUrl = env.GITHUB_API_URL.replace(/\/+$/, "");
     const githubToken = env.GITHUB_TOKEN || env.NEXT_PUBLIC_GITHUB_TOKEN;
 
     const url = `${githubApiUrl}/repos/${githubUsername}/${repoName}/languages`;

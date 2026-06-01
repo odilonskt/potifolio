@@ -1,4 +1,4 @@
-# TODO: Reorganizar componentes src/containers/with Clean Code
+TODO: Reorganizar componentes src/containers/with Clean Code
 
 ## Objetivo
 

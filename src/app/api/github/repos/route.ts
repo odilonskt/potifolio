@@ -70,8 +70,13 @@ async function fetchAllGitHubRepos(
 
 export async function GET() {
   try {
-    const githubUsername = env.NEXT_PUBLIC_GITHUB_USERNAME;
-    const githubApiUrl = env.NEXT_PUBLIC_GITHUB_API_URL.replace(/\/+$/, "");
+    const githubUsername =
+      env.GITHUB_USERNAME || env.NEXT_PUBLIC_GITHUB_USERNAME;
+    if (!githubUsername) {
+      throw new Error("GitHub username is not configured");
+    }
+
+    const githubApiUrl = env.GITHUB_API_URL.replace(/\/+$/, "");
     const githubToken = env.GITHUB_TOKEN || env.NEXT_PUBLIC_GITHUB_TOKEN;
 
     const repos = await fetchAllGitHubRepos(

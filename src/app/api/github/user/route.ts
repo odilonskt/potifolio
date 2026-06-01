@@ -44,7 +44,7 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const githubApiUrl = env.NEXT_PUBLIC_GITHUB_API_URL.replace(/\/+$/, "");
+    const githubApiUrl = env.GITHUB_API_URL.replace(/\/+$/, "");
     const githubToken = env.GITHUB_TOKEN || env.NEXT_PUBLIC_GITHUB_TOKEN;
 
     const url = `${githubApiUrl}/users/${username}`;

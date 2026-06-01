@@ -27,7 +27,6 @@ interface LanguageBreakdown {
   [key: string]: number;
 }
 
-const GITHUB_USERNAME = process.env.NEXT_PUBLIC_GITHUB_USERNAME || "odilonskt";
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000; // ms
 const REQUEST_TIMEOUT = 8000; // ms
