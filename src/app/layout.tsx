@@ -1,10 +1,10 @@
 import Footer from "@/components/footer/page";
+import { GitHubUserProvider } from "@/context/github-user-context";
+import { env } from "@/lib/env";
+import { getGitHubUser } from "@/lib/github";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { GitHubUserProvider } from "@/context/github-user-context";
-import { getGitHubUser } from "@/lib/github";
-import { env } from "@/lib/env";
 
 import type React from "react";
 import "./globals.css";

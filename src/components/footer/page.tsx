@@ -1,9 +1,9 @@
 "use client";
 
+import { useGitHubUserContext } from "@/context/github-user-context";
 import { Github, Instagram, Linkedin } from "lucide-react";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useGitHubUserContext } from "@/context/github-user-context";
 
 // Componente SocialButton (mantido igual)
 function SocialButton({
