@@ -34,11 +34,8 @@ const envSchema = z
       });
     }
     if (!data.GITHUB_TOKEN && !data.NEXT_PUBLIC_GITHUB_TOKEN) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["GITHUB_TOKEN"],
-        message: "GITHUB_TOKEN or NEXT_PUBLIC_GITHUB_TOKEN is required",
-      });
+      // Token is optional for public repository access. Keep it optional
+      // so unauthenticated requests can still succeed for public data.
     }
   });
 
