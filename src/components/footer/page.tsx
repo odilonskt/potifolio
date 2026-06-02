@@ -3,7 +3,7 @@
 import { Github, Instagram, Linkedin } from "lucide-react";
 import Image from "next/image";
 import NextLink from "next/link";
-import { useEffect, useState } from "react";
+import { useGitHubUserContext } from "@/context/github-user-context";
 
 // Componente SocialButton (mantido igual)
 function SocialButton({
@@ -52,26 +52,7 @@ interface GitHubUser {
 }
 
 export default function Footer() {
-  const [githubData, setGithubData] = useState<GitHubUser | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchGitHubData = async () => {
-      try {
-        const response = await fetch("/api/github/user?username=odilonskt");
-        if (response.ok) {
-          const data = await response.json();
-          setGithubData(data);
-        }
-      } catch (error) {
-        console.error("Erro ao buscar dados do GitHub:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchGitHubData();
-  }, []);
+  const { githubData, loading } = useGitHubUserContext();
 
   return (
     <footer

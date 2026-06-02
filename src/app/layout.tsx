@@ -2,6 +2,9 @@ import Footer from "@/components/footer/page";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import { GitHubUserProvider } from "@/context/github-user-context";
+import { getGitHubUser } from "@/lib/github";
+import { env } from "@/lib/env";
 
 import type React from "react";
 import "./globals.css";
@@ -32,14 +35,22 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  let githubUser = null;
+  try {
+    githubUser = await getGitHubUser(env.GITHUB_USERNAME);
+  } catch (error) {
+    console.error("Error fetching GitHub user in layout:", error);
+  }
   return (
     <html lang="pt-BR" className="scroll-smooth dark">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100`}
       >
-        {children}
+        <GitHubUserProvider initialData={githubUser}>
+          {children}
+          <Footer />
+        </GitHubUserProvider>
         <SpeedInsights />
-        <Footer />
       </body>
     </html>
   );

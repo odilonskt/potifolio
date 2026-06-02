@@ -370,7 +370,7 @@ function buildStats(data: {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function Start({ id }: StartProps) {
-  const { githubData, loading } = useGitHubUser(GITHUB_USERNAME);
+  const { githubData, loading } = useGitHubUser();
   const stats = githubData ? buildStats(githubData) : [];
 
   return (
@@ -404,7 +404,7 @@ export default function Start({ id }: StartProps) {
           ) : (
             <>
               <Header />
-              <Bio location={githubData?.location} />
+              <Bio location={githubData?.location ?? undefined} />
               <StatsGrid stats={stats} loading={false} />
               <ActionButtons loading={false} />
             </>
