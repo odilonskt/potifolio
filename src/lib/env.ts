@@ -13,7 +13,6 @@ const envSchema = z
     GITHUB_USERNAME: z.string().min(1),
     NEXT_PUBLIC_GITHUB_API_URL: z.string().url().optional(),
     NEXT_PUBLIC_GITHUB_USERNAME: z.string().min(1).optional(),
-    NEXT_PUBLIC_GITHUB_TOKEN: z.string().min(1).optional(),
     GITHUB_TOKEN: z.string().min(1).optional(),
     FIREBASE_CLIENT_EMAIL: z.string().optional(),
     FIREBASE_PRIVATE_KEY: z.string().optional(),
@@ -32,10 +31,6 @@ const envSchema = z
         path: ["GITHUB_USERNAME"],
         message: "GITHUB_USERNAME is required",
       });
-    }
-    if (!data.GITHUB_TOKEN && !data.NEXT_PUBLIC_GITHUB_TOKEN) {
-      // Token is optional for public repository access. Keep it optional
-      // so unauthenticated requests can still succeed for public data.
     }
   });
 
@@ -57,7 +52,6 @@ export const env = envSchema.parse({
     process.env.GITHUB_USERNAME ?? process.env.NEXT_PUBLIC_GITHUB_USERNAME,
   NEXT_PUBLIC_GITHUB_API_URL: process.env.NEXT_PUBLIC_GITHUB_API_URL,
   NEXT_PUBLIC_GITHUB_USERNAME: process.env.NEXT_PUBLIC_GITHUB_USERNAME,
-  NEXT_PUBLIC_GITHUB_TOKEN: process.env.NEXT_PUBLIC_GITHUB_TOKEN,
   GITHUB_TOKEN: process.env.GITHUB_TOKEN,
   FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
   FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,

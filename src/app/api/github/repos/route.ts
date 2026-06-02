@@ -77,7 +77,7 @@ export async function GET() {
     }
 
     const githubApiUrl = env.GITHUB_API_URL.replace(/\/+$/, "");
-    const githubToken = env.GITHUB_TOKEN || env.NEXT_PUBLIC_GITHUB_TOKEN;
+    const githubToken = env.GITHUB_TOKEN;
 
     const repos = await fetchAllGitHubRepos(
       githubApiUrl,
