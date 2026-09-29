@@ -28,7 +28,8 @@ async function loadPost(params: Props["params"]) {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const post = await loadPost(params);
-  if (!post) return { title: "Post não encontrado | Odilon" };
+  // Chamar notFound() aqui faz robôs de busca (metadados bloqueantes) receberem HTTP 404
+  if (!post) notFound();
 
   return {
     title: `${post.title} | Blog do Odilon`,

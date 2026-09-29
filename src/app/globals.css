@@ -278,6 +278,64 @@
   animation: loading-fade-in 400ms ease-out 200ms both;
 }
 
+/* Loading: o anel gira e o arco estica/encolhe (circunferência r=20 ≈ 126) */
+@keyframes loader-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-dash {
+  0% {
+    stroke-dasharray: 1 126;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90 126;
+    stroke-dashoffset: -30;
+  }
+  100% {
+    stroke-dasharray: 90 126;
+    stroke-dashoffset: -124;
+  }
+}
+
+@keyframes loader-breathe {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.loader-ring {
+  animation: loader-rotate 1.6s linear infinite;
+}
+
+.loader-arc {
+  stroke-dasharray: 90 126; /* estado estático usado com movimento reduzido */
+  animation: loader-dash 1.4s ease-in-out infinite;
+}
+
+.loader-label {
+  animation: loader-breathe 1.8s ease-in-out infinite;
+}
+
+/* Páginas de status: dígitos entram uma única vez, em sequência */
+@keyframes status-digit-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.25em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.status-code span {
+  display: inline-block;
+  animation: status-digit-in 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
 /* Acessibilidade: sem animações decorativas para quem pede movimento reduzido */
 @media (prefers-reduced-motion: reduce) {
   *,
