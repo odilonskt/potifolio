@@ -10,7 +10,7 @@ import { isAdminRequest } from "@/lib/auth/session";
 import { isAdminConfigured } from "@/lib/firebase/admin";
 import { deleteContact, markAsRead, markAsUnread, saveContactForm } from "@/lib/firebase-contacts";
 import { contactFormSchema } from "@/lib/schemas/contact-form";
-import { clientIp, exceedsBodyLimit, isSameOrigin, rateLimit } from "@/lib/security/request-guard";
+import { clientIp, clientIpForStorage, exceedsBodyLimit, isSameOrigin, rateLimit } from "@/lib/security/request-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -63,7 +63,18 @@ async function handleSubmission(request: NextRequest, body: unknown) {
     return json({ success: false, error: "Dados inválidos", details: parsed.error.issues }, 400);
   }
 
-  const result = await saveContactForm(parsed.data);
+  // Segundo limite, por e-mail: quem troca de IP continua limitado (5 por hora)
+  const emailLimit = rateLimit(`contact:email:${parsed.data.email.toLowerCase()}`, 5, 60 * 60 * 1000);
+  if (!emailLimit.allowed) {
+    return json(
+      { success: false, error: "Você já enviou várias mensagens. Aguarde um pouco para enviar outra." },
+      429,
+      { "Retry-After": String(emailLimit.retryAfterSeconds) },
+    );
+  }
+
+  // IP registrado para prevenção de abuso (informado no formulário)
+  const result = await saveContactForm(parsed.data, { ip: clientIpForStorage(request.headers) });
   if (!result.success) return json({ success: false, error: "Erro ao salvar contato" }, 500);
 
   return json({ success: true, id: result.data?.id, message: "Contato salvo com sucesso" });

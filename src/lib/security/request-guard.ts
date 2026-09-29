@@ -4,6 +4,7 @@
 import "server-only";
 
 import { headers } from "next/headers";
+import { isIP } from "node:net";
 
 // ─── Limite de tentativas (janela deslizante, em memória) ─────────────────────
 // Em serverless cada instância tem a própria memória: é uma primeira barreira,
@@ -42,6 +43,15 @@ export function clientIp(requestHeaders: Headers): string {
     requestHeaders.get("x-real-ip")?.trim() ||
     "desconhecido"
   );
+}
+
+/**
+ * IP para gravar no banco: só aceita um IPv4/IPv6 válido (nada de texto arbitrário
+ * vindo de header). Na Vercel, x-forwarded-for é definido pela própria plataforma.
+ */
+export function clientIpForStorage(requestHeaders: Headers): string | undefined {
+  const ip = clientIp(requestHeaders);
+  return isIP(ip) ? ip : undefined;
 }
 
 /** Mesma coisa, para server actions (onde não há Request). */

@@ -25,6 +25,22 @@ import {
   type FormState,
 } from "@/lib/content/schemas";
 import { adminDb } from "@/lib/firebase/admin";
+import { rateLimit } from "@/lib/security/request-guard";
+
+// ─── Limite de tentativas ─────────────────────────────────────────────────────
+// Mesmo com login de admin: protege contra script em loop ou sessão roubada
+// (cada "salvar" pode enviar uma imagem de até 2 MB para o Storage).
+const LIMITS = {
+  save: { limit: 20, windowMs: 60_000 },
+  delete: { limit: 30, windowMs: 60_000 },
+} as const;
+
+const RATE_LIMITED_MESSAGE = "Muitas ações seguidas. Aguarde um minuto e tente de novo.";
+
+function isRateLimited(uid: string, kind: keyof typeof LIMITS): boolean {
+  const { limit, windowMs } = LIMITS[kind];
+  return !rateLimit(`dashboard:${kind}:${uid}`, limit, windowMs).allowed;
+}
 
 const docIdSchema = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/);
 
@@ -61,7 +77,8 @@ function clean<T extends Record<string, unknown>>(data: T): Partial<T> {
 // ─── Trajetória ───────────────────────────────────────────────────────────────
 
 export async function saveJourneyAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  await requireAdmin();
+  const { uid } = await requireAdmin();
+  if (isRateLimited(uid, "save")) return errorState(formData, { message: RATE_LIMITED_MESSAGE });
 
   const parsed = journeyInputSchema.safeParse({
     kind: formData.get("kind"),
@@ -123,7 +140,8 @@ export async function saveJourneyAction(_prev: FormState, formData: FormData): P
 }
 
 export async function deleteJourneyAction(formData: FormData): Promise<void> {
-  await requireAdmin();
+  const { uid } = await requireAdmin();
+  if (isRateLimited(uid, "delete")) return;
   const id = readId(formData);
   if (!id) return;
 
@@ -138,7 +156,8 @@ export async function deleteJourneyAction(formData: FormData): Promise<void> {
 // ─── Blog ─────────────────────────────────────────────────────────────────────
 
 export async function savePostAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  await requireAdmin();
+  const { uid } = await requireAdmin();
+  if (isRateLimited(uid, "save")) return errorState(formData, { message: RATE_LIMITED_MESSAGE });
 
   const parsed = postInputSchema.safeParse({
     title: formData.get("title"),
@@ -200,7 +219,8 @@ export async function savePostAction(_prev: FormState, formData: FormData): Prom
 }
 
 export async function deletePostAction(formData: FormData): Promise<void> {
-  await requireAdmin();
+  const { uid } = await requireAdmin();
+  if (isRateLimited(uid, "delete")) return;
   const id = readId(formData);
   if (!id) return;
 
