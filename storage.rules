@@ -1,0 +1,12 @@
+rules_version = '2';
+
+// Uploads são feitos pelo servidor (Firebase Admin SDK), que ignora estas regras.
+// As imagens publicadas continuam acessíveis pelas URLs com token geradas no upload
+// (getDownloadURL); listar, ler sem token ou enviar arquivos pelo cliente é bloqueado.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
