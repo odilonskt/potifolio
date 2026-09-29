@@ -192,7 +192,9 @@ export function ContactForm() {
         </div>
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-xs text-muted-foreground">Seus dados são usados só para responder este contato.</p>
+          <p className="text-xs text-muted-foreground">
+            Seus dados são usados só para responder este contato. O IP do envio é registrado para prevenir spam e abuso.
+          </p>
           <Button type="submit" size="lg" disabled={isLoading}>
             {isLoading ? (
               <Loader2 data-icon="inline-start" className="animate-spin" aria-hidden="true" />
