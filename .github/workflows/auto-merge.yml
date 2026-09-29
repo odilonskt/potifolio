@@ -1,0 +1,37 @@
+name: Auto-merge
+
+# Ativa o auto-merge do GitHub nos PRs para a main. O merge (squash) só acontece
+# depois que todos os checks obrigatórios da branch protection passarem (CI e Vercel).
+# Para não mesclar um PR específico, adicione a label "no-auto-merge".
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, ready_for_review, labeled, unlabeled]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  enable-auto-merge:
+    name: Ativar auto-merge
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    # Apenas PRs do próprio repositório (nunca de forks), do dono do repo, fora de rascunho
+    if: >-
+      github.event.pull_request.head.repo.full_name == github.repository &&
+      github.event.pull_request.user.login == github.repository_owner &&
+      !github.event.pull_request.draft
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR_URL: ${{ github.event.pull_request.html_url }}
+      HAS_OPT_OUT: ${{ contains(github.event.pull_request.labels.*.name, 'no-auto-merge') }}
+    steps:
+      - name: Ativar auto-merge (squash)
+        if: env.HAS_OPT_OUT == 'false'
+        run: gh pr merge --auto --squash --delete-branch "$PR_URL"
+
+      - name: Desativar auto-merge (label no-auto-merge)
+        if: env.HAS_OPT_OUT == 'true'
+        run: gh pr merge --disable-auto "$PR_URL" || true
