@@ -2,6 +2,7 @@
 
 import { Github, Instagram, Linkedin } from "lucide-react";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
 
 import { useGitHubUserContext } from "@/context/github-user-context";
 import { PROFILE, SOCIAL_LINKS, type SocialName } from "@/lib/content/profile";
@@ -12,10 +13,15 @@ const ICONS: Record<SocialName, typeof Github> = {
   Instagram: Instagram,
 };
 
+// Área administrativa tem layout próprio, sem o rodapé público
+const HIDDEN_ON = ["/dashboard", "/login"];
+
 const monthYear = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" });
 
 export default function Footer() {
   const { githubData } = useGitHubUserContext();
+  const pathname = usePathname();
+  if (HIDDEN_ON.some((prefix) => pathname.startsWith(prefix))) return null;
 
   return (
     // pb extra no celular: espaço para a barra de navegação fixa

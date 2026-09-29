@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 
-const links = [
+const LINKS = [
   { href: "/dashboard", label: "Contatos", icon: Inbox },
   { href: "/dashboard/trajetoria", label: "Trajetória", icon: Route },
   { href: "/dashboard/blog", label: "Blog", icon: Newspaper },
@@ -16,9 +16,9 @@ export function DashboardNav() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Seções do painel" className="border-b border-border bg-card/60 backdrop-blur">
-      <ul className="mx-auto flex max-w-7xl gap-1 overflow-x-auto px-3 py-2 sm:px-6">
-        {links.map(({ href, label, icon: Icon }) => {
+    <nav aria-label="Seções do painel" className="-mx-1 overflow-x-auto">
+      <ul className="flex gap-1 px-1">
+        {LINKS.map(({ href, label, icon: Icon }) => {
           const active = href === "/dashboard" ? pathname === href : pathname.startsWith(href);
           return (
             <li key={href}>
@@ -26,8 +26,9 @@ export function DashboardNav() {
                 href={href}
                 aria-current={active ? "page" : undefined}
                 className={cn(
-                  "inline-flex items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/10 hover:text-foreground focus-visible:outline-2 focus-visible:outline-ring",
-                  active && "bg-secondary text-foreground"
+                  "inline-flex h-9 items-center gap-2 rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground",
+                  "aria-[current=page]:bg-muted aria-[current=page]:text-foreground",
+                  "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
                 )}
               >
                 <Icon className="size-4" aria-hidden="true" />

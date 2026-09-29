@@ -1,23 +1,20 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth/session";
 
+import { PageHeader } from "../../page-header";
 import { PostForm } from "../post-form";
 
 export default async function NewPostPage() {
   await requireAdmin();
 
   return (
-    <main className="mx-auto max-w-4xl p-3 sm:p-6">
+    <>
+      <PageHeader title="Novo post" description="Escreva em Markdown e use a pré-visualização antes de publicar." />
       <Card>
-        <CardHeader>
-          <CardTitle>
-            <h1>Novo post</h1>
-          </CardTitle>
-        </CardHeader>
         <CardContent>
           <PostForm />
         </CardContent>
       </Card>
-    </main>
+    </>
   );
 }

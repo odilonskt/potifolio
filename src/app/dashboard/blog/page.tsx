@@ -19,6 +19,7 @@ import { listAllPostsUncached } from "@/lib/content/repository";
 
 import { deletePostAction } from "../actions";
 import { DeleteButton } from "../form-parts";
+import { PageHeader } from "../page-header";
 
 type Props = { searchParams: Promise<{ salvo?: string }> };
 
@@ -28,16 +29,19 @@ export default async function BlogDashboardPage({ searchParams }: Props) {
   const posts = await listAllPostsUncached();
 
   return (
-    <main className="mx-auto flex max-w-4xl flex-col gap-6 p-3 sm:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-2xl font-bold">Blog</h1>
-        <Button asChild>
-          <Link href="/dashboard/blog/novo">
-            <Plus data-icon="inline-start" aria-hidden="true" />
-            Novo post
-          </Link>
-        </Button>
-      </div>
+    <div className="flex flex-col gap-6">
+      <PageHeader
+        title="Blog"
+        description="Rascunhos ficam só aqui; posts publicados aparecem em /blog."
+        action={
+          <Button asChild>
+            <Link href="/dashboard/blog/novo">
+              <Plus data-icon="inline-start" aria-hidden="true" />
+              Novo post
+            </Link>
+          </Button>
+        }
+      />
 
       <div aria-live="polite">
         {salvo && (
@@ -103,6 +107,6 @@ export default async function BlogDashboardPage({ searchParams }: Props) {
           ))}
         </ul>
       )}
-    </main>
+    </div>
   );
 }

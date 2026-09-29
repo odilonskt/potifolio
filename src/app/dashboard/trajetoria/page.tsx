@@ -5,7 +5,7 @@ import { JourneyLogo } from "@/components/journey/journey-card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth/session";
 import { Empty, EmptyDescription, EmptyHeader, EmptyMedia, EmptyTitle } from "@/components/ui/empty";
 import { formatMonth } from "@/lib/content/dates";
@@ -14,6 +14,7 @@ import { JOURNEY_KIND_LABELS } from "@/lib/content/schemas";
 
 import { deleteJourneyAction } from "../actions";
 import { DeleteButton } from "../form-parts";
+import { PageHeader } from "../page-header";
 import { JourneyForm } from "./journey-form";
 
 type Props = { searchParams: Promise<{ editar?: string; salvo?: string }> };
@@ -28,15 +29,16 @@ export default async function JourneyDashboardPage({ searchParams }: Props) {
   ]);
 
   return (
-    <main className="mx-auto grid max-w-7xl gap-6 p-3 sm:p-6 lg:grid-cols-[1fr_minmax(0,28rem)]">
-      <h1 className="sr-only">Trajetória</h1>
+    <>
+      <PageHeader
+        title="Trajetória"
+        description="Carreira, estudos e certificados exibidos na home. Itens sem data de término aparecem em “Agora”."
+      />
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem]">
 
       <Card className="order-2 lg:order-1">
         <CardHeader>
           <CardTitle>{editing ? `Editando “${editing.title}”` : "Novo item"}</CardTitle>
-          <CardDescription>
-            Carreira, estudos e certificados aparecem na home. Itens sem data de término entram em “Agora”.
-          </CardDescription>
         </CardHeader>
         <CardContent>
           {/* key força o remount ao trocar de item */}
@@ -44,9 +46,9 @@ export default async function JourneyDashboardPage({ searchParams }: Props) {
         </CardContent>
       </Card>
 
-      <section aria-labelledby="journey-list-title" className="order-1 flex flex-col gap-4 lg:order-2">
-        <h2 id="journey-list-title" className="text-lg font-semibold">
-          Itens publicados ({items.length})
+      <section aria-labelledby="journey-list-title" className="order-1 flex flex-col gap-4 self-start lg:order-2">
+        <h2 id="journey-list-title" className="font-semibold text-foreground">
+          Publicados ({items.length})
         </h2>
 
         <div aria-live="polite">
@@ -101,6 +103,7 @@ export default async function JourneyDashboardPage({ searchParams }: Props) {
           </ul>
         )}
       </section>
-    </main>
+      </div>
+    </>
   );
 }

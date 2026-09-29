@@ -1,10 +1,11 @@
 // app/api/contact/route.ts
-import { saveContactForm } from "@/lib/firebase";
 import {
   deleteContact,
   markAsRead,
   markAsUnread,
+  saveContactForm,
 } from "@/lib/firebase-contacts";
+import { isAdminConfigured } from "@/lib/firebase/admin";
 import { contactFormSchema } from "@/lib/schemas/contact-form";
 import { isAdminRequest } from "@/lib/auth/session";
 import { NextRequest, NextResponse } from "next/server";
@@ -18,7 +19,7 @@ export const dynamic = "force-dynamic";
 export async function POST(request: NextRequest) {
   try {
     // Verificar se o Firebase está configurado
-    if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+    if (!isAdminConfigured()) {
       return NextResponse.json(
         {
           success: false,
@@ -119,7 +120,7 @@ export async function POST(request: NextRequest) {
     // Sucesso
     return NextResponse.json({
       success: true,
-      id: result.id || contactData.id,
+      id: result.data?.id,
       message: "Contato salvo com sucesso",
     });
   } catch (error) {
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     // Verificar se o Firebase está configurado
-    if (!process.env.NEXT_PUBLIC_FIREBASE_API_KEY) {
+    if (!isAdminConfigured()) {
       return NextResponse.json(
         {
           success: false,
@@ -182,7 +183,7 @@ export async function DELETE(request: NextRequest) {
 // GET - Verificar status da API
 export async function GET() {
   // Verificação simples de saúde da API
-  const isFirebaseConfigured = !!process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+  const isFirebaseConfigured = isAdminConfigured();
 
   return NextResponse.json(
     {
