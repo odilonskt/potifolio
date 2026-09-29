@@ -1,7 +1,9 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// Headers de privacidade globais
+// Headers de privacidade globais.
+// connect-src 'self': o navegador só fala com este site. Tudo do GitHub passa pelo
+// proxy /api/github (servidor), então o IP de quem visita nunca chega ao GitHub.
 const PRIVACY_HEADERS = {
   "X-DNS-Prefetch-Control": "off",
   "X-Frame-Options": "DENY",
@@ -10,7 +12,7 @@ const PRIVACY_HEADERS = {
   "Referrer-Policy": "no-referrer",
   "Permissions-Policy": "geolocation=(), microphone=(), camera=(), payment=()",
   "Content-Security-Policy":
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.github.com; frame-ancestors 'none';",
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none';",
 };
 
 // Next 16.3+: "proxy" substitui a convenção "middleware"

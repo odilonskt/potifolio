@@ -32,5 +32,19 @@ export async function getGitHubUser(username: string): Promise<GitHubUser> {
     throw new Error(`GitHub user fetch failed: ${response.status}`);
   }
 
-  return response.json();
+  // Só os campos usados pelo site vão para o HTML (evita expor o objeto inteiro da API)
+  const data = (await response.json()) as GitHubUser;
+  return {
+    login: data.login,
+    id: data.id,
+    name: data.name,
+    bio: data.bio,
+    location: data.location,
+    public_repos: data.public_repos,
+    public_gists: data.public_gists,
+    followers: data.followers,
+    following: data.following,
+    created_at: data.created_at,
+    avatar_url: data.avatar_url,
+  };
 }
