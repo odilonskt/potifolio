@@ -82,5 +82,14 @@
     "ui:install": "pnpm shadcn-ui add button card badge separator toggle-group popover tooltip spinner scroll-area carousel aspect-ratio dialog tabs progress"
   },
   "version": "0.1.0",
-  "packageManager": "pnpm@10.19.0"
+  "packageManager": "pnpm@10.19.0",
+  "pnpm": {
+    "overrides": {
+      "protobufjs@^7": "^7.6.1",
+      "websocket-driver@^0.7": "^0.7.5",
+      "minimatch@^9": "^9.0.7",
+      "brace-expansion@^2": "^2.1.4",
+      "browserslist@^4": "^4.28.7"
+    }
+  }
 }
