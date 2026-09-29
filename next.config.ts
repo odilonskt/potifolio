@@ -44,6 +44,12 @@ const nextConfig: NextConfig = {
         hostname: "skillicons.dev",
       },
       {
+        // GIFs da seção "Destaque visual" (servidas pelo proxy de imagens do Next)
+        protocol: "https",
+        hostname: "i.pinimg.com",
+        pathname: "/originals/**",
+      },
+      {
         // Imagens enviadas pelo painel (Firebase Storage)
         protocol: "https",
         hostname: "firebasestorage.googleapis.com",

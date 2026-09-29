@@ -129,6 +129,18 @@ function getThemeTransitionClipPaths(
 
 const subscribeNoop = () => () => {}
 
+/** Desliga todas as transições CSS até a função retornada ser chamada. */
+function suspendTransitions(): () => void {
+  const style = document.createElement("style")
+  style.textContent = "*,*::before,*::after{transition:none!important}"
+  document.head.appendChild(style)
+  return () => {
+    // Força o recálculo com as transições desligadas antes de removê-las
+    void window.getComputedStyle(document.body).opacity
+    style.remove()
+  }
+}
+
 export const AnimatedThemeToggler = ({
   className,
   duration = 400,
@@ -157,9 +169,15 @@ export const AnimatedThemeToggler = ({
       setTheme(nextTheme)
     }
 
+    // Sem isso, os "transition-colors/all" dos componentes animam as cores durante a
+    // troca e a view transition captura um estado intermediário (efeito duplo/piscada)
+    const restoreTransitions = suspendTransitions()
+
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
     if (prefersReducedMotion || typeof document.startViewTransition !== "function") {
       applyTheme()
+      // Duas frames: garante que o novo estado já foi pintado antes de reativar
+      requestAnimationFrame(() => requestAnimationFrame(restoreTransitions))
       return
     }
 
@@ -191,6 +209,7 @@ export const AnimatedThemeToggler = ({
     const cleanup = () => {
       delete root.dataset.magicuiThemeVt
       root.style.removeProperty("--magicui-theme-toggle-vt-duration")
+      restoreTransitions()
     }
 
     const transition = document.startViewTransition(() => {

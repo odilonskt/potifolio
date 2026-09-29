@@ -67,9 +67,9 @@ export function JourneyCard({ item, showKind = false }: { item: JourneyItem; sho
     <MagicCard
       className="rounded-2xl"
       gradientSize={260}
-      gradientColor="rgba(56, 189, 248, 0.08)"
-      gradientFrom="#38bdf8"
-      gradientTo="#818cf8"
+      gradientColor="color-mix(in oklch, var(--brand) 12%, transparent)"
+      gradientFrom="var(--brand)"
+      gradientTo="var(--ring)"
     >
       <article className="flex flex-col gap-4 p-5 sm:flex-row sm:p-6">
         <JourneyLogo item={item} />

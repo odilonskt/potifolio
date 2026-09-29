@@ -6,12 +6,16 @@ export const contactFormSchema = z.object({
     .min(2, "Nome deve ter pelo menos 2 caracteres")
     .max(50, "Nome deve ter no máximo 50 caracteres"),
   email: z.string().email("Email inválido"),
+  // Opcional (minimização de dados, LGPD): só valida o formato quando preenchido
   telefone: z
     .string()
-    .nonempty("Telefone é obrigatório")
-    .regex(/^[0-9+()\s-]+$/, "Telefone inválido")
-    .min(10, "Telefone deve ter pelo menos 10 caracteres")
-    .max(20, "Telefone deve ter no máximo 20 caracteres"),
+    .trim()
+    .max(20, "Telefone deve ter no máximo 20 caracteres")
+    .refine(
+      (value) => value === "" || /^[0-9+()\s-]{10,20}$/.test(value),
+      "Telefone inválido: use de 10 a 20 números, parênteses ou traços"
+    )
+    .default(""),
   message: z
     .string()
     .min(10, "Mensagem deve ter pelo menos 10 caracteres")

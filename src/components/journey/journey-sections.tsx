@@ -1,4 +1,4 @@
-import Titan from "@/components/titan/page";
+import { Section } from "@/components/section/section";
 import { getJourney } from "@/lib/content/repository";
 import type { JourneyItem } from "@/lib/content/schemas";
 
@@ -30,7 +30,7 @@ function NowSection({ items }: { items: JourneyItem[] }) {
     <section
       id="Agora"
       aria-labelledby="agora-heading"
-      className="mx-auto w-full max-w-4xl scroll-mt-24 px-4 py-12 sm:py-16"
+      className="mx-auto w-full max-w-5xl scroll-mt-24 px-4 py-12 sm:px-6"
     >
       <div className="rounded-3xl border border-border bg-card/40 p-6 sm:p-8">
         <h2 id="agora-heading" className="flex items-center gap-3 text-xl font-semibold text-foreground sm:text-2xl">
@@ -62,17 +62,9 @@ export default async function JourneySections() {
     <>
       <NowSection items={items} />
 
-      {/* Titan já renderiza a <section> rotulada pelo título */}
-      <div id="Trajetoria" className="scroll-mt-24 py-12">
-        <Titan
-          id="trajetoria-heading"
-          title="Trajetória"
-          subtitle="Carreira, estudos e certificados"
-        />
-        <div className="mx-auto w-full max-w-3xl px-4 py-8">
-          <JourneyTabs items={items} />
-        </div>
-      </div>
+      <Section id="Trajetoria" title="Trajetória" description="Carreira, estudos e certificados." width="narrow">
+        <JourneyTabs items={items} />
+      </Section>
     </>
   );
 }
