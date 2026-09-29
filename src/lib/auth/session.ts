@@ -42,11 +42,16 @@ export const getSession = cache(async (): Promise<Session> => {
   }
 
   try {
-    const decoded = await adminAuth().verifySessionCookie(sessionCookie, true);
+    const decoded = await (await adminAuth()).verifySessionCookie(sessionCookie, true);
     if (!isAllowedAdmin(decoded.email)) return { authenticated: false };
 
     return { authenticated: true, uid: decoded.uid, email: decoded.email! };
-  } catch {
+  } catch (error) {
+    // Cookie inválido/expirado é normal (erros "auth/..."); o resto é falha de infraestrutura
+    const code = (error as { code?: unknown })?.code;
+    if (typeof code !== "string" || !code.startsWith("auth/")) {
+      console.error("Falha ao verificar sessão:", error);
+    }
     return { authenticated: false };
   }
 });
@@ -63,7 +68,7 @@ export async function isAdminRequest(request: Request): Promise<boolean> {
   if (!header?.startsWith("Bearer ") || !isAdminConfigured()) return false;
 
   try {
-    const decoded = await adminAuth().verifyIdToken(header.slice(7), true);
+    const decoded = await (await adminAuth()).verifyIdToken(header.slice(7), true);
     return isAllowedAdmin(decoded.email);
   } catch {
     return false;

@@ -4,7 +4,6 @@
 import "server-only";
 
 import { cert, getApp, getApps, initializeApp, type App } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
@@ -53,6 +52,14 @@ function getAdminApp(): App {
   );
 }
 
-export const adminAuth = () => getAuth(getAdminApp());
+/**
+ * Carregado sob demanda: firebase-admin/auth depende de "jose" (só ESM). Se o runtime
+ * não conseguir carregá-lo, a falha acontece aqui, dentro do try/catch de quem chama,
+ * em vez de derrubar a página inteira na importação (ex.: /login com erro 500).
+ */
+export async function adminAuth() {
+  const { getAuth } = await import("firebase-admin/auth");
+  return getAuth(getAdminApp());
+}
 export const adminDb = () => getFirestore(getAdminApp());
 export const adminBucket = () => getStorage(getAdminApp()).bucket();

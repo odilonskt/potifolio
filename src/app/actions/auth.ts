@@ -109,12 +109,12 @@ export async function loginAction(
     if ("error" in result) return { message: result.error, success: false };
 
     // Confere o token no servidor antes de emitir a sessão
-    const decoded = await adminAuth().verifyIdToken(result.idToken);
+    const decoded = await (await adminAuth()).verifyIdToken(result.idToken);
     if (!isAllowedAdmin(decoded.email)) {
       return { message: INVALID_CREDENTIALS, success: false };
     }
 
-    const sessionCookie = await adminAuth().createSessionCookie(
+    const sessionCookie = await (await adminAuth()).createSessionCookie(
       result.idToken,
       { expiresIn: SESSION_MAX_AGE_SECONDS * 1000 }
     );
@@ -133,7 +133,7 @@ export async function loginAction(
     return { message: "Login realizado com sucesso!", success: true };
   } catch (error) {
     console.error("Erro ao criar sessão:", error);
-    return { message: "Erro ao fazer login", success: false };
+    return { message: "Não foi possível entrar agora. Tente novamente em alguns instantes.", success: false };
   }
 }
 
@@ -145,8 +145,8 @@ export async function logoutAction() {
   // Revoga os refresh tokens para invalidar a sessão em todos os dispositivos
   if (sessionCookie && isAdminConfigured()) {
     try {
-      const decoded = await adminAuth().verifySessionCookie(sessionCookie);
-      await adminAuth().revokeRefreshTokens(decoded.sub);
+      const decoded = await (await adminAuth()).verifySessionCookie(sessionCookie);
+      await (await adminAuth()).revokeRefreshTokens(decoded.sub);
     } catch {
       // Cookie já inválido/expirado: nada a revogar
     }

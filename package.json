@@ -91,5 +91,8 @@
       "brace-expansion@^2": "^2.1.4",
       "browserslist@^4": "^4.28.7"
     }
+  },
+  "engines": {
+    "node": "24.x"
   }
 }
