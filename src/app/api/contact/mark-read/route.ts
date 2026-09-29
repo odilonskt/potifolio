@@ -1,26 +1,19 @@
-// app/api/contacts/mark-read/route.ts
-import { verifyIdToken } from "@/lib/firebase-auth";
+// app/api/contact/mark-read/route.ts
+import { isAdminRequest } from "@/lib/auth/session";
 import { markAsRead } from "@/lib/firebase-contacts";
 import { NextRequest, NextResponse } from "next/server";
 
+const ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
+
 export async function POST(request: NextRequest) {
   try {
-    // Verificar autenticação
-    const authHeader = request.headers.get("authorization");
-    if (!authHeader?.startsWith("Bearer ")) {
+    if (!(await isAdminRequest(request))) {
       return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
     }
 
-    const token = authHeader.split(" ")[1];
-    const verification = await verifyIdToken(token);
+    const { id } = await request.json();
 
-    if (!verification.valid) {
-      return NextResponse.json({ error: "Token inválido" }, { status: 401 });
-    }
-
-    const body = await request.json();
-    const { id } = body;
-    if (!id) {
+    if (typeof id !== "string" || !ID_PATTERN.test(id)) {
       return NextResponse.json(
         { error: "ID do contato é obrigatório" },
         { status: 400 }
@@ -30,11 +23,11 @@ export async function POST(request: NextRequest) {
     const result = await markAsRead(id);
 
     if (!result.success) {
-      return NextResponse.json({ error: result.error }, { status: 500 });
+      return NextResponse.json({ error: "Erro ao atualizar contato" }, { status: 500 });
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       { error: "Erro interno do servidor" },
       { status: 500 }

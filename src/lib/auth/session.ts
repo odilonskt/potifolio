@@ -50,6 +50,25 @@ export const getSession = cache(async (): Promise<Session> => {
   }
 });
 
+/**
+ * Autorização para Route Handlers (/api/*): aceita o cookie de sessão do painel
+ * ou um header "Authorization: Bearer <Firebase ID token>" de um e-mail admin.
+ */
+export async function isAdminRequest(request: Request): Promise<boolean> {
+  const session = await getSession();
+  if (session.authenticated) return true;
+
+  const header = request.headers.get("authorization");
+  if (!header?.startsWith("Bearer ") || !isAdminConfigured()) return false;
+
+  try {
+    const decoded = await adminAuth().verifyIdToken(header.slice(7), true);
+    return isAllowedAdmin(decoded.email);
+  } catch {
+    return false;
+  }
+}
+
 /** Use no topo de páginas e server actions do painel. */
 export async function requireAdmin(): Promise<{ uid: string; email: string }> {
   const session = await getSession();

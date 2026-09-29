@@ -6,7 +6,10 @@ import {
   markAsUnread,
 } from "@/lib/firebase-contacts";
 import { contactFormSchema } from "@/lib/schemas/contact-form";
+import { isAdminRequest } from "@/lib/auth/session";
 import { NextRequest, NextResponse } from "next/server";
+
+const ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
 
 // Marcar como dinâmico para não ser otimizado durante build
 export const dynamic = "force-dynamic";
@@ -39,6 +42,22 @@ export async function POST(request: NextRequest) {
     }
 
     const action = request.nextUrl.searchParams.get("action");
+
+    // Ações do painel exigem admin; o envio do formulário de contato continua público
+    if (action === "mark-read" || action === "mark-unread") {
+      if (!(await isAdminRequest(request))) {
+        return NextResponse.json(
+          { success: false, error: "Não autorizado" },
+          { status: 401 }
+        );
+      }
+      if (typeof body?.id !== "string" || !ID_PATTERN.test(body.id)) {
+        return NextResponse.json(
+          { success: false, error: "ID obrigatório" },
+          { status: 400 }
+        );
+      }
+    }
 
     // Ação: marcar como lido
     if (action === "mark-read") {
@@ -91,7 +110,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           success: false,
-          error: result.error || "Erro ao salvar contato",
+          error: "Erro ao salvar contato",
         },
         { status: 500 }
       );
@@ -106,17 +125,11 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Erro na API de contato:", error);
 
-    // Extrair a mensagem de erro de forma segura
-    let errorMessage = "Erro interno do servidor";
-
-    if (error instanceof Error) {
-      errorMessage = error.message;
-    }
-
+    // Mensagem genérica: detalhes internos ficam só no log do servidor
     return NextResponse.json(
       {
         success: false,
-        error: errorMessage,
+        error: "Erro interno do servidor",
       },
       { status: 500 }
     );
@@ -137,10 +150,17 @@ export async function DELETE(request: NextRequest) {
       );
     }
 
+    if (!(await isAdminRequest(request))) {
+      return NextResponse.json(
+        { success: false, error: "Não autorizado" },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const id = searchParams.get("id");
 
-    if (!id) {
+    if (!id || !ID_PATTERN.test(id)) {
       return NextResponse.json(
         { success: false, error: "ID obrigatório" },
         { status: 400 }

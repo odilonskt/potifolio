@@ -121,36 +121,13 @@ export function getCurrentUser(): User | null {
   return auth.currentUser;
 }
 
-// Função para verificar token no servidor
-export async function verifyIdToken(
-  token: string
-): Promise<TokenVerificationResult> {
-  try {
-    // Implemente a verificação real com Firebase Admin SDK
-    // Exemplo de implementação:
-    // const admin = await import("firebase-admin");
-    // const decodedToken = await admin.auth().verifyIdToken(token);
-
-    return {
-      valid: true,
-      uid: "user-id-example",
-    };
-  } catch (error: unknown) {
-    const errorMessage =
-      error instanceof Error ? error.message : "Token inválido";
-
-    return {
-      valid: false,
-      error: errorMessage,
-    };
-  }
-}
+// Verificação de token no servidor: use isAdminRequest/getSession em @/lib/auth/session
+// (Firebase Admin SDK). O antigo verifyIdToken aceitava qualquer token e foi removido.
 
 export interface AuthService {
   login: (email: string, password: string) => Promise<LoginResult>;
   logout: () => Promise<LogoutResult>;
   getCurrentUser: () => User | null;
-  verifyToken: (token: string) => Promise<TokenVerificationResult>;
 }
 
 // Implementação opcional como serviço
@@ -158,7 +135,6 @@ export const authService: AuthService = {
   login: loginUser,
   logout: logoutUser,
   getCurrentUser: getCurrentUser,
-  verifyToken: verifyIdToken,
 };
 
 export function validateCredentials(credentials: LoginCredentials): {
