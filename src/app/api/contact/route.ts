@@ -63,6 +63,16 @@ async function handleSubmission(request: NextRequest, body: unknown) {
     return json({ success: false, error: "Dados inválidos", details: parsed.error.issues }, 400);
   }
 
+  // Segundo limite, por e-mail: quem troca de IP continua limitado (5 por hora)
+  const emailLimit = rateLimit(`contact:email:${parsed.data.email.toLowerCase()}`, 5, 60 * 60 * 1000);
+  if (!emailLimit.allowed) {
+    return json(
+      { success: false, error: "Você já enviou várias mensagens. Aguarde um pouco para enviar outra." },
+      429,
+      { "Retry-After": String(emailLimit.retryAfterSeconds) },
+    );
+  }
+
   const result = await saveContactForm(parsed.data);
   if (!result.success) return json({ success: false, error: "Erro ao salvar contato" }, 500);
 
