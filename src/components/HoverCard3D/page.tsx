@@ -2,28 +2,31 @@ import Image from "next/image";
 
 interface Hover3DCardProps {
   src: string;
+  /** Vazio quando a imagem é só decorativa */
   alt: string;
 }
 
+/**
+ * Card com inclinação 3D no hover (componente hover-3d do daisyUI).
+ * A imagem passa pelo /_next/image: o navegador do visitante não acessa o host externo.
+ */
 export default function Hover3DCard({ src, alt }: Hover3DCardProps) {
   return (
-    <div className="hover-3d w-full h-full">
-      {/* Conteúdo */}
-      <figure className="w-full h-full aspect-video rounded-xl xs:rounded-2xl overflow-hidden shadow-lg hover:shadow-2xl transition-shadow duration-300">
+    <div className="hover-3d size-full">
+      <figure className="size-full overflow-hidden rounded-2xl border border-border">
         <Image
           src={src}
           alt={alt}
           width={600}
           height={400}
-          className="rounded-xl xs:rounded-2xl object-cover w-full h-full"
-          priority
-          unoptimized
+          sizes="(min-width: 1024px) 480px, 100vw"
+          className="size-full object-cover"
         />
       </figure>
 
-      {/* 8 divs obrigatórias para o efeito 3D */}
+      {/* 8 divs exigidas pelo hover-3d do daisyUI (áreas de detecção do mouse) */}
       {Array.from({ length: 8 }).map((_, i) => (
-        <div key={i} />
+        <div key={i} aria-hidden="true" />
       ))}
     </div>
   );

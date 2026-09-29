@@ -1,4 +1,5 @@
 import Footer from "@/components/footer/page";
+import { ThemeProvider } from "@/components/theme/theme-provider";
 import { GitHubUserProvider } from "@/context/github-user-context";
 import { env } from "@/lib/env";
 import { getGitHubUser } from "@/lib/github";
@@ -42,14 +43,23 @@ export default async function RootLayout({
     console.error("Error fetching GitHub user in layout:", error);
   }
   return (
-    <html lang="pt-BR" className="scroll-smooth dark">
+    // suppressHydrationWarning: o next-themes ajusta class/data-theme do <html> antes da hidratação
+    <html lang="pt-BR" className="scroll-smooth" data-scroll-behavior="smooth" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-slate-950 text-slate-100`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased flex min-h-dvh flex-col bg-background text-foreground`}
       >
-        <GitHubUserProvider initialData={githubUser}>
-          {children}
-          <Footer />
-        </GitHubUserProvider>
+        <a
+          href="#conteudo"
+          className="sr-only focus:not-sr-only focus:fixed focus:top-3 focus:left-3 focus:z-[100] focus:rounded-md focus:bg-primary focus:px-4 focus:py-2 focus:text-primary-foreground"
+        >
+          Pular para o conteúdo
+        </a>
+        <ThemeProvider>
+          <GitHubUserProvider initialData={githubUser}>
+            <div className="flex-1">{children}</div>
+            <Footer />
+          </GitHubUserProvider>
+        </ThemeProvider>
         <SpeedInsights />
       </body>
     </html>

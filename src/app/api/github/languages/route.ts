@@ -50,7 +50,7 @@ export async function GET(request: NextRequest) {
     }
 
     const githubUsername =
-      env.GITHUB_USERNAME || env.NEXT_PUBLIC_GITHUB_USERNAME;
+      env.GITHUB_USERNAME;
     if (!githubUsername) {
       return NextResponse.json(
         { error: "GitHub username is not configured" },

@@ -1,150 +1,66 @@
-.scrollContainer {
-  position: relative;
+/* Faixa de tecnologias: cores só por tokens do tema, sem valores fixos */
+
+.viewport {
+  display: flex;
   overflow: hidden;
-  padding: 1.5rem;
-  border-radius: 1.5rem;
-
-  /* Enhanced neon glass effect */
-  background: linear-gradient(
-    135deg,
-    rgba(15, 23, 42, 0.4),
-    rgba(30, 41, 59, 0.3)
-  );
-  -webkit-backdrop-filter: blur(16px);
-  backdrop-filter: blur(16px);
-  border: 1.5px solid rgba(0, 229, 255, 0.2);
-  box-shadow:
-    0 0 30px rgba(0, 229, 255, 0.1),
-    0 0 60px rgba(217, 70, 239, 0.05),
-    inset 0 0 30px rgba(0, 229, 255, 0.05);
-  transition: all 0.3s ease;
-
-  /* Responsividade */
-  margin: 0 1rem;
+  border-block: 1px solid var(--border);
+  padding-block: 1.75rem;
+  /* Esmaece as bordas sem sobrepor uma cor fixa: funciona em qualquer tema */
+  mask-image: linear-gradient(to right, transparent, #000 10%, #000 90%, transparent);
 }
 
-.scrollContainer:hover {
-  border-color: rgba(0, 229, 255, 0.4);
-  box-shadow:
-    0 0 40px rgba(0, 229, 255, 0.2),
-    0 0 80px rgba(217, 70, 239, 0.1),
-    inset 0 0 40px rgba(0, 229, 255, 0.08);
-}
-
-/* blur laterais - ajuste responsivo */
-.leftBlur,
-.rightBlur {
-  position: absolute;
-  top: 0;
-  height: 100%;
-  z-index: 5;
-  pointer-events: none;
-}
-
-.leftBlur {
-  left: 0;
-  background: linear-gradient(to right, rgba(12, 10, 9, 1), transparent);
-}
-
-.rightBlur {
-  right: 0;
-  background: linear-gradient(to left, rgba(12, 10, 9, 1), transparent);
-}
-
-/* Ajuste de largura do blur para diferentes telas */
-@media (max-width: 640px) {
-  .leftBlur,
-  .rightBlur {
-    width: 40px;
-  }
-}
-
-@media (min-width: 641px) and (max-width: 768px) {
-  .leftBlur,
-  .rightBlur {
-    width: 60px;
-  }
-}
-
-@media (min-width: 769px) {
-  .leftBlur,
-  .rightBlur {
-    width: 90px;
-  }
-}
-
-.scrollWrapper {
+.track {
   display: flex;
-  width: max-content;
+  flex-shrink: 0;
+  gap: 3rem;
+  padding-inline-end: 3rem;
+  animation: marquee 40s linear infinite;
 }
 
-.scrollContent {
+.item {
   display: flex;
-  gap: 2rem;
-  animation: infinite-scroll 23s linear infinite;
+  flex-shrink: 0;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--muted-foreground);
+  transition: color 150ms ease;
 }
 
-/* Ajuste de gap para diferentes telas */
-@media (max-width: 640px) {
-  .scrollContent {
-    gap: 1.5rem;
-  }
+.item:hover {
+  color: var(--foreground);
 }
 
-@media (min-width: 641px) and (max-width: 768px) {
-  .scrollContent {
-    gap: 2rem;
-  }
-}
-
-@media (min-width: 769px) {
-  .scrollContent {
-    gap: 4.5rem;
-  }
-}
-
-.scrollContent:hover {
+/* Pausa com mouse, com foco dentro da faixa ou pelo botão */
+.viewport:hover .track,
+.viewport:focus-within .track,
+.viewport[data-paused] .track {
   animation-play-state: paused;
 }
 
-@keyframes infinite-scroll {
-  0% {
-    transform: translateX(0);
-  }
-  100% {
-    transform: translateX(-50%);
+@keyframes marquee {
+  to {
+    transform: translateX(-100%);
   }
 }
 
-.techItem {
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition:
-    transform 0.35s ease,
-    filter 0.3s ease;
-  display: flex;
-  flex-direction: column;
-  filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
-}
-
-.techItem:hover {
-  transform: scale(1.3);
-  filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.25));
-}
-
-/* Ajustes responsivos para a seção container */
-@media (max-width: 640px) {
-  .scrollContainer {
-    padding: 0.75rem;
-    border-radius: 0.75rem;
+/* Movimento reduzido: grade estática, sem cópia e sem botão de pausa */
+@media (prefers-reduced-motion: reduce) {
+  .viewport {
+    mask-image: none;
   }
-}
 
-/* Ajuste de velocidade da animação para telas menores */
-@media (max-width: 768px) {
-  .scrollContent {
-    animation-duration: 40s;
+  .track {
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    padding-inline-end: 0;
+    row-gap: 2rem;
+    animation: none;
+  }
+
+  .duplicate,
+  .toggle {
+    display: none;
   }
 }

@@ -1,4 +1,8 @@
 "use client";
+
+import { Pause, Play } from "lucide-react";
+import { useState } from "react";
+import type { IconType } from "react-icons";
 import { IoLogoFirebase } from "react-icons/io5";
 import {
   SiCss3,
@@ -15,65 +19,77 @@ import {
   SiTypescript,
 } from "react-icons/si";
 import { TbApi } from "react-icons/tb";
+
+import { Button } from "@/components/ui/button";
+import { TECHNOLOGIES, type Technology } from "@/lib/content/profile";
+import { cn } from "@/lib/utils";
+
 import styles from "./InfinityScroll.module.css";
 
-const technologies = [
-  { icon: SiNextdotjs, name: "Next.js", color: "text-white dark:text-white" },
-  { icon: SiNestjs, name: "NestJS", color: "text-red-500" },
-  { icon: SiTypescript, name: "TypeScript", color: "text-blue-500" },
-  { icon: SiJavascript, name: "JavaScript", color: "text-yellow-400" },
-  { icon: SiReact, name: "React", color: "text-cyan-400" },
-  { icon: SiNodedotjs, name: "Node.js", color: "text-green-500" },
-  { icon: SiDocker, name: "Docker", color: "text-blue-400" },
-  { icon: SiPostgresql, name: "PostgreSQL", color: "text-blue-600" },
-  { icon: SiTailwindcss, name: "Tailwind", color: "text-cyan-400" },
-  { icon: SiGit, name: "Git", color: "text-orange-500" },
-  { icon: TbApi, name: "RESTful", color: "text-green-500" },
-  { icon: SiCss3, name: "CSS3", color: "text-blue-600" },
-  { icon: SiExpress, name: "Express", color: "text-gray-700" },
-  { icon: IoLogoFirebase, name: "Firebase", color: "text-yellow-400" },
-];
+const ICONS: Record<Technology, IconType> = {
+  "Next.js": SiNextdotjs,
+  React: SiReact,
+  TypeScript: SiTypescript,
+  JavaScript: SiJavascript,
+  "Node.js": SiNodedotjs,
+  NestJS: SiNestjs,
+  Express: SiExpress,
+  PostgreSQL: SiPostgresql,
+  Docker: SiDocker,
+  Tailwind: SiTailwindcss,
+  Git: SiGit,
+  Firebase: IoLogoFirebase,
+  CSS3: SiCss3,
+  RESTful: TbApi,
+};
 
-interface InfinityScrollAnimationProps {
-  id?: string;
-}
-export default function InfinityScrollAnimation({
-  id,
-}: InfinityScrollAnimationProps) {
+function TechList({ hidden = false }: { hidden?: boolean }) {
   return (
-    <>
-      <section
-        className=" flex flex-col items-center justify-center max-w-6xl mx-auto p-4"
-        id="Tecnologia"
-      >
-        <div className="w-full max-w-6xl mx-auto" id={id}>
-          <div className={styles.scrollContainer} suppressHydrationWarning>
-            {/* efeito blur lateral */}
-            <div className={styles.leftBlur}></div>
-            <div className={styles.rightBlur}></div>
+    <ul
+      className={cn(styles.track, hidden && styles.duplicate)}
+      // A cópia existe só para o loop contínuo: fica fora da árvore de acessibilidade
+      aria-hidden={hidden || undefined}
+      aria-label={hidden ? undefined : "Tecnologias"}
+    >
+      {TECHNOLOGIES.map((name) => {
+        const Icon = ICONS[name];
+        return (
+          <li key={name} className={styles.item}>
+            <Icon className="size-8 sm:size-10" aria-hidden="true" />
+            <span className="text-sm">{name}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
 
-            <div className={styles.scrollWrapper}>
-              <div className={styles.scrollContent}>
-                {[
-                  ...technologies,
-                  ...technologies,
-                  ...technologies,
-                  ...technologies,
-                ].map((tech, index) => (
-                  <div key={index} className={styles.techItem}>
-                    <tech.icon
-                      className={`text-3xl md:text-4xl lg:text-5xl ${tech.color}`}
-                    />
-                    <span className="mt-1 md:mt-2 text-white text-xs md:text-sm">
-                      {tech.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </>
+/**
+ * Faixa de tecnologias em rolagem contínua.
+ * Acessibilidade (WCAG 2.2.2): pode ser pausada por botão, pausa com mouse/foco e
+ * vira uma grade estática com "movimento reduzido".
+ */
+export default function TechMarquee() {
+  const [paused, setPaused] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className={styles.viewport} data-paused={paused || undefined}>
+        <TechList />
+        <TechList hidden />
+      </div>
+
+      <Button
+        type="button"
+        variant="ghost"
+        size="sm"
+        onClick={() => setPaused((value) => !value)}
+        aria-pressed={paused}
+        className={cn("self-end", styles.toggle)}
+      >
+        {paused ? <Play data-icon="inline-start" aria-hidden="true" /> : <Pause data-icon="inline-start" aria-hidden="true" />}
+        {paused ? "Retomar animação" : "Pausar animação"}
+      </Button>
+    </div>
   );
 }

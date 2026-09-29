@@ -1,7 +1,10 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 @import "./neon-theme.css";
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: light --default, dark --prefersdark;
+}
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -39,45 +42,52 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+  --color-brand: var(--brand);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
 }
 
+/*
+ * Tema claro (padrão) e escuro (.dark). O next-themes aplica a classe "dark" e o
+ * atributo data-theme (usado pelo daisyUI) no <html>.
+ * Contraste verificado para WCAG AA: texto normal >= 4.5:1 sobre background/card.
+ */
 :root {
   --radius: 0.625rem;
-  --background: oklch(0.08 0 0);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.12 0 0);
-  --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.12 0 0);
-  --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.3 0.3 262);
-  --primary-foreground: oklch(0.98 0 0);
-  --secondary: oklch(0.15 0 0);
-  --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.15 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.6 0.3 262);
-  --accent-foreground: oklch(0.08 0 0);
-  --destructive: oklch(0.6 0.2 25);
-  --border: oklch(0.2 0 0);
-  --input: oklch(0.15 0 0);
-  --ring: oklch(0.6 0.3 262);
-  --chart-1: oklch(0.6 0.3 262);
-  --chart-2: oklch(0.6 0.3 200);
-  --chart-3: oklch(0.6 0.3 40);
-  --chart-4: oklch(0.6 0.3 120);
-  --chart-5: oklch(0.6 0.3 300);
-  --sidebar: oklch(0.1 0 0);
-  --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.6 0.3 262);
-  --sidebar-primary-foreground: oklch(0.98 0 0);
-  --sidebar-accent: oklch(0.2 0 0);
-  --sidebar-accent-foreground: oklch(0.98 0 0);
-  --sidebar-border: oklch(0.2 0 0);
-  --sidebar-ring: oklch(0.6 0.3 262);
+  --background: oklch(0.985 0.004 255);
+  --foreground: oklch(0.21 0.03 262);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.03 262);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.21 0.03 262);
+  --primary: oklch(0.48 0.2 262);
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.95 0.008 255);
+  --secondary-foreground: oklch(0.25 0.03 262);
+  --muted: oklch(0.95 0.008 255);
+  --muted-foreground: oklch(0.46 0.025 262);
+  --accent: oklch(0.93 0.03 262);
+  --accent-foreground: oklch(0.3 0.12 262);
+  --destructive: oklch(0.53 0.2 27);
+  --border: oklch(0.9 0.01 255);
+  --input: oklch(0.64 0.015 255);
+  --ring: oklch(0.55 0.2 262);
+  --brand: oklch(0.47 0.13 238);
+  --chart-1: oklch(0.55 0.22 262);
+  --chart-2: oklch(0.55 0.15 200);
+  --chart-3: oklch(0.6 0.18 40);
+  --chart-4: oklch(0.55 0.15 150);
+  --chart-5: oklch(0.55 0.2 300);
+  --sidebar: oklch(0.97 0.005 255);
+  --sidebar-foreground: oklch(0.21 0.03 262);
+  --sidebar-primary: oklch(0.48 0.2 262);
+  --sidebar-primary-foreground: oklch(0.99 0 0);
+  --sidebar-accent: oklch(0.93 0.03 262);
+  --sidebar-accent-foreground: oklch(0.3 0.12 262);
+  --sidebar-border: oklch(0.9 0.01 255);
+  --sidebar-ring: oklch(0.55 0.2 262);
   --neon-cyan: #00ffff;
   --neon-purple: #7c3aed;
   --neon-blue: #0ea5e9;
@@ -92,31 +102,32 @@
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.12 0 0);
   --popover-foreground: oklch(0.98 0 0);
-  --primary: oklch(0.3 0.3 262);
+  --primary: oklch(0.52 0.19 262);
   --primary-foreground: oklch(0.98 0 0);
   --secondary: oklch(0.15 0 0);
   --secondary-foreground: oklch(0.98 0 0);
   --muted: oklch(0.15 0 0);
-  --muted-foreground: oklch(0.5 0 0);
-  --accent: oklch(0.6 0.3 262);
-  --accent-foreground: oklch(0.08 0 0);
+  --muted-foreground: oklch(0.72 0 0);
+  --accent: oklch(0.24 0.01 262);
+  --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.6 0.2 25);
   --border: oklch(0.2 0 0);
-  --input: oklch(0.15 0 0);
-  --ring: oklch(0.6 0.3 262);
-  --chart-1: oklch(0.6 0.3 262);
+  --input: oklch(0.5 0 0);
+  --ring: oklch(0.68 0.16 262);
+  --brand: oklch(0.85 0.09 230);
+  --chart-1: oklch(0.62 0.2 262);
   --chart-2: oklch(0.6 0.3 200);
   --chart-3: oklch(0.6 0.3 40);
   --chart-4: oklch(0.6 0.3 120);
   --chart-5: oklch(0.6 0.3 300);
   --sidebar: oklch(0.1 0 0);
   --sidebar-foreground: oklch(0.98 0 0);
-  --sidebar-primary: oklch(0.6 0.3 262);
+  --sidebar-primary: oklch(0.52 0.19 262);
   --sidebar-primary-foreground: oklch(0.98 0 0);
   --sidebar-accent: oklch(0.2 0 0);
   --sidebar-accent-foreground: oklch(0.98 0 0);
   --sidebar-border: oklch(0.2 0 0);
-  --sidebar-ring: oklch(0.6 0.3 262);
+  --sidebar-ring: oklch(0.68 0.16 262);
   --neon-cyan: #00ffff;
   --neon-purple: #7c3aed;
   --neon-blue: #0ea5e9;
@@ -249,4 +260,90 @@
 ::view-transition-old(root), ::view-transition-new(root) {
     animation: none;
     mix-blend-mode: normal;
+}
+
+/* Loading: surge suavemente após um pequeno atraso para não piscar em navegações rápidas */
+@keyframes loading-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.loading-fade {
+  animation: loading-fade-in 400ms ease-out 200ms both;
+}
+
+/* Loading: o anel gira e o arco estica/encolhe (circunferência r=20 ≈ 126) */
+@keyframes loader-rotate {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes loader-dash {
+  0% {
+    stroke-dasharray: 1 126;
+    stroke-dashoffset: 0;
+  }
+  50% {
+    stroke-dasharray: 90 126;
+    stroke-dashoffset: -30;
+  }
+  100% {
+    stroke-dasharray: 90 126;
+    stroke-dashoffset: -124;
+  }
+}
+
+@keyframes loader-breathe {
+  50% {
+    opacity: 0.55;
+  }
+}
+
+.loader-ring {
+  animation: loader-rotate 1.6s linear infinite;
+}
+
+.loader-arc {
+  stroke-dasharray: 90 126; /* estado estático usado com movimento reduzido */
+  animation: loader-dash 1.4s ease-in-out infinite;
+}
+
+.loader-label {
+  animation: loader-breathe 1.8s ease-in-out infinite;
+}
+
+/* Páginas de status: dígitos entram uma única vez, em sequência */
+@keyframes status-digit-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.25em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.status-code span {
+  display: inline-block;
+  animation: status-digit-in 500ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+/* Acessibilidade: sem animações decorativas para quem pede movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

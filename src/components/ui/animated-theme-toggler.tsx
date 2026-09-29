@@ -1,7 +1,8 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useCallback, useRef, useSyncExternalStore } from "react"
 import { Moon, Sun } from "lucide-react"
+import { useTheme } from "next-themes"
 import { flushSync } from "react-dom"
 
 import { cn } from "@/lib/utils"
@@ -126,6 +127,20 @@ function getThemeTransitionClipPaths(
   }
 }
 
+const subscribeNoop = () => () => {}
+
+/** Desliga todas as transições CSS até a função retornada ser chamada. */
+function suspendTransitions(): () => void {
+  const style = document.createElement("style")
+  style.textContent = "*,*::before,*::after{transition:none!important}"
+  document.head.appendChild(style)
+  return () => {
+    // Força o recálculo com as transições desligadas antes de removê-las
+    void window.getComputedStyle(document.body).opacity
+    style.remove()
+  }
+}
+
 export const AnimatedThemeToggler = ({
   className,
   duration = 400,
@@ -134,28 +149,37 @@ export const AnimatedThemeToggler = ({
   ...props
 }: AnimatedThemeTogglerProps) => {
   const shape = variant ?? "circle"
-  const [isDark, setIsDark] = useState(false)
+  const { resolvedTheme, setTheme } = useTheme()
   const buttonRef = useRef<HTMLButtonElement>(null)
-
-  useEffect(() => {
-    const updateTheme = () => {
-      setIsDark(document.documentElement.classList.contains("dark"))
-    }
-
-    updateTheme()
-
-    const observer = new MutationObserver(updateTheme)
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["class"],
-    })
-
-    return () => observer.disconnect()
-  }, [])
+  // O tema só é conhecido no cliente: antes da hidratação renderizamos um estado neutro
+  const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false)
+  const isDark = mounted && resolvedTheme === "dark"
 
   const toggleTheme = useCallback(() => {
     const button = buttonRef.current
     if (!button) return
+
+    const nextTheme = isDark ? "light" : "dark"
+    const applyTheme = () => {
+      // Aplica já no DOM (para a view transition capturar o estado novo) e persiste via next-themes
+      const root = document.documentElement
+      root.classList.toggle("dark", nextTheme === "dark")
+      root.dataset.theme = nextTheme
+      root.style.colorScheme = nextTheme
+      setTheme(nextTheme)
+    }
+
+    // Sem isso, os "transition-colors/all" dos componentes animam as cores durante a
+    // troca e a view transition captura um estado intermediário (efeito duplo/piscada)
+    const restoreTransitions = suspendTransitions()
+
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    if (prefersReducedMotion || typeof document.startViewTransition !== "function") {
+      applyTheme()
+      // Duas frames: garante que o novo estado já foi pintado antes de reativar
+      requestAnimationFrame(() => requestAnimationFrame(restoreTransitions))
+      return
+    }
 
     const viewportWidth = window.visualViewport?.width ?? window.innerWidth
     const viewportHeight = window.visualViewport?.height ?? window.innerHeight
@@ -176,18 +200,6 @@ export const AnimatedThemeToggler = ({
       Math.max(y, viewportHeight - y)
     )
 
-    const applyTheme = () => {
-      const newTheme = !isDark
-      setIsDark(newTheme)
-      document.documentElement.classList.toggle("dark")
-      localStorage.setItem("theme", newTheme ? "dark" : "light")
-    }
-
-    if (typeof document.startViewTransition !== "function") {
-      applyTheme()
-      return
-    }
-
     const root = document.documentElement
     root.dataset.magicuiThemeVt = "active"
     root.style.setProperty(
@@ -197,6 +209,7 @@ export const AnimatedThemeToggler = ({
     const cleanup = () => {
       delete root.dataset.magicuiThemeVt
       root.style.removeProperty("--magicui-theme-toggle-vt-duration")
+      restoreTransitions()
     }
 
     const transition = document.startViewTransition(() => {
@@ -233,18 +246,21 @@ export const AnimatedThemeToggler = ({
         )
       })
     }
-  }, [shape, fromCenter, duration, isDark])
+  }, [shape, fromCenter, duration, isDark, setTheme])
 
+  // Botão de alternância acessível: nome fixo + aria-pressed indica o estado
   return (
     <button
       type="button"
       ref={buttonRef}
       onClick={toggleTheme}
+      aria-label="Tema escuro"
+      aria-pressed={mounted ? isDark : undefined}
+      title={isDark ? "Mudar para o tema claro" : "Mudar para o tema escuro"}
       className={cn(className)}
       {...props}
     >
-      {isDark ? <Sun /> : <Moon />}
-      <span className="sr-only">Toggle theme</span>
+      {isDark ? <Sun aria-hidden="true" /> : <Moon aria-hidden="true" />}
     </button>
   )
 }

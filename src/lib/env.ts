@@ -1,60 +1,38 @@
+// lib/env.ts
+// Variáveis de ambiente — SÓ servidor. Nada aqui usa o prefixo NEXT_PUBLIC_, então
+// nenhum valor é embutido no JavaScript enviado ao navegador.
+import "server-only";
+
 import { z } from "zod";
 
-const envSchema = z
-  .object({
-    NEXT_PUBLIC_FIREBASE_API_KEY: z.string().min(1),
-    NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN: z.string().min(1),
-    NEXT_PUBLIC_FIREBASE_PROJECT_ID: z.string().min(1),
-    NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET: z.string().min(1),
-    NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID: z.string().min(1),
-    NEXT_PUBLIC_FIREBASE_APP_ID: z.string().min(1),
-    NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID: z.string().min(1),
-    GITHUB_API_URL: z.string().url(),
-    GITHUB_USERNAME: z.string().min(1),
-    NEXT_PUBLIC_GITHUB_API_URL: z.string().url().optional(),
-    NEXT_PUBLIC_GITHUB_USERNAME: z.string().min(1).optional(),
-    GITHUB_TOKEN: z.string().min(1).optional(),
-    FIREBASE_CLIENT_EMAIL: z.string().optional(),
-    FIREBASE_PRIVATE_KEY: z.string().optional(),
-  })
-  .superRefine((data, ctx) => {
-    if (!data.GITHUB_API_URL && !data.NEXT_PUBLIC_GITHUB_API_URL) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["GITHUB_API_URL"],
-        message: "GITHUB_API_URL is required",
-      });
-    }
-    if (!data.GITHUB_USERNAME && !data.NEXT_PUBLIC_GITHUB_USERNAME) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        path: ["GITHUB_USERNAME"],
-        message: "GITHUB_USERNAME is required",
-      });
-    }
-  });
+const envSchema = z.object({
+  // Firebase (Admin SDK + API REST de login)
+  FIREBASE_API_KEY: z.string().min(1),
+  FIREBASE_PROJECT_ID: z.string().min(1),
+  FIREBASE_STORAGE_BUCKET: z.string().min(1),
+  FIREBASE_CLIENT_EMAIL: z.string().email().optional(),
+  FIREBASE_PRIVATE_KEY: z.string().min(1).optional(),
+  ADMIN_EMAILS: z.string().optional(),
+
+  // GitHub
+  GITHUB_API_URL: z.string().url().default("https://api.github.com"),
+  GITHUB_USERNAME: z.string().min(1),
+  GITHUB_TOKEN: z.string().min(1).optional(),
+});
+
+// Strings vazias ("VAR=") contam como ausentes
+const clean = (value: string | undefined) => (value?.trim() ? value : undefined);
 
 export const env = envSchema.parse({
-  NEXT_PUBLIC_FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN:
-    process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  NEXT_PUBLIC_FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET:
-    process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID:
-    process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  NEXT_PUBLIC_FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-  NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID:
-    process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
-  GITHUB_API_URL:
-    process.env.GITHUB_API_URL ?? process.env.NEXT_PUBLIC_GITHUB_API_URL,
-  GITHUB_USERNAME:
-    process.env.GITHUB_USERNAME ?? process.env.NEXT_PUBLIC_GITHUB_USERNAME,
-  NEXT_PUBLIC_GITHUB_API_URL: process.env.NEXT_PUBLIC_GITHUB_API_URL,
-  NEXT_PUBLIC_GITHUB_USERNAME: process.env.NEXT_PUBLIC_GITHUB_USERNAME,
-  GITHUB_TOKEN: process.env.GITHUB_TOKEN,
-  FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL,
-  FIREBASE_PRIVATE_KEY: process.env.FIREBASE_PRIVATE_KEY,
+  FIREBASE_API_KEY: clean(process.env.FIREBASE_API_KEY),
+  FIREBASE_PROJECT_ID: clean(process.env.FIREBASE_PROJECT_ID),
+  FIREBASE_STORAGE_BUCKET: clean(process.env.FIREBASE_STORAGE_BUCKET),
+  FIREBASE_CLIENT_EMAIL: clean(process.env.FIREBASE_CLIENT_EMAIL),
+  FIREBASE_PRIVATE_KEY: clean(process.env.FIREBASE_PRIVATE_KEY),
+  ADMIN_EMAILS: clean(process.env.ADMIN_EMAILS),
+  GITHUB_API_URL: clean(process.env.GITHUB_API_URL),
+  GITHUB_USERNAME: clean(process.env.GITHUB_USERNAME),
+  GITHUB_TOKEN: clean(process.env.GITHUB_TOKEN),
 });
 
 export type Env = z.infer<typeof envSchema>;

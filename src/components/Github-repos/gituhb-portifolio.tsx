@@ -1,11 +1,12 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
+import { AlertCircle, ExternalLink, Rocket } from "lucide-react";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { MdOpenInNew, MdRocket } from "react-icons/md";
+
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Repository {
   id: number;
@@ -17,10 +18,6 @@ interface Repository {
   stargazers_count: number;
   forks_count: number;
   updated_at: string;
-  owner: {
-    avatar_url: string;
-    login: string;
-  };
 }
 
 interface LanguageBreakdown {
@@ -134,17 +131,16 @@ const fetchWithRetry = async (
   }
 };
 
-const customImages: Record<string, string> = {
+// Prints dos projetos (em /public). Sem print, o card mostra só o texto.
+const PROJECT_IMAGES: Record<string, string> = {
   "calculadora-em-POO": "/calculadora-em-POO.png",
   portfolio: "/portfolio.png",
-  "M4-API-Futebol": "/M4-API-Futebol.png",
   portifolio: "/portfolio.png",
+  "M4-API-Futebol": "/M4-API-Futebol.png",
 };
 
-const fallbackPreviewImage = "/favicon.svg ";
-const fallbackAvatarImage = "/perfil.svg";
-
-const languageColors: Record<string, string> = {
+// Cores oficiais das linguagens no GitHub (dado, não decoração)
+const LANGUAGE_COLORS: Record<string, string> = {
   JavaScript: "#f7df1e",
   TypeScript: "#3178c6",
   Python: "#3572A5",
@@ -156,16 +152,118 @@ const languageColors: Record<string, string> = {
   Rust: "#dea584",
   PHP: "#4F5D95",
   Shell: "#89e051",
-  Default: "#6366f1",
 };
+const DEFAULT_LANGUAGE_COLOR = "#6366f1";
+
+const INITIAL_VISIBLE = 6;
+
+const dateFormatter = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short", year: "numeric" });
+
+type LanguageShare = { language: string; percentage: number; color: string };
+
+function toLanguageShares(breakdown: LanguageBreakdown = {}): LanguageShare[] {
+  const total = Object.values(breakdown).reduce((sum, bytes) => sum + bytes, 0);
+  if (total === 0) return [];
+  return Object.entries(breakdown).map(([language, bytes]) => ({
+    language,
+    percentage: Math.round((bytes / total) * 100),
+    color: LANGUAGE_COLORS[language] ?? DEFAULT_LANGUAGE_COLOR,
+  }));
+}
+
+function LanguageBar({ shares }: { shares: LanguageShare[] }) {
+  if (shares.length === 0) return null;
+  return (
+    <div className="flex flex-col gap-2">
+      <div className="flex h-1.5 overflow-hidden rounded-full bg-muted" aria-hidden="true">
+        {shares.map((share) => (
+          <span key={share.language} style={{ width: `${share.percentage}%`, backgroundColor: share.color }} />
+        ))}
+      </div>
+      <ul aria-label="Linguagens" className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-muted-foreground">
+        {shares.slice(0, 3).map((share) => (
+          <li key={share.language} className="flex items-center gap-1.5">
+            <span className="size-2 rounded-full" style={{ backgroundColor: share.color }} aria-hidden="true" />
+            <span className="text-foreground/80">{share.language}</span> {share.percentage}%
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function RepoCard({ repo, shares }: { repo: Repository; shares: LanguageShare[] }) {
+  const image = PROJECT_IMAGES[repo.name];
+  const titleId = `repo-${repo.id}-title`;
+
+  return (
+    <article aria-labelledby={titleId} className="flex h-full flex-col overflow-hidden rounded-2xl border border-border bg-card">
+      {image && (
+        <Image
+          src={image}
+          alt={`Tela do projeto ${repo.name}`}
+          width={640}
+          height={360}
+          sizes="(min-width: 1024px) 320px, (min-width: 768px) 50vw, 100vw"
+          className="aspect-video w-full border-b border-border object-cover"
+        />
+      )}
+
+      <div className="flex flex-1 flex-col gap-4 p-5">
+        <header className="flex flex-col gap-1">
+          <h3 id={titleId} className="font-semibold break-words text-foreground">
+            {repo.name}
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            Atualizado em <time dateTime={repo.updated_at}>{dateFormatter.format(new Date(repo.updated_at))}</time>
+          </p>
+        </header>
+
+        <p className="line-clamp-3 text-sm text-muted-foreground">{repo.description || "Sem descrição."}</p>
+
+        <LanguageBar shares={shares} />
+
+        <div className="mt-auto flex gap-2 pt-1">
+          <Button asChild variant="outline" size="sm" className="flex-1">
+            <a href={repo.html_url} target="_blank" rel="noopener noreferrer">
+              <ExternalLink data-icon="inline-start" aria-hidden="true" />
+              Código<span className="sr-only"> de {repo.name} (abre em nova aba)</span>
+            </a>
+          </Button>
+          {repo.homepage && (
+            <Button asChild variant="secondary" size="sm" className="flex-1">
+              <a href={repo.homepage} target="_blank" rel="noopener noreferrer">
+                <Rocket data-icon="inline-start" aria-hidden="true" />
+                Ver online<span className="sr-only"> {repo.name} (abre em nova aba)</span>
+              </a>
+            </Button>
+          )}
+        </div>
+      </div>
+    </article>
+  );
+}
+
+function RepoGridSkeleton() {
+  return (
+    <div role="status" aria-label="Carregando projetos" className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      {Array.from({ length: INITIAL_VISIBLE }).map((_, index) => (
+        <div key={index} className="flex flex-col gap-3 rounded-2xl border border-border p-5">
+          <Skeleton className="h-5 w-2/3" />
+          <Skeleton className="h-3 w-1/3" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function GithubRepos() {
   const [repos, setRepos] = useState<Repository[]>([]);
-  const [languages, setLanguages] = useState<Record<number, LanguageBreakdown>>(
-    {},
-  );
+  const [languages, setLanguages] = useState<Record<number, LanguageBreakdown>>({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
 
   useEffect(() => {
     async function fetchRepos() {
@@ -174,35 +272,23 @@ export default function GithubRepos() {
         const data: Repository[] = await response.json();
         setRepos(data);
 
-        const languagePromises = data.map(async (repo) => {
-          try {
+        const results = await Promise.allSettled(
+          data.map(async (repo) => {
             const langResponse = await fetchWithRetry(
-              `${API_BASE_URL}/languages?repo=${repo.name}`,
+              `${API_BASE_URL}/languages?repo=${encodeURIComponent(repo.name)}`,
               2,
             );
-            const langData = await langResponse.json();
-            return { id: repo.id, languages: langData };
-          } catch (err) {
-            console.warn(`Failed to fetch languages for ${repo.name}:`, err);
-            return { id: repo.id, languages: {} };
-          }
-        });
+            return { id: repo.id, languages: (await langResponse.json()) as LanguageBreakdown };
+          }),
+        );
 
-        const languageResults = await Promise.allSettled(languagePromises);
         const languageMap: Record<number, LanguageBreakdown> = {};
-        languageResults.forEach((result) => {
-          if (result.status === "fulfilled" && result.value) {
-            languageMap[result.value.id] = result.value.languages;
-          }
-        });
+        for (const result of results) {
+          if (result.status === "fulfilled") languageMap[result.value.id] = result.value.languages;
+        }
         setLanguages(languageMap);
       } catch (err) {
-        const errorMessage =
-          err instanceof Error
-            ? err.message
-            : "Erro desconhecido ao carregar repositórios";
-        setError(errorMessage);
-        console.error("Error fetching repos:", err);
+        setError(err instanceof Error ? err.message : "Erro desconhecido ao carregar repositórios");
       } finally {
         setLoading(false);
       }
@@ -210,190 +296,45 @@ export default function GithubRepos() {
     fetchRepos();
   }, []);
 
-  const getLanguagePercentages = (repoLanguages: LanguageBreakdown) => {
-    const total = Object.values(repoLanguages).reduce((a, b) => a + b, 0);
-    if (total === 0) return [];
-    return Object.entries(repoLanguages).map(([lang, bytes]) => ({
-      language: lang,
-      percentage: Math.round((bytes / total) * 100),
-      color: languageColors[lang] || languageColors.Default,
-    }));
-  };
+  if (loading) return <RepoGridSkeleton />;
 
   if (error) {
     return (
-      <div className="text-center py-12">
-        <div className="inline-block rounded-lg bg-red-500/10 border border-red-500/30 p-4 max-w-md">
-          <p className="text-red-400 font-medium mb-2">
-            ⚠️ Erro ao carregar repositórios
-          </p>
-          <p className="text-red-300/80 text-sm">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-3 px-4 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-300 rounded text-sm transition-colors"
-          >
+      <Alert variant="destructive">
+        <AlertCircle aria-hidden="true" />
+        <AlertTitle>Não foi possível carregar os projetos</AlertTitle>
+        <AlertDescription className="flex flex-col items-start gap-3">
+          <p>{error}</p>
+          <Button variant="outline" size="sm" onClick={() => window.location.reload()}>
             Tentar novamente
-          </button>
-        </div>
-      </div>
+          </Button>
+        </AlertDescription>
+      </Alert>
     );
   }
 
+  const visible = showAll ? repos : repos.slice(0, INITIAL_VISIBLE);
+
   return (
-    <div className="  max-w-6xl mx-auto px-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {loading
-          ? Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-zinc-950 border-zinc-900">
-                <Skeleton className="h-40 w-full bg-zinc-900" />
-                <div className="p-4 space-y-3">
-                  <Skeleton className="h-5 w-32 bg-zinc-900bg-zinc-900" />
-                  <Skeleton className="h-4 w-full bg-zinc-900" />
-                </div>
-              </Card>
-            ))
-          : repos.map((repo) => {
-              const langPercentages = getLanguagePercentages(
-                languages[repo.id] || {},
-              );
-              const imageUrl = customImages[repo.name] || fallbackPreviewImage;
+    <div className="flex flex-col items-center gap-8">
+      <ul id="lista-projetos" className="grid w-full gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {visible.map((repo) => (
+          <li key={repo.id}>
+            <RepoCard repo={repo} shares={toLanguageShares(languages[repo.id])} />
+          </li>
+        ))}
+      </ul>
 
-              return (
-                <article
-                  key={repo.id}
-                  className="group bg-black border border-zinc-800 rounded-lg overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-white/20"
-                  aria-labelledby={`repo-${repo.id}-title`}
-                >
-                  <div className="relative h-40 sm:h-44 md:h-48 lg:h-56 w-full bg-zinc-900 overflow-hidden">
-                    <Image
-                      src={imageUrl}
-                      alt={`Preview do repositório ${repo.name}`}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      unoptimized
-                    />
-                  </div>
-
-                  <CardContent className="p-4 space-y-3 text-white">
-                    <header className="flex items-start justify-between gap-3">
-                      <div className="flex items-center gap-3">
-                        <Image
-                          src={repo.owner.avatar_url || fallbackAvatarImage}
-                          alt={`Avatar de ${repo.owner.login}`}
-                          width={32}
-                          height={32}
-                          className="rounded-full flex-shrink-0"
-                        />
-                        <h3
-                          id={`repo-${repo.id}-title`}
-                          className="font-semibold text-sm truncate"
-                        >
-                          {repo.name}
-                        </h3>
-                      </div>
-                      <time
-                        dateTime={repo.updated_at}
-                        className="text-xs text-zinc-400"
-                        aria-label={`Última atualização ${new Date(
-                          repo.updated_at,
-                        ).toLocaleDateString()}`}
-                      >
-                        {new Date(repo.updated_at).toLocaleDateString()}
-                      </time>
-                    </header>
-
-                    <p className="text-sm text-zinc-300 line-clamp-2 min-h-[2.5rem]">
-                      {repo.description || "Sem descrição"}
-                    </p>
-
-                    {langPercentages.length > 0 && (
-                      <div className="space-y-2">
-                        <div
-                          className="flex h-2 rounded-full overflow-hidden bg-zinc-900"
-                          role="img"
-                          aria-label={`Linguagens: ${langPercentages
-                            .map((l) => `${l.language} ${l.percentage}%`)
-                            .join(", ")}`}
-                        >
-                          {langPercentages.map((lang, i) => (
-                            <div
-                              key={i}
-                              style={{
-                                width: `${lang.percentage}%`,
-                                backgroundColor: lang.color,
-                              }}
-                              className="h-full"
-                              aria-hidden
-                            />
-                          ))}
-                        </div>
-                        <div className="flex flex-wrap gap-2 text-xs">
-                          {langPercentages.slice(0, 3).map((lang, i) => (
-                            <span
-                              key={i}
-                              className="flex items-center gap-2 text-zinc-300"
-                            >
-                              <span
-                                className="w-2 h-2 rounded-full"
-                                style={{ backgroundColor: lang.color }}
-                                aria-hidden
-                              />
-                              <span className="sr-only">Linguagem: </span>
-                              {lang.language}{" "}
-                              <span className="text-zinc-400">
-                                {lang.percentage}%
-                              </span>
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="flex gap-2 pt-2">
-                      <Button
-                        asChild
-                        size="sm"
-                        className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                      >
-                        <a
-                          href={repo.html_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          aria-label={`Abrir repositório ${repo.name}`}
-                        >
-                          <MdOpenInNew
-                            className="h-4 w-4 mr-2 inline"
-                            aria-hidden
-                          />
-                          <span>Repositório</span>
-                        </a>
-                      </Button>
-                      {repo.homepage && (
-                        <Button
-                          asChild
-                          size="sm"
-                          className="flex-1 bg-white/5 hover:bg-white/10 text-white border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
-                        >
-                          <a
-                            href={repo.homepage}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            aria-label={`Abrir deploy do ${repo.name}`}
-                          >
-                            <MdRocket
-                              className="h-4 w-4 mr-2 inline"
-                              aria-hidden
-                            />
-                            <span>Deploy</span>
-                          </a>
-                        </Button>
-                      )}
-                    </div>
-                  </CardContent>
-                </article>
-              );
-            })}
-      </div>
+      {repos.length > INITIAL_VISIBLE && (
+        <Button
+          variant="outline"
+          onClick={() => setShowAll((value) => !value)}
+          aria-expanded={showAll}
+          aria-controls="lista-projetos"
+        >
+          {showAll ? "Mostrar menos" : `Ver todos os ${repos.length} projetos`}
+        </Button>
+      )}
     </div>
   );
 }

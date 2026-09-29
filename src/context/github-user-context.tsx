@@ -1,6 +1,6 @@
 "use client";
 
-import { GitHubUser } from "@/lib/github";
+import type { GitHubUser } from "@/lib/github";
 import { createContext, ReactNode, useContext } from "react";
 
 interface GitHubUserContextValue {

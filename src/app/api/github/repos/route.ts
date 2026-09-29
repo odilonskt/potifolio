@@ -71,7 +71,7 @@ async function fetchAllGitHubRepos(
 export async function GET() {
   try {
     const githubUsername =
-      env.GITHUB_USERNAME || env.NEXT_PUBLIC_GITHUB_USERNAME;
+      env.GITHUB_USERNAME;
     if (!githubUsername) {
       throw new Error("GitHub username is not configured");
     }

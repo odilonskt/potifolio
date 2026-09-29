@@ -1,28 +1,35 @@
-import FuzzyText from "@/components/FuzzyText";
+import { Home, Newspaper } from "lucide-react";
+import type { Metadata } from "next";
 import Link from "next/link";
 
+import { StatusPage } from "@/components/status/status-page";
+import { Button } from "@/components/ui/button";
+
+export const metadata: Metadata = {
+  title: "Página não encontrada | Odilon",
+  robots: { index: false },
+};
+
+// Next.js responde com status 404 ao renderizar esta página
 export default function NotFound() {
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-slate-950 px-4 text-center">
-      <div className="flex flex-col items-center gap-6">
-        {/* Código 404 */}
-        <FuzzyText baseIntensity={0.2} hoverIntensity={0.5} enableHover>
-          404
-        </FuzzyText>
-
-        {/* Mensagem */}
-        <p className="max-w-md text-sm text-slate-300">
-          Ops! A página que você procura não foi encontrada.
-        </p>
-
-        {/* Ação */}
-        <Link
-          href="/"
-          className="mt-2 rounded-xl bg-white px-5 py-2 text-sm font-medium text-slate-900 transition hover:bg-slate-200"
-        >
-          Voltar para o início
+    <StatusPage
+      code={404}
+      title="Página não encontrada"
+      description="O endereço pode ter mudado ou a página foi removida. Confira o link ou volte para o início."
+    >
+      <Button asChild>
+        <Link href="/">
+          <Home data-icon="inline-start" aria-hidden="true" />
+          Ir para o início
         </Link>
-      </div>
-    </main>
+      </Button>
+      <Button asChild variant="outline">
+        <Link href="/blog">
+          <Newspaper data-icon="inline-start" aria-hidden="true" />
+          Ver o blog
+        </Link>
+      </Button>
+    </StatusPage>
   );
 }

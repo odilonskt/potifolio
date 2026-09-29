@@ -7,11 +7,14 @@ const nextConfig: NextConfig = {
     root: __dirname,
   },
   reactStrictMode: true,
+  // Não expõe "X-Powered-By: Next.js"
+  poweredByHeader: false,
   // Next.js 15 vem com otimizações automáticas
   experimental: {
     // Se quiser usar server actions puros
     serverActions: {
-      bodySizeLimit: "2mb",
+      // Imagens de até 2 MB + campos do formulário do painel
+      bodySizeLimit: "3mb",
     },
   },
   // Melhor suporte para PWA e cache
@@ -39,6 +42,18 @@ const nextConfig: NextConfig = {
       {
         protocol: "https",
         hostname: "skillicons.dev",
+      },
+      {
+        // GIFs da seção "Destaque visual" (servidas pelo proxy de imagens do Next)
+        protocol: "https",
+        hostname: "i.pinimg.com",
+        pathname: "/originals/**",
+      },
+      {
+        // Imagens enviadas pelo painel (Firebase Storage)
+        protocol: "https",
+        hostname: "firebasestorage.googleapis.com",
+        pathname: `/v0/b/${process.env.FIREBASE_STORAGE_BUCKET ?? "*"}/**`,
       },
     ],
   },
