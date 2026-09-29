@@ -53,7 +53,7 @@ const nextConfig: NextConfig = {
         // Imagens enviadas pelo painel (Firebase Storage)
         protocol: "https",
         hostname: "firebasestorage.googleapis.com",
-        pathname: `/v0/b/${process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ?? "*"}/**`,
+        pathname: `/v0/b/${process.env.FIREBASE_STORAGE_BUCKET ?? "*"}/**`,
       },
     ],
   },

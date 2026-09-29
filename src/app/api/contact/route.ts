@@ -1,197 +1,109 @@
 // app/api/contact/route.ts
-import {
-  deleteContact,
-  markAsRead,
-  markAsUnread,
-  saveContactForm,
-} from "@/lib/firebase-contacts";
-import { isAdminConfigured } from "@/lib/firebase/admin";
-import { contactFormSchema } from "@/lib/schemas/contact-form";
+// POST  /api/contact                    → envia o formulário (público)
+// POST  /api/contact?action=mark-read   → marca como lida (admin)
+// POST  /api/contact?action=mark-unread → marca como não lida (admin)
+// DELETE /api/contact?id=...            → exclui (admin)
+import { NextResponse, type NextRequest } from "next/server";
+import { z } from "zod";
+
 import { isAdminRequest } from "@/lib/auth/session";
-import { NextRequest, NextResponse } from "next/server";
+import { isAdminConfigured } from "@/lib/firebase/admin";
+import { deleteContact, markAsRead, markAsUnread, saveContactForm } from "@/lib/firebase-contacts";
+import { contactFormSchema } from "@/lib/schemas/contact-form";
+import { clientIp, exceedsBodyLimit, isSameOrigin, rateLimit } from "@/lib/security/request-guard";
 
-const ID_PATTERN = /^[A-Za-z0-9_-]{1,64}$/;
-
-// Marcar como dinâmico para não ser otimizado durante build
 export const dynamic = "force-dynamic";
 
-// POST - Criar novo contato ou atualizar status
+const MAX_BODY_BYTES = 10 * 1024; // 10 KB: o formulário tem no máximo ~1 KB
+const MIN_FILL_TIME_MS = 3000; // pessoas levam mais que 3s para preencher o formulário
+const idSchema = z.string().regex(/^[A-Za-z0-9_-]{1,64}$/);
+
+const json = (body: Record<string, unknown>, status = 200, headers?: HeadersInit) =>
+  NextResponse.json(body, { status, headers });
+
+/** Barreiras comuns a toda requisição que altera dados. */
+function guard(request: NextRequest): NextResponse | null {
+  if (!isSameOrigin(request)) return json({ success: false, error: "Origem não permitida" }, 403);
+  if (exceedsBodyLimit(request, MAX_BODY_BYTES)) return json({ success: false, error: "Requisição muito grande" }, 413);
+  if (!isAdminConfigured()) return json({ success: false, error: "Serviço temporariamente indisponível" }, 503);
+  return null;
+}
+
+async function handleReadStatus(request: NextRequest, body: unknown, read: boolean) {
+  if (!(await isAdminRequest(request))) return json({ success: false, error: "Não autorizado" }, 401);
+
+  const id = idSchema.safeParse((body as { id?: unknown } | null)?.id);
+  if (!id.success) return json({ success: false, error: "ID obrigatório" }, 400);
+
+  const result = read ? await markAsRead(id.data) : await markAsUnread(id.data);
+  return json({ success: result.success, error: result.error }, result.success ? 200 : 500);
+}
+
+async function handleSubmission(request: NextRequest, body: unknown) {
+  // Antispam: no máximo 3 envios a cada 10 minutos por IP
+  const limit = rateLimit(`contact:${clientIp(request.headers)}`, 3, 10 * 60 * 1000);
+  if (!limit.allowed) {
+    return json(
+      { success: false, error: "Muitos envios seguidos. Tente de novo em alguns minutos." },
+      429,
+      { "Retry-After": String(limit.retryAfterSeconds) },
+    );
+  }
+
+  const { website, elapsedMs, ...fields } = (body ?? {}) as Record<string, unknown>;
+
+  // Honeypot: campo invisível preenchido ou envio instantâneo = robô.
+  // Respondemos "sucesso" sem salvar, para o robô não aprender a contornar.
+  if ((typeof website === "string" && website.trim() !== "") || (typeof elapsedMs === "number" && elapsedMs < MIN_FILL_TIME_MS)) {
+    return json({ success: true, message: "Contato salvo com sucesso" });
+  }
+
+  const parsed = contactFormSchema.safeParse(fields);
+  if (!parsed.success) {
+    return json({ success: false, error: "Dados inválidos", details: parsed.error.issues }, 400);
+  }
+
+  const result = await saveContactForm(parsed.data);
+  if (!result.success) return json({ success: false, error: "Erro ao salvar contato" }, 500);
+
+  return json({ success: true, id: result.data?.id, message: "Contato salvo com sucesso" });
+}
+
 export async function POST(request: NextRequest) {
+  const blocked = guard(request);
+  if (blocked) return blocked;
+
+  let body: unknown;
   try {
-    // Verificar se o Firebase está configurado
-    if (!isAdminConfigured()) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Serviço temporariamente indisponível",
-        },
-        { status: 503 }
-      );
-    }
+    body = await request.json();
+  } catch {
+    return json({ success: false, error: "Dados inválidos" }, 400);
+  }
 
-    let body;
-    try {
-      body = await request.json();
-    } catch {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Dados inválidos",
-        },
-        { status: 400 }
-      );
-    }
-
+  try {
     const action = request.nextUrl.searchParams.get("action");
-
-    // Ações do painel exigem admin; o envio do formulário de contato continua público
-    if (action === "mark-read" || action === "mark-unread") {
-      if (!(await isAdminRequest(request))) {
-        return NextResponse.json(
-          { success: false, error: "Não autorizado" },
-          { status: 401 }
-        );
-      }
-      if (typeof body?.id !== "string" || !ID_PATTERN.test(body.id)) {
-        return NextResponse.json(
-          { success: false, error: "ID obrigatório" },
-          { status: 400 }
-        );
-      }
-    }
-
-    // Ação: marcar como lido
-    if (action === "mark-read") {
-      const { id } = body;
-      if (!id) {
-        return NextResponse.json(
-          { success: false, error: "ID obrigatório" },
-          { status: 400 }
-        );
-      }
-      const result = await markAsRead(id);
-      return NextResponse.json(result);
-    }
-
-    // Ação: marcar como não lido
-    if (action === "mark-unread") {
-      const { id } = body;
-      if (!id) {
-        return NextResponse.json(
-          { success: false, error: "ID obrigatório" },
-          { status: 400 }
-        );
-      }
-      const result = await markAsUnread(id);
-      return NextResponse.json(result);
-    }
-
-    // Padrão: criar novo contato
-    // Validar com Zod
-    const validatedData = contactFormSchema.safeParse(body);
-
-    if (!validatedData.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Dados inválidos",
-          details: validatedData.error.issues,
-        },
-        { status: 400 }
-      );
-    }
-
-    // Criar dados completos para o Firebase
-    const contactData = validatedData.data;
-
-    // Salvar no Firebase
-    const result = await saveContactForm(contactData);
-
-    if (!result.success) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Erro ao salvar contato",
-        },
-        { status: 500 }
-      );
-    }
-
-    // Sucesso
-    return NextResponse.json({
-      success: true,
-      id: result.data?.id,
-      message: "Contato salvo com sucesso",
-    });
+    if (action === "mark-read") return await handleReadStatus(request, body, true);
+    if (action === "mark-unread") return await handleReadStatus(request, body, false);
+    if (action) return json({ success: false, error: "Ação desconhecida" }, 400);
+    return await handleSubmission(request, body);
   } catch (error) {
+    // Detalhes só no log do servidor
     console.error("Erro na API de contato:", error);
-
-    // Mensagem genérica: detalhes internos ficam só no log do servidor
-    return NextResponse.json(
-      {
-        success: false,
-        error: "Erro interno do servidor",
-      },
-      { status: 500 }
-    );
+    return json({ success: false, error: "Erro interno do servidor" }, 500);
   }
 }
 
-// DELETE - Deletar contato
 export async function DELETE(request: NextRequest) {
-  try {
-    // Verificar se o Firebase está configurado
-    if (!isAdminConfigured()) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Serviço temporariamente indisponível",
-        },
-        { status: 503 }
-      );
-    }
+  const blocked = guard(request);
+  if (blocked) return blocked;
 
-    if (!(await isAdminRequest(request))) {
-      return NextResponse.json(
-        { success: false, error: "Não autorizado" },
-        { status: 401 }
-      );
-    }
+  if (!(await isAdminRequest(request))) return json({ success: false, error: "Não autorizado" }, 401);
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get("id");
+  const id = idSchema.safeParse(request.nextUrl.searchParams.get("id"));
+  if (!id.success) return json({ success: false, error: "ID obrigatório" }, 400);
 
-    if (!id || !ID_PATTERN.test(id)) {
-      return NextResponse.json(
-        { success: false, error: "ID obrigatório" },
-        { status: 400 }
-      );
-    }
-
-    const result = await deleteContact(id);
-    return NextResponse.json(result);
-  } catch (error) {
-    console.error("Erro ao deletar contato:", error);
-
-    return NextResponse.json(
-      { success: false, error: "Erro ao deletar contato" },
-      { status: 500 }
-    );
-  }
+  const result = await deleteContact(id.data);
+  return json({ success: result.success, error: result.error }, result.success ? 200 : 500);
 }
 
-// GET - Verificar status da API
-export async function GET() {
-  // Verificação simples de saúde da API
-  const isFirebaseConfigured = isAdminConfigured();
-
-  return NextResponse.json(
-    {
-      success: true,
-      api: "online",
-      firebase: isFirebaseConfigured ? "configured" : "not-configured",
-      timestamp: new Date().toISOString(),
-    },
-    { status: 200 }
-  );
-}
+// Sem GET: a rota não expõe mais o estado da configuração do servidor

@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
 
+import { env } from "@/lib/env";
 import { adminAuth, isAdminConfigured } from "@/lib/firebase/admin";
 
 export const SESSION_COOKIE = "session";
@@ -17,7 +18,7 @@ export type Session =
 
 /** E-mails autorizados a usar o painel (ADMIN_EMAILS, separados por vírgula). */
 export function getAdminEmails(): string[] {
-  return (process.env.ADMIN_EMAILS ?? "")
+  return (env.ADMIN_EMAILS ?? "")
     .split(",")
     .map((email) => email.trim().toLowerCase())
     .filter(Boolean);

@@ -2,6 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Loader2, Send } from "lucide-react";
+import { useState, type BaseSyntheticEvent } from "react";
 import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 
@@ -22,6 +23,9 @@ import { useContactForm } from "@/hooks/useContactForm";
 import { contactFormSchema, type ContactFormInput } from "@/lib/schemas/contact-form";
 
 const MESSAGE_MAX = 500;
+
+// Chamado só no envio (fora do render)
+const millisecondsSince = (start: number) => Date.now() - start;
 
 const defaultValues: ContactFormInput = {
   nome: "",
@@ -72,6 +76,8 @@ function RequiredMark() {
 
 export function ContactForm() {
   const { submitForm, isLoading, error, success, reset } = useContactForm();
+  // Antispam: robôs preenchem o campo invisível e enviam instantaneamente
+  const [openedAt] = useState(() => Date.now());
 
   const form = useForm<ContactFormInput>({
     resolver: zodResolver(contactFormSchema),
@@ -79,7 +85,8 @@ export function ContactForm() {
     mode: "onSubmit",
   });
 
-  async function onSubmit(inputData: ContactFormInput) {
+  async function onSubmit(inputData: ContactFormInput, event?: BaseSyntheticEvent) {
+    const honeypot = (event?.target as HTMLFormElement | undefined)?.elements.namedItem("website");
     const formData = contactFormSchema.parse({
       ...inputData,
       id: inputData.id || uuidv4(),
@@ -88,7 +95,11 @@ export function ContactForm() {
       lidor: inputData.lidor ?? false,
     });
 
-    const result = await submitForm(formData);
+    const result = await submitForm({
+      ...formData,
+      website: honeypot instanceof HTMLInputElement ? honeypot.value : "",
+      elapsedMs: millisecondsSince(openedAt),
+    });
     if (result.success) {
       form.reset(defaultValues);
       reset();
@@ -97,10 +108,16 @@ export function ContactForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="flex flex-col gap-6">
+      <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="relative flex flex-col gap-6">
         <p className="text-sm text-muted-foreground">
           Campos com <RequiredMark /> são obrigatórios.
         </p>
+
+        {/* Honeypot: invisível e fora da ordem de foco e da árvore de acessibilidade */}
+        <div aria-hidden="true" className="absolute -left-[9999px] size-px overflow-hidden">
+          <label htmlFor="website">Não preencha este campo</label>
+          <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
+        </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
           {TEXT_FIELDS.map((config) => (

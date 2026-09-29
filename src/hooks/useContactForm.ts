@@ -8,7 +8,8 @@ export function useContactForm() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
 
-  const submitForm = async (data: ContactFormData) => {
+  // antispam: campo honeypot + tempo de preenchimento (validados no servidor)
+  const submitForm = async (data: ContactFormData & { website?: string; elapsedMs?: number }) => {
     setIsLoading(true);
     setError(null);
     setSuccess(false);
@@ -39,7 +40,6 @@ export function useContactForm() {
       return { success: true, id: result.id };
     } catch (err) {
       const message = err instanceof Error ? err.message : "Erro desconhecido";
-      console.error("Erro no envio:", err);
       setError(message);
       return { success: false, error: message };
     } finally {

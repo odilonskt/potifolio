@@ -8,13 +8,15 @@ import { getAuth } from "firebase-admin/auth";
 import { getFirestore } from "firebase-admin/firestore";
 import { getStorage } from "firebase-admin/storage";
 
+import { env } from "@/lib/env";
+
 const ADMIN_APP_NAME = "portfolio-admin";
 
 function readCredentials() {
-  const projectId = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID;
-  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const projectId = env.FIREBASE_PROJECT_ID;
+  const clientEmail = env.FIREBASE_CLIENT_EMAIL;
   // Na Vercel/.env a chave vem com "\n" literais
-  const privateKey = process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
+  const privateKey = env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, "\n");
 
   if (!projectId || !clientEmail || !privateKey) return null;
   return { projectId, clientEmail, privateKey };
@@ -45,7 +47,7 @@ function getAdminApp(): App {
     {
       credential: cert(credentials),
       projectId: credentials.projectId,
-      storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+      storageBucket: env.FIREBASE_STORAGE_BUCKET,
     },
     ADMIN_APP_NAME
   );

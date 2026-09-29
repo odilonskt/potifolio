@@ -5,7 +5,9 @@ import {
   SESSION_MAX_AGE_SECONDS,
   isAllowedAdmin,
 } from "@/lib/auth/session";
+import { env } from "@/lib/env";
 import { adminAuth, isAdminConfigured } from "@/lib/firebase/admin";
+import { actionClientIp, rateLimit } from "@/lib/security/request-guard";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
@@ -37,7 +39,7 @@ async function signInWithPassword(
   email: string,
   password: string
 ): Promise<{ idToken: string } | { error: string }> {
-  const apiKey = process.env.NEXT_PUBLIC_FIREBASE_API_KEY;
+  const apiKey = env.FIREBASE_API_KEY;
   if (!apiKey) return { error: "Serviço de login indisponível" };
 
   const response = await fetch(
@@ -90,6 +92,13 @@ export async function loginAction(
   }
 
   const { email, password } = validatedFields.data;
+
+  // Força bruta: 5 tentativas/min por IP e 5 a cada 15 min por e-mail
+  const ipLimit = rateLimit(`login:ip:${await actionClientIp()}`, 5, 60 * 1000);
+  const emailLimit = rateLimit(`login:email:${email.toLowerCase()}`, 5, 15 * 60 * 1000);
+  if (!ipLimit.allowed || !emailLimit.allowed) {
+    return { message: "Muitas tentativas. Aguarde alguns minutos e tente de novo.", success: false };
+  }
 
   if (!isAllowedAdmin(email)) {
     return { message: INVALID_CREDENTIALS, success: false };

@@ -1,18 +1,41 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-// Headers de privacidade globais.
-// connect-src 'self': o navegador só fala com este site. Tudo do GitHub passa pelo
-// proxy /api/github (servidor), então o IP de quem visita nunca chega ao GitHub.
-const PRIVACY_HEADERS = {
-  "X-DNS-Prefetch-Control": "off",
+const isProd = process.env.NODE_ENV === "production";
+
+// Content Security Policy: de onde o navegador pode carregar cada tipo de recurso.
+// - connect-src 'self': o navegador só fala com este site (GitHub/Firebase via servidor)
+// - 'unsafe-eval' só em desenvolvimento (recarregamento do next dev)
+// - 'unsafe-inline' em script-src é exigido pelo Next sem nonce; nonce tornaria todas
+//   as páginas dinâmicas e desligaria o cache (ISR)
+const CSP = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob: https:",
+  "font-src 'self' data:",
+  "connect-src 'self'",
+  "media-src 'self'",
+  "object-src 'none'",
+  "frame-src 'none'",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  ...(isProd ? ["upgrade-insecure-requests"] : []),
+].join("; ");
+
+const SECURITY_HEADERS: Record<string, string> = {
+  "Content-Security-Policy": CSP,
   "X-Frame-Options": "DENY",
   "X-Content-Type-Options": "nosniff",
-  "X-XSS-Protection": "1; mode=block",
   "Referrer-Policy": "no-referrer",
-  "Permissions-Policy": "geolocation=(), microphone=(), camera=(), payment=()",
-  "Content-Security-Policy":
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self'; frame-ancestors 'none';",
+  "Permissions-Policy": "geolocation=(), microphone=(), camera=(), payment=(), usb=(), interest-cohort=()",
+  "Cross-Origin-Opener-Policy": "same-origin",
+  "X-DNS-Prefetch-Control": "off",
+  // O filtro XSS antigo dos navegadores é obsoleto e pode ser explorado: desligado
+  "X-XSS-Protection": "0",
+  // HTTPS obrigatório por 2 anos (só em produção; em localhost quebraria o http)
+  ...(isProd ? { "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload" } : {}),
 };
 
 // Next 16.3+: "proxy" substitui a convenção "middleware"
@@ -27,13 +50,15 @@ export function proxy(request: NextRequest) {
   }
 
   const response = NextResponse.next();
-
-  // Adicionar headers de privacidade globais
-  Object.entries(PRIVACY_HEADERS).forEach(([key, value]) => {
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
     response.headers.set(key, value);
-  });
+  }
 
-  // X-Powered-By é desligado em next.config.ts (poweredByHeader: false)
+  // Área administrativa nunca vai para cache compartilhado
+  if (request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname.startsWith("/login")) {
+    response.headers.set("Cache-Control", "private, no-store");
+  }
+
   return response;
 }
 
