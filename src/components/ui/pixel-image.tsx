@@ -62,11 +62,15 @@ export const PixelImage = ({
   }, [customGrid, grid])
 
   useEffect(() => {
-    setIsVisible(true)
+    // Trigger the reveal on the next frame so the initial hidden state paints first
+    const frame = requestAnimationFrame(() => setIsVisible(true))
     const colorTimeout = setTimeout(() => {
       setShowColor(true)
     }, colorRevealDelay)
-    return () => clearTimeout(colorTimeout)
+    return () => {
+      cancelAnimationFrame(frame)
+      clearTimeout(colorTimeout)
+    }
   }, [colorRevealDelay])
 
   const pieces = useMemo(() => {
@@ -82,7 +86,9 @@ export const PixelImage = ({
         ${col * (100 / cols)}% ${(row + 1) * (100 / rows)}%
       )`
 
-      const delay = Math.random() * maxAnimationDelay
+      // Deterministic pseudo-random delay keeps render pure and SSR-stable
+      const delay =
+        (((index * 9301 + 49297) % 233280) / 233280) * maxAnimationDelay
       return {
         clipPath,
         delay,

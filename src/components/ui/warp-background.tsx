@@ -1,6 +1,6 @@
 "use client"
 
-import React, { HTMLAttributes, useCallback, useMemo } from "react"
+import React, { HTMLAttributes, useCallback, useMemo, useState } from "react"
 import { motion } from "motion/react"
 
 import { cn } from "@/lib/utils"
@@ -27,8 +27,10 @@ const Beam = ({
   delay: number
   duration: number
 }) => {
-  const hue = Math.floor(Math.random() * 360)
-  const ar = Math.floor(Math.random() * 10) + 1
+  const [{ hue, ar }] = useState(() => ({
+    hue: Math.floor(Math.random() * 360),
+    ar: Math.floor(Math.random() * 10) + 1,
+  }))
 
   return (
     <motion.div
