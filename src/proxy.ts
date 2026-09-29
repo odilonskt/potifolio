@@ -1,4 +1,3 @@
-import { cookies } from "next/headers";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
@@ -14,19 +13,15 @@ const PRIVACY_HEADERS = {
     "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://api.github.com; frame-ancestors 'none';",
 };
 
-// Esta função pode ser marcada como `async` se estiver usando `await`
-export async function middleware(request: NextRequest) {
-  const cookieStore = await cookies();
-  const session = cookieStore.get("session");
+// Next 16.3+: "proxy" substitui a convenção "middleware"
+export function proxy(request: NextRequest) {
+  const session = request.cookies.get("session");
 
-  // Se não houver sessão e o usuário tentar acessar rotas protegidas
+  // Filtro rápido: sem cookie nem chega no painel. A verificação real do cookie
+  // (assinatura, expiração, e-mail admin) acontece no servidor via requireAdmin().
+  // Não redirecionamos /login -> /dashboard aqui: um cookie inválido causaria loop.
   if (!session && request.nextUrl.pathname.startsWith("/dashboard")) {
     return NextResponse.redirect(new URL("/login", request.url));
-  }
-
-  // Se já tiver sessão e tentar acessar login
-  if (session && request.nextUrl.pathname === "/login") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 
   const response = NextResponse.next();
@@ -36,10 +31,7 @@ export async function middleware(request: NextRequest) {
     response.headers.set(key, value);
   });
 
-  // Remove headers que podem expor informações
-  response.headers.delete("Server");
-  response.headers.delete("X-Powered-By");
-
+  // X-Powered-By é desligado em next.config.ts (poweredByHeader: false)
   return response;
 }
 

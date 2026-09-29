@@ -6,6 +6,10 @@ import Start from "@/components/start/page";
 import InfinityScrollAnimation from "@/components/tecnologia/page";
 import Titan from "@/components/titan/page";
 import Hover3DCard from "../components/HoverCard3D/page";
+import JourneySections from "@/components/journey/journey-sections";
+
+// Conteúdo do painel é cacheado e invalidado pelas server actions (updateTag)
+export const revalidate = 3600;
 
 export default function Home() {
   return (
@@ -31,6 +35,7 @@ sou Formando em Desenvolvedor Web pelo programa Programadores do Amanhã, com fo
 
 Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecimentos na prática."
         />
+        <JourneySections />
         <section id="Tecnologia" className="py-12 bg-slate-950">
           <Titan
             title="Tecnologias"

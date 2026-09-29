@@ -1,5 +1,6 @@
 // app/dashboard/page.tsx
-import { getSession, logoutAction } from "@/app/actions/auth";
+import { logoutAction } from "@/app/actions/auth";
+import { getSession } from "@/lib/auth/session";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

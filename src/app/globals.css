@@ -2,6 +2,7 @@
 @import "tw-animate-css";
 @import "./neon-theme.css";
 @plugin "daisyui";
+@plugin "@tailwindcss/typography";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -58,7 +59,7 @@
   --secondary: oklch(0.15 0 0);
   --secondary-foreground: oklch(0.98 0 0);
   --muted: oklch(0.15 0 0);
-  --muted-foreground: oklch(0.5 0 0);
+  --muted-foreground: oklch(0.72 0 0); /* contraste AA sobre o fundo escuro */
   --accent: oklch(0.6 0.3 262);
   --accent-foreground: oklch(0.08 0 0);
   --destructive: oklch(0.6 0.2 25);
@@ -97,7 +98,7 @@
   --secondary: oklch(0.15 0 0);
   --secondary-foreground: oklch(0.98 0 0);
   --muted: oklch(0.15 0 0);
-  --muted-foreground: oklch(0.5 0 0);
+  --muted-foreground: oklch(0.72 0 0); /* contraste AA sobre o fundo escuro */
   --accent: oklch(0.6 0.3 262);
   --accent-foreground: oklch(0.08 0 0);
   --destructive: oklch(0.6 0.2 25);
