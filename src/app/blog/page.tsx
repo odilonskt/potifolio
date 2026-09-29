@@ -41,11 +41,11 @@ export default async function BlogPage() {
                     </time>
                   )}
                   <div className="flex flex-col gap-2">
-                    <h2 className="text-xl font-semibold text-foreground group-hover:text-sky-300">
+                    <h2 className="text-xl font-semibold text-foreground group-hover:text-brand">
                       {/* O link cobre o card inteiro, mas o nome acessível é só o título */}
                       <Link
                         href={`/blog/${post.slug}`}
-                        className="rounded-sm after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
+                        className="rounded-sm after:absolute after:inset-0 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
                       >
                         {post.title}
                       </Link>

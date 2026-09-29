@@ -60,7 +60,7 @@ export function ContactForm() {
 
   return (
     <div className="w-full mx-auto px-4 sm:px-6 lg:px-8 max-w-6xl">
-      <div className="bg-gradient-to-br from-gray-900/80 to-black/80 backdrop-blur-sm border border-gray-800 rounded-2xl p-6 md:p-8 lg:p-10 shadow-2xl">
+      <div className="bg-gradient-to-br from-card/80 to-background/80 backdrop-blur-sm border border-border rounded-2xl p-6 md:p-8 lg:p-10 shadow-2xl">
         {/* Header responsivo */}
         <div className="text-center mb-8 md:mb-10">
           <div className="inline-flex items-center justify-center w-14 h-14 md:w-16 md:h-16 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 border border-primary/20 mb-4 md:mb-6">
@@ -82,10 +82,10 @@ export function ContactForm() {
               color="white"
             />
           </div>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-white via-gray-200 to-gray-400 bg-clip-text text-transparent mb-3">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-gradient-to-r from-foreground via-foreground/85 to-foreground/65 bg-clip-text text-transparent mb-3">
             Envie sua Mensagem
           </h2>
-          {/* <p className="text-gray-400 text-sm sm:text-base max-w-2xl mx-auto">
+          {/* <p className="text-muted-foreground text-sm sm:text-base max-w-2xl mx-auto">
             Preencha o formulário abaixo e retornarei em até 24h úteis
           </p> */}
         </div>
@@ -103,14 +103,14 @@ export function ContactForm() {
                 name="nome"
                 render={({ field }) => (
                   <FormItem className="sm:col-span-1">
-                    <FormLabel className="text-sm font-medium text-gray-300">
+                    <FormLabel className="text-sm font-medium text-foreground/80">
                       Nome Completo <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Seu nome completo"
                         {...field}
-                        className="h-11 sm:h-12 bg-gray-900/60 border-gray-700 text-white placeholder:text-gray-500 
+                        className="h-11 sm:h-12 bg-card/60 border-border text-foreground placeholder:text-muted-foreground 
                           hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary
                           transition-all duration-200 text-sm sm:text-base"
                       />
@@ -126,7 +126,7 @@ export function ContactForm() {
                 name="email"
                 render={({ field }) => (
                   <FormItem className="sm:col-span-1">
-                    <FormLabel className="text-sm font-medium text-gray-300">
+                    <FormLabel className="text-sm font-medium text-foreground/80">
                       E-mail <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -134,7 +134,7 @@ export function ContactForm() {
                         placeholder="seu@email.com"
                         type="email"
                         {...field}
-                        className="h-11 sm:h-12 bg-gray-900/60 border-gray-700 text-white placeholder:text-gray-500 
+                        className="h-11 sm:h-12 bg-card/60 border-border text-foreground placeholder:text-muted-foreground 
                           hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary
                           transition-all duration-200 text-sm sm:text-base"
                       />
@@ -150,7 +150,7 @@ export function ContactForm() {
                 name="telefone"
                 render={({ field }) => (
                   <FormItem className="sm:col-span-1">
-                    <FormLabel className="text-sm font-medium text-gray-300">
+                    <FormLabel className="text-sm font-medium text-foreground/80">
                       Telefone <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
@@ -159,12 +159,12 @@ export function ContactForm() {
                         inputMode="tel"
                         placeholder="(11) 99999-9999"
                         {...field}
-                        className="h-11 sm:h-12 bg-gray-900/60 border-gray-700 text-white placeholder:text-gray-500 
+                        className="h-11 sm:h-12 bg-card/60 border-border text-foreground placeholder:text-muted-foreground 
                           hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary
                           transition-all duration-200 text-sm sm:text-base"
                       />
                     </FormControl>
-                    <FormDescription className="text-xs text-gray-500 mt-1">
+                    <FormDescription className="text-xs text-muted-foreground mt-1">
                       Obrigatório. Use apenas números, parênteses e traços.
                     </FormDescription>
                     <FormMessage className="text-xs sm:text-sm text-red-400 mt-1" />
@@ -178,14 +178,14 @@ export function ContactForm() {
                 name="subject"
                 render={({ field }) => (
                   <FormItem className="sm:col-span-1">
-                    <FormLabel className="text-sm font-medium text-gray-300">
+                    <FormLabel className="text-sm font-medium text-foreground/80">
                       Assunto <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormControl>
                       <Input
                         placeholder="Sobre o que você quer conversar?"
                         {...field}
-                        className="h-11 sm:h-12 bg-gray-900/60 border-gray-700 text-white placeholder:text-gray-500 
+                        className="h-11 sm:h-12 bg-card/60 border-border text-foreground placeholder:text-muted-foreground 
                           hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary
                           transition-all duration-200 text-sm sm:text-base"
                       />
@@ -203,17 +203,17 @@ export function ContactForm() {
               render={({ field }) => (
                 <FormItem>
                   <div className="flex justify-between items-center mb-2">
-                    <FormLabel className="text-sm font-medium text-gray-300">
+                    <FormLabel className="text-sm font-medium text-foreground/80">
                       Mensagem <span className="text-red-500">*</span>
                     </FormLabel>
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-muted-foreground">
                       {field.value?.length || 0}/500
                     </span>
                   </div>
                   <FormControl>
                     <Textarea
                       placeholder="Descreva detalhadamente sua necessidade ou projeto..."
-                      className="min-h-[140px] sm:min-h-[160px] bg-gray-900/60 border-gray-700 text-white placeholder:text-gray-500 
+                      className="min-h-[140px] sm:min-h-[160px] bg-card/60 border-border text-foreground placeholder:text-muted-foreground 
                         hover:border-primary/50 focus:border-primary focus:ring-1 focus:ring-primary
                         transition-all duration-200 resize-none text-sm sm:text-base"
                       maxLength={500}
@@ -221,7 +221,7 @@ export function ContactForm() {
                     />
                   </FormControl>
                   <div className="flex justify-between mt-2">
-                    <FormDescription className="text-xs text-gray-500">
+                    <FormDescription className="text-xs text-muted-foreground">
                       Mínimo 10 caracteres
                     </FormDescription>
                     <FormMessage className="text-xs sm:text-sm text-red-400" />
@@ -296,8 +296,8 @@ export function ContactForm() {
             </Button>
 
             {/* Aviso de privacidade */}
-            <div className="pt-4 border-t border-gray-800">
-              <p className="text-xs text-gray-500 text-center">
+            <div className="pt-4 border-t border-border">
+              <p className="text-xs text-muted-foreground text-center">
                 Seus dados estão seguros. Nunca compartilhamos informações com
                 terceiros.
               </p>

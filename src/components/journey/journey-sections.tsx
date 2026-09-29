@@ -13,7 +13,7 @@ function NowRow({ label, item }: { label: string; item: JourneyItem }) {
         <dt className="text-sm text-muted-foreground">{label}</dt>
         <dd className="text-base font-medium text-foreground sm:text-lg">
           {item.title} <span className="text-muted-foreground">em</span>{" "}
-          <span className="text-sky-200">{item.organization}</span>
+          <span className="text-brand">{item.organization}</span>
         </dd>
       </div>
     </div>

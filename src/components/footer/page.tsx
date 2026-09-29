@@ -56,7 +56,7 @@ export default function Footer() {
 
   return (
     <footer
-      className="footer sm:footer-horizontal bg-black text-white border-t border-gray-800 p-4 px-4 md:px-20 items-center pb-24 md:pb-4 max-sm:flex-col max-sm:gap-4"
+      className="footer sm:footer-horizontal bg-background text-foreground border-t border-border p-4 px-4 md:px-20 items-center pb-24 md:pb-4 max-sm:flex-col max-sm:gap-4"
       suppressHydrationWarning
     >
       {/* Lado esquerdo: logo e informações do GitHub */}
@@ -72,13 +72,13 @@ export default function Footer() {
         <div>
           <span className="font-medium text-lg block">Odilon</span>
           {loading ? (
-            <div className="text-xs text-gray-500 animate-pulse">
+            <div className="text-xs text-muted-foreground animate-pulse">
               Carregando dados do GitHub...
             </div>
           ) : githubData?.created_at ? (
-            <div className="text-xs text-gray-400">
+            <div className="text-xs text-muted-foreground">
               Desenvolvedor desde{" "}
-              <span className="text-blue-400 font-semibold whitespace-nowrap">
+              <span className="text-blue-700 dark:text-blue-400 font-semibold whitespace-nowrap">
                 {new Date(githubData.created_at).toLocaleDateString("pt-BR", {
                   month: "long",
                   year: "numeric",
@@ -86,7 +86,7 @@ export default function Footer() {
               </span>
             </div>
           ) : (
-            <div className="text-xs text-gray-500">
+            <div className="text-xs text-muted-foreground">
               Dados do GitHub indisponíveis
             </div>
           )}

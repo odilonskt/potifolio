@@ -52,7 +52,7 @@ export function JourneyLogo({ item, size = 56 }: { item: JourneyItem; size?: num
   return (
     <span
       aria-hidden="true"
-      className="flex shrink-0 items-center justify-center rounded-xl border border-border bg-card text-lg font-semibold text-sky-300"
+      className="flex shrink-0 items-center justify-center rounded-xl border border-border bg-card text-lg font-semibold text-brand"
       style={{ width: size, height: size }}
     >
       {item.organization.charAt(0).toUpperCase()}
@@ -78,14 +78,14 @@ export function JourneyCard({ item, showKind = false }: { item: JourneyItem; sho
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="text-base font-semibold text-foreground sm:text-lg">{item.title}</h3>
             {isCurrent && (
-              <Badge variant="outline" className="border-emerald-400/40 text-emerald-300">
+              <Badge variant="outline" className="border-emerald-600/40 text-emerald-700 dark:border-emerald-400/40 dark:text-emerald-300">
                 Atual
               </Badge>
             )}
             {showKind && <Badge variant="secondary">{JOURNEY_KIND_LABELS[item.kind]}</Badge>}
           </div>
 
-          <p className="font-medium text-sky-200">{item.organization}</p>
+          <p className="font-medium text-brand">{item.organization}</p>
           <Period item={item} />
 
           <p className="max-w-prose whitespace-pre-line text-sm leading-relaxed text-foreground/85 sm:text-base">
@@ -97,7 +97,7 @@ export function JourneyCard({ item, showKind = false }: { item: JourneyItem; sho
               href={item.link}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex w-fit items-center gap-1.5 rounded-sm text-sm font-medium text-sky-300 underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-400"
+              className="inline-flex w-fit items-center gap-1.5 rounded-sm text-sm font-medium text-brand underline-offset-4 hover:underline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
             >
               {LINK_LABELS[item.kind]}
               <ExternalLink className="size-3.5" aria-hidden="true" />

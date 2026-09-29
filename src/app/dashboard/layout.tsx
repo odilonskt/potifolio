@@ -14,7 +14,8 @@ export default async function DashboardLayout({ children }: { children: React.Re
   await requireAdmin();
 
   return (
-    <div className="min-h-screen bg-background">
+    // Painel sempre no tema escuro (layout interno pensado para ele)
+    <div className="dark min-h-screen bg-background text-foreground">
       <DashboardNav />
       {children}
     </div>

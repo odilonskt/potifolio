@@ -18,7 +18,7 @@ import { TbApi } from "react-icons/tb";
 import styles from "./InfinityScroll.module.css";
 
 const technologies = [
-  { icon: SiNextdotjs, name: "Next.js", color: "text-white dark:text-white" },
+  { icon: SiNextdotjs, name: "Next.js", color: "text-foreground" },
   { icon: SiNestjs, name: "NestJS", color: "text-red-500" },
   { icon: SiTypescript, name: "TypeScript", color: "text-blue-500" },
   { icon: SiJavascript, name: "JavaScript", color: "text-yellow-400" },
@@ -30,7 +30,7 @@ const technologies = [
   { icon: SiGit, name: "Git", color: "text-orange-500" },
   { icon: TbApi, name: "RESTful", color: "text-green-500" },
   { icon: SiCss3, name: "CSS3", color: "text-blue-600" },
-  { icon: SiExpress, name: "Express", color: "text-gray-700" },
+  { icon: SiExpress, name: "Express", color: "text-foreground/75" },
   { icon: IoLogoFirebase, name: "Firebase", color: "text-yellow-400" },
 ];
 
@@ -64,7 +64,7 @@ export default function InfinityScrollAnimation({
                     <tech.icon
                       className={`text-3xl md:text-4xl lg:text-5xl ${tech.color}`}
                     />
-                    <span className="mt-1 md:mt-2 text-white text-xs md:text-sm">
+                    <span className="mt-1 md:mt-2 text-foreground text-xs md:text-sm">
                       {tech.name}
                     </span>
                   </div>

@@ -144,19 +144,19 @@ export default function Titan({ title, subtitle, id, className }: TitanProps) {
 
         <div className="relative z-10 text-center px-4">
           {/* Eyebrow label — helps screen readers understand section purpose */}
-          <p className="text-[11px] tracking-[0.35em] text-slate-500 uppercase mb-3">
+          <p className="text-[11px] tracking-[0.35em] text-muted-foreground uppercase mb-3">
             {subtitle ?? "Seção"}
           </p>
 
           <h2
             id={headingId}
-            className="text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight"
+            className="text-2xl sm:text-4xl md:text-5xl font-bold text-foreground tracking-tight"
           >
             {title}
           </h2>
 
           {subtitle && (
-            <p className="mt-2 text-sm sm:text-base text-slate-400 max-w-md mx-auto">
+            <p className="mt-2 text-sm sm:text-base text-muted-foreground max-w-md mx-auto">
               {subtitle}
             </p>
           )}

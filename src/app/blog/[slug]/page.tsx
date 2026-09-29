@@ -56,7 +56,7 @@ export default async function PostPage({ params }: Props) {
       <main id="conteudo" className="mx-auto w-full max-w-3xl px-4 pt-16 pb-28 sm:pt-32">
         <Link
           href="/blog"
-          className="inline-flex items-center gap-2 rounded-sm text-sm text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-sky-400"
+          className="inline-flex items-center gap-2 rounded-sm text-sm text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-ring"
         >
           <ArrowLeft className="size-4" aria-hidden="true" />
           Todos os posts

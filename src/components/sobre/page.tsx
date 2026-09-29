@@ -45,7 +45,7 @@ function formatarTextoComLinksENegrito(
         <strong key={index}>
           <Link
             href={palavraLink.href}
-            className="font-bold text-white hover:text-blue-400 transition-colors duration-300 underline underline-offset-4"
+            className="font-bold text-foreground hover:text-blue-600 dark:hover:text-blue-400 transition-colors duration-300 underline underline-offset-4"
             title={palavraLink.descricao || `Ir para ${palavraLink.palavra}`}
             target={palavraLink.target}
           >
@@ -62,7 +62,7 @@ function formatarTextoComLinksENegrito(
 
     if (palavraNegrito) {
       return (
-        <strong key={index} className="font-bold text-white">
+        <strong key={index} className="font-bold text-foreground">
           {parte}
         </strong>
       );
@@ -195,7 +195,7 @@ export default function Sobre(props: SobreProps) {
             />
 
             <div
-              className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm"
+              className="relative bg-linear-to-br from-card to-background border border-border hover:border-foreground/25 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm"
               suppressHydrationWarning
             >
               <div
@@ -208,7 +208,7 @@ export default function Sobre(props: SobreProps) {
                 </h3>
               </div>
 
-              <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed sm:leading-loose md:leading-loose text-justify sm:text-left">
+              <p className="text-sm xs:text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed sm:leading-loose md:leading-loose text-justify sm:text-left">
                 {formatarTextoComLinksENegrito(
                   props.descrition_hardSkill,
                   palavrasComLinks,
@@ -229,7 +229,7 @@ export default function Sobre(props: SobreProps) {
             />
 
             <div
-              className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm"
+              className="relative bg-linear-to-br from-card to-background border border-border hover:border-foreground/25 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm"
               suppressHydrationWarning
             >
               <div
@@ -242,7 +242,7 @@ export default function Sobre(props: SobreProps) {
                 </h3>
               </div>
 
-              <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed sm:leading-loose md:leading-loose text-justify sm:text-left">
+              <p className="text-sm xs:text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed sm:leading-loose md:leading-loose text-justify sm:text-left">
                 {formatarTextoComLinksENegrito(
                   props.descrition_softSkill,
                   palavrasComLinks,
@@ -263,7 +263,7 @@ export default function Sobre(props: SobreProps) {
             />
 
             <div
-              className="relative bg-linear-to-br from-gray-950 to-black border border-gray-800 hover:border-gray-700 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm"
+              className="relative bg-linear-to-br from-card to-background border border-border hover:border-foreground/25 rounded-2xl p-6 xs:p-7 sm:p-8 md:p-10 transition-all duration-300 backdrop-blur-sm"
               suppressHydrationWarning
             >
               <div
@@ -276,7 +276,7 @@ export default function Sobre(props: SobreProps) {
                 </h3>
               </div>
 
-              <p className="text-sm xs:text-base sm:text-lg md:text-xl text-gray-300 leading-relaxed sm:leading-loose md:leading-loose text-justify sm:text-left">
+              <p className="text-sm xs:text-base sm:text-lg md:text-xl text-foreground/80 leading-relaxed sm:leading-loose md:leading-loose text-justify sm:text-left">
                 {formatarTextoComLinksENegrito(
                   props.descrition_estudo,
                   palavrasComLinks,

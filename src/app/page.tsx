@@ -15,7 +15,7 @@ export default function Home() {
   return (
     <>
       {/* <link rel="icon" href="/favicon.svg" sizes="any" /> */}
-      <main className="bg-slate-950">
+      <main id="conteudo" className="bg-background">
         <Header />
         <Start id="start"></Start>
 
@@ -36,7 +36,7 @@ sou Formando em Desenvolvedor Web pelo programa Programadores do Amanhã, com fo
 Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecimentos na prática."
         />
         <JourneySections />
-        <section id="Tecnologia" className="py-12 bg-slate-950">
+        <section id="Tecnologia" className="py-12 bg-background">
           <Titan
             title="Tecnologias"
             subtitle="Ferramentas e linguagens que domino"
@@ -47,7 +47,7 @@ Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecim
         </section>
         <section
           id="Destaque"
-          className="w-full bg-slate-950 py-8 xs:py-12 sm:py-16 md:py-20 px-3 xs:px-4 sm:px-6 md:px-8"
+          className="w-full bg-background py-8 xs:py-12 sm:py-16 md:py-20 px-3 xs:px-4 sm:px-6 md:px-8"
           suppressHydrationWarning
         >
           <div className="flex flex-col items-center justify-center gap-8 xs:gap-10 sm:gap-12 md:gap-16 max-w-7xl mx-auto">
@@ -72,7 +72,7 @@ Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecim
             </div>
           </div>
         </section>
-        <section id="Projeto" className="bg-slate-950 py-12">
+        <section id="Projeto" className="bg-background py-12">
           <Titan
             title="Projetos"
             subtitle="Explore meus repositórios no GitHub"
@@ -82,7 +82,7 @@ Buscando  oportunidade como Desenvolvedor Full Stack, para aplicar meus conhecim
           </div>
         </section>
 
-        <section className="py-12 bg-slate-950" id="Contato">
+        <section className="py-12 bg-background" id="Contato">
           <Titan title="Contato" subtitle="Vamos trabalhar juntos!" />
           <div className="py-8">
             <ContactForm />

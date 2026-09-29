@@ -7,6 +7,7 @@ import { Github, Linkedin } from "@deemlol/next-icons";
 import { Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
 import Aurora from "../ui/Aurora";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -101,7 +102,7 @@ function ProfileImageSkeleton() {
     <Skeleton
       className={cn(
         "shrink-0 w-44 h-44 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-2xl",
-        "bg-zinc-900",
+        "bg-muted",
       )}
     />
   );
@@ -110,14 +111,14 @@ function ProfileImageSkeleton() {
 function HeaderSkeleton() {
   return (
     <div className="space-y-2 w-full">
-      <Skeleton className={cn("h-3 w-20 mx-auto lg:mx-0", "bg-zinc-900")} />
+      <Skeleton className={cn("h-3 w-20 mx-auto lg:mx-0", "bg-muted")} />
       <Skeleton
         className={cn(
           "h-10 sm:h-14 md:h-16 w-64 sm:w-80 mx-auto lg:mx-0",
-          "bg-zinc-900",
+          "bg-muted",
         )}
       />
-      <Skeleton className={cn("h-5 w-40 mx-auto lg:mx-0", "bg-zinc-900")} />
+      <Skeleton className={cn("h-5 w-40 mx-auto lg:mx-0", "bg-muted")} />
     </div>
   );
 }
@@ -125,12 +126,12 @@ function HeaderSkeleton() {
 function BioSkeleton() {
   return (
     <div className="space-y-2 w-full">
-      <Skeleton className={cn("h-4 w-full max-w-lg", "bg-zinc-900")} />
+      <Skeleton className={cn("h-4 w-full max-w-lg", "bg-muted")} />
       <Skeleton
-        className={cn("h-4 w-4/5 max-w-lg mx-auto lg:mx-0", "bg-zinc-900")}
+        className={cn("h-4 w-4/5 max-w-lg mx-auto lg:mx-0", "bg-muted")}
       />
       <Skeleton
-        className={cn("h-3 w-24 mx-auto lg:mx-0 mt-1", "bg-zinc-900")}
+        className={cn("h-3 w-24 mx-auto lg:mx-0 mt-1", "bg-muted")}
       />
     </div>
   );
@@ -140,9 +141,9 @@ function StatsGridSkeleton() {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 w-full">
       {Array.from({ length: 4 }).map((_, i) => (
-        <div key={i} className="p-4 rounded-xl border border-white/5 space-y-2">
-          <Skeleton className={cn("h-7 w-10", "bg-zinc-900")} />
-          <Skeleton className={cn("h-3 w-16", "bg-zinc-900")} />
+        <div key={i} className="p-4 rounded-xl border border-foreground/5 space-y-2">
+          <Skeleton className={cn("h-7 w-10", "bg-muted")} />
+          <Skeleton className={cn("h-3 w-16", "bg-muted")} />
         </div>
       ))}
     </div>
@@ -156,11 +157,11 @@ function ActionButtonsSkeleton() {
       aria-hidden="true"
     >
       <div className="flex gap-2">
-        <Skeleton className={cn("w-10 h-10 rounded-full", "bg-zinc-900")} />
-        <Skeleton className={cn("w-10 h-10 rounded-full", "bg-zinc-900")} />
-        <Skeleton className={cn("w-10 h-10 rounded-full", "bg-zinc-900")} />
+        <Skeleton className={cn("w-10 h-10 rounded-full", "bg-muted")} />
+        <Skeleton className={cn("w-10 h-10 rounded-full", "bg-muted")} />
+        <Skeleton className={cn("w-10 h-10 rounded-full", "bg-muted")} />
       </div>
-      <Skeleton className={cn("h-9 w-28 rounded-xl", "bg-zinc-900")} />
+      <Skeleton className={cn("h-9 w-28 rounded-xl", "bg-muted")} />
     </div>
   );
 }
@@ -183,7 +184,7 @@ function ProfileImage() {
             width={400}
             height={400}
             priority={i === 0}
-            className="rounded-2xl object-cover w-full h-full border border-white/10"
+            className="rounded-2xl object-cover w-full h-full border border-foreground/10"
           />
         ))}
       </figure>
@@ -194,13 +195,13 @@ function ProfileImage() {
 function Header() {
   return (
     <header className="space-y-2">
-      <p className="text-xs tracking-[0.3em] text-slate-500 uppercase">
+      <p className="text-xs tracking-[0.3em] text-muted-foreground uppercase">
         Portfólio
       </p>
-      <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-white leading-tight tracking-tight">
+      <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold text-foreground leading-tight tracking-tight">
         Odilon de Campos
       </h1>
-      <h2 className="text-base sm:text-lg text-slate-400 font-normal">
+      <h2 className="text-base sm:text-lg text-muted-foreground font-normal">
         Full-Stack Developer
       </h2>
     </header>
@@ -210,11 +211,11 @@ function Header() {
 function Bio({ location }: { location?: string }) {
   return (
     <div className="space-y-2 w-full">
-      <p className="text-sm sm:text-base text-slate-400 max-w-lg leading-relaxed">
+      <p className="text-sm sm:text-base text-muted-foreground max-w-lg leading-relaxed">
         {BIO_TEXT}
       </p>
       {location?.trim() && (
-        <p className="text-xs text-slate-500 flex items-center justify-center lg:justify-start gap-1.5">
+        <p className="text-xs text-muted-foreground flex items-center justify-center lg:justify-start gap-1.5">
           <span aria-hidden>📍</span>
           <span>{location}</span>
         </p>
@@ -225,11 +226,11 @@ function Bio({ location }: { location?: string }) {
 
 function StatCard({ label, value }: StatItem) {
   return (
-    <div className="flex flex-col gap-0.5 p-4 rounded-xl border border-white/5 bg-white/[0.02] hover:bg-white/[0.04] transition-colors">
-      <span className="text-2xl font-bold text-white tabular-nums">
+    <div className="flex flex-col gap-0.5 p-4 rounded-xl border border-foreground/5 bg-foreground/[0.02] hover:bg-foreground/[0.04] transition-colors">
+      <span className="text-2xl font-bold text-foreground tabular-nums">
         {value}
       </span>
-      <span className="text-xs text-slate-500">{label}</span>
+      <span className="text-xs text-muted-foreground">{label}</span>
     </div>
   );
 }
@@ -271,36 +272,59 @@ function SocialButton({
       aria-label={label}
       className={cn(
         "flex items-center justify-center w-10 h-10 rounded-full",
-        "border border-white/10 bg-white/[0.03]",
-        "hover:border-white/20 hover:bg-white/[0.07]",
+        "border border-foreground/10 bg-foreground/[0.03]",
+        "hover:border-foreground/20 hover:bg-foreground/[0.07]",
         "transition-all duration-200 hover:scale-105 active:scale-95",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         `hover:shadow-md ${glow}`,
       )}
     >
-      <Icon size={16} color="white" aria-hidden />
+      <Icon size={16} className="text-foreground" aria-hidden />
     </Link>
   );
 }
 
 function EmailButton() {
-  const copyEmail = () => navigator.clipboard.writeText(EMAIL);
+  const [copied, setCopied] = useState(false);
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(EMAIL);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      // Sem permissão de área de transferência: abre o app de e-mail
+      window.location.href = `mailto:${EMAIL}`;
+    }
+  };
 
   return (
+    <span className="relative inline-flex">
     <button
+      type="button"
       onClick={copyEmail}
-      aria-label="Copiar endereço de e-mail"
+      aria-label={copied ? "E-mail copiado" : "Copiar endereço de e-mail"}
       className={cn(
         "flex items-center justify-center w-10 h-10 rounded-full",
-        "border border-white/10 bg-white/[0.03]",
-        "hover:border-white/20 hover:bg-white/[0.07]",
+        "border border-foreground/10 bg-foreground/[0.03]",
+        "hover:border-foreground/20 hover:bg-foreground/[0.07]",
         "transition-all duration-200 hover:scale-105 active:scale-95",
-        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/30",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
         "hover:shadow-md hover:shadow-rose-500/30",
       )}
     >
-      <Mail size={16} color="white" aria-hidden />
+      <Mail size={16} className="text-foreground" aria-hidden />
     </button>
+      {/* Confirmação visível e anunciada por leitores de tela */}
+      <span
+        role="status"
+        className={cn(
+          "pointer-events-none absolute top-full left-1/2 mt-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-foreground px-2 py-1 text-xs text-background transition-opacity",
+          copied ? "opacity-100" : "opacity-0",
+        )}
+      >
+        {copied ? "E-mail copiado" : ""}
+      </span>
+    </span>
   );
 }
 
@@ -376,7 +400,7 @@ export default function Start({ id }: StartProps) {
   return (
     <main
       id={id}
-      className="relative w-full min-h-screen bg-slate-950 overflow-hidden text-white"
+      className="relative w-full min-h-screen bg-background overflow-hidden text-foreground"
     >
       {/* Aurora background */}
       <div className="absolute inset-0 -z-10 opacity-40">

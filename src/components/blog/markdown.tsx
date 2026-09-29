@@ -64,7 +64,7 @@ export function Markdown({
   return (
     <div
       className={cn(
-        "prose prose-invert prose-slate max-w-none prose-headings:scroll-mt-24 prose-headings:font-semibold prose-a:text-sky-300 prose-a:underline-offset-4 prose-code:before:content-none prose-code:after:content-none prose-pre:border prose-pre:border-border",
+        "prose prose-slate dark:prose-invert max-w-none prose-headings:scroll-mt-24 prose-headings:font-semibold prose-a:text-brand prose-a:underline-offset-4 prose-code:before:content-none prose-code:after:content-none prose-pre:border prose-pre:border-border",
         className
       )}
     >

@@ -244,11 +244,11 @@ export default function GithubRepos() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="bg-zinc-950 border-zinc-900">
-                <Skeleton className="h-40 w-full bg-zinc-900" />
+              <Card key={i} className="bg-card border-border">
+                <Skeleton className="h-40 w-full bg-muted" />
                 <div className="p-4 space-y-3">
-                  <Skeleton className="h-5 w-32 bg-zinc-900bg-zinc-900" />
-                  <Skeleton className="h-4 w-full bg-zinc-900" />
+                  <Skeleton className="h-5 w-32 bg-muted" />
+                  <Skeleton className="h-4 w-full bg-muted" />
                 </div>
               </Card>
             ))
@@ -261,10 +261,10 @@ export default function GithubRepos() {
               return (
                 <article
                   key={repo.id}
-                  className="group bg-black border border-zinc-800 rounded-lg overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-white/20"
+                  className="group bg-card border border-border rounded-lg overflow-hidden shadow-sm focus-within:ring-2 focus-within:ring-ring/60"
                   aria-labelledby={`repo-${repo.id}-title`}
                 >
-                  <div className="relative h-40 sm:h-44 md:h-48 lg:h-56 w-full bg-zinc-900 overflow-hidden">
+                  <div className="relative h-40 sm:h-44 md:h-48 lg:h-56 w-full bg-muted overflow-hidden">
                     <Image
                       src={imageUrl}
                       alt={`Preview do repositório ${repo.name}`}
@@ -274,7 +274,7 @@ export default function GithubRepos() {
                     />
                   </div>
 
-                  <CardContent className="p-4 space-y-3 text-white">
+                  <CardContent className="p-4 space-y-3 text-foreground">
                     <header className="flex items-start justify-between gap-3">
                       <div className="flex items-center gap-3">
                         <Image
@@ -293,7 +293,7 @@ export default function GithubRepos() {
                       </div>
                       <time
                         dateTime={repo.updated_at}
-                        className="text-xs text-zinc-400"
+                        className="text-xs text-muted-foreground"
                         aria-label={`Última atualização ${new Date(
                           repo.updated_at,
                         ).toLocaleDateString()}`}
@@ -302,14 +302,14 @@ export default function GithubRepos() {
                       </time>
                     </header>
 
-                    <p className="text-sm text-zinc-300 line-clamp-2 min-h-[2.5rem]">
+                    <p className="text-sm text-foreground/80 line-clamp-2 min-h-[2.5rem]">
                       {repo.description || "Sem descrição"}
                     </p>
 
                     {langPercentages.length > 0 && (
                       <div className="space-y-2">
                         <div
-                          className="flex h-2 rounded-full overflow-hidden bg-zinc-900"
+                          className="flex h-2 rounded-full overflow-hidden bg-muted"
                           role="img"
                           aria-label={`Linguagens: ${langPercentages
                             .map((l) => `${l.language} ${l.percentage}%`)
@@ -331,7 +331,7 @@ export default function GithubRepos() {
                           {langPercentages.slice(0, 3).map((lang, i) => (
                             <span
                               key={i}
-                              className="flex items-center gap-2 text-zinc-300"
+                              className="flex items-center gap-2 text-foreground/80"
                             >
                               <span
                                 className="w-2 h-2 rounded-full"
@@ -340,7 +340,7 @@ export default function GithubRepos() {
                               />
                               <span className="sr-only">Linguagem: </span>
                               {lang.language}{" "}
-                              <span className="text-zinc-400">
+                              <span className="text-muted-foreground">
                                 {lang.percentage}%
                               </span>
                             </span>
@@ -353,7 +353,7 @@ export default function GithubRepos() {
                       <Button
                         asChild
                         size="sm"
-                        className="flex-1 bg-zinc-900 hover:bg-zinc-800 text-white border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                        className="flex-1 bg-muted hover:bg-muted/70 text-foreground border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       >
                         <a
                           href={repo.html_url}
@@ -372,7 +372,7 @@ export default function GithubRepos() {
                         <Button
                           asChild
                           size="sm"
-                          className="flex-1 bg-white/5 hover:bg-white/10 text-white border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/50"
+                          className="flex-1 bg-foreground/5 hover:bg-foreground/10 text-foreground border-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                         >
                           <a
                             href={repo.homepage}

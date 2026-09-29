@@ -19,8 +19,8 @@ function Timeline({ items, label }: { items: JourneyItem[]; label: string }) {
           <span
             aria-hidden="true"
             className={cn(
-              "absolute top-8 -left-[31px] size-3 rounded-full border-2 border-sky-400 sm:-left-[39px]",
-              !item.endDate && item.kind !== "certificate" ? "bg-sky-400" : "bg-background"
+              "absolute top-8 -left-[31px] size-3 rounded-full border-2 border-brand sm:-left-[39px]",
+              !item.endDate && item.kind !== "certificate" ? "bg-brand" : "bg-background"
             )}
           />
           <JourneyCard item={item} />
