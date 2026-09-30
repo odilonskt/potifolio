@@ -4,6 +4,13 @@ import { z } from "zod";
 
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
 
+/** Aceita "aaaa-mm" e também "mm/aaaa" (como o campo exibe), sempre gravando "aaaa-mm". */
+const month = (message: string) =>
+  z.preprocess(
+    (value) => (typeof value === "string" ? value.trim().replace(/^(\d{2})\/(\d{4})$/, "$2-$1") : value),
+    z.string().regex(monthRegex, message),
+  );
+
 const httpsUrl = z
   .string()
   .trim()
@@ -32,8 +39,8 @@ export const journeyInputSchema = z
     title: z.string().trim().min(2, "Informe o nome").max(120),
     organization: z.string().trim().min(2, "Informe a instituição ou empresa").max(120),
     description: z.string().trim().min(10, "Escreva ao menos 10 caracteres").max(1200),
-    startDate: z.string().regex(monthRegex, "Informe o mês de início"),
-    endDate: optional(z.string().regex(monthRegex, "Mês de término inválido")),
+    startDate: month("Informe o mês de início no formato mm/aaaa"),
+    endDate: optional(month("Mês de término inválido: use mm/aaaa")),
     link: optional(httpsUrl),
     imageAlt: optional(z.string().trim().max(160)),
   })

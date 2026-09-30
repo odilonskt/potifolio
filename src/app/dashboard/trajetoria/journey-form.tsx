@@ -26,6 +26,7 @@ import {
 
 import { saveJourneyAction } from "../actions";
 import { fieldProps, FieldErrors, FormMessage, ImageField, SubmitButton } from "../form-parts";
+import { MonthField } from "../month-field";
 
 const KIND_HINTS: Record<JourneyItem["kind"], string> = {
   work: "Emprego, estágio ou freelance",
@@ -107,29 +108,23 @@ export function JourneyForm({ item }: { item?: JourneyItem | null }) {
         </Field>
 
         <div className="grid gap-6 sm:grid-cols-2">
-          <Field data-invalid={invalid("startDate")}>
-            <FieldLabel htmlFor="startDate">{isCertificate ? "Emitido em" : "Início"}</FieldLabel>
-            <Input {...fieldProps(state, "startDate")} type="month" defaultValue={value("startDate")} required />
-            <FieldErrors state={state} name="startDate" />
-          </Field>
+          <MonthField
+            state={state}
+            name="startDate"
+            label={isCertificate ? "Emitido em" : "Início"}
+            defaultValue={value("startDate")}
+            required
+          />
 
           {!isCertificate && (
-            <Field data-invalid={invalid("endDate")}>
-              <FieldLabel htmlFor="endDate">Término</FieldLabel>
-              <Input
-                {...fieldProps(state, "endDate")}
-                type="month"
-                defaultValue={value("endDate")}
-                disabled={isCurrent}
-              />
+            <MonthField state={state} name="endDate" label="Término" defaultValue={value("endDate")} disabled={isCurrent}>
               <div className="flex items-center gap-2">
                 <Switch id="current" name="current" checked={isCurrent} onCheckedChange={setIsCurrent} />
                 <Label htmlFor="current" className="font-normal">
                   {kind === "work" ? "Trabalho aqui atualmente" : "Estou cursando"}
                 </Label>
               </div>
-              <FieldErrors state={state} name="endDate" />
-            </Field>
+            </MonthField>
           )}
         </div>
         {/* Certificados não têm término */}
