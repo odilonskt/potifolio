@@ -24,11 +24,6 @@ export const metadata: Metadata = {
   description:
     "Portfólio de Odilon, desenvolvedor full-stack apaixonado por criar soluções inovadoras e impactantes. Explore meus projetos, habilidades e experiência para conhecer meu trabalho e minha jornada na área de desenvolvimento.",
   generator: "Next.js",
-  // <CHANGE> Removed icon.svg reference that was causing 404 errors
-  icons: {
-    icon: "/favicon.svg", // ✅ caminho para o favicon
-    shortcut: "/favicon.svg", // opcional, para navegadores que usam shortcut icon
-  },
 };
 
 export default async function RootLayout({

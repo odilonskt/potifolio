@@ -1,9 +1,9 @@
 "use client";
 
 import { Github, Instagram, Linkedin } from "lucide-react";
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 
+import { BrandMark } from "@/components/brand-mark";
 import { useGitHubUserContext } from "@/context/github-user-context";
 import { PROFILE, SOCIAL_LINKS, type SocialName } from "@/lib/content/profile";
 
@@ -28,7 +28,7 @@ export default function Footer() {
     <footer className="border-t border-border bg-background pb-24 md:pb-0">
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-6 px-4 py-8 sm:flex-row sm:justify-between sm:px-6">
         <div className="flex items-center gap-3">
-          <Image src="/favicon.svg" alt="" width={36} height={36} className="size-9 rounded-lg" />
+          <BrandMark />
           <div className="flex flex-col">
             <span className="font-medium text-foreground">{PROFILE.name}</span>
             {githubData?.created_at && (
