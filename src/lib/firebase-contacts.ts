@@ -13,8 +13,6 @@ export interface Contact {
   nome: string;
   email: string;
   telefone?: string;
-  /** IP do envio (prevenção de spam/abuso). Só aparece no painel. */
-  ip?: string;
   message: string;
   subject: string;
   read: boolean;
@@ -44,7 +42,6 @@ function toContact(doc: DocumentSnapshot): Contact {
     nome: String(data.nome ?? ""),
     email: String(data.email ?? ""),
     telefone: data.telefone ? String(data.telefone) : undefined,
-    ip: typeof data.ip === "string" ? data.ip : undefined,
     message: String(data.message ?? ""),
     subject: String(data.subject ?? ""),
     read: Boolean(data.read),
@@ -70,18 +67,13 @@ export function getAllContacts(): Promise<ApiResponse<Contact[]>> {
   });
 }
 
-/** `ip` já deve vir validado (ver clientIpForStorage). */
-export function saveContactForm(
-  data: ContactFormData,
-  meta: { ip?: string } = {},
-): Promise<ApiResponse<{ id: string }>> {
+export function saveContactForm(data: ContactFormData): Promise<ApiResponse<{ id: string }>> {
   return run("Erro ao salvar contato", async () => {
     // Só os campos do formulário: nada vindo do cliente define status ou datas
     const ref = await contacts().add({
       nome: data.nome,
       email: data.email,
       telefone: data.telefone || "",
-      ip: meta.ip ?? null,
       subject: data.subject,
       message: data.message,
       read: false,
