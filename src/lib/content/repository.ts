@@ -1,5 +1,5 @@
 // lib/content/repository.ts
-// Leitura e escrita da trajetória, do blog e dos projetos no Firestore (via Admin SDK, só no servidor).
+// Leitura e escrita da trajetória, do blog, dos projetos e do currículo no Firestore (via Admin SDK, só no servidor).
 // Leituras públicas usam cache com tag; as server actions invalidam com updateTag().
 import "server-only";
 
@@ -7,6 +7,7 @@ import type { DocumentSnapshot } from "firebase-admin/firestore";
 import { unstable_cache } from "next/cache";
 
 import { adminDb, isAdminConfigured } from "@/lib/firebase/admin";
+import type { Resume } from "@/lib/content/resume";
 import type { JourneyItem, Post, Project } from "@/lib/content/schemas";
 
 export const JOURNEY_COLLECTION = "journey";
@@ -15,6 +16,9 @@ export const JOURNEY_TAG = "journey";
 export const POSTS_TAG = "posts";
 export const PROJECTS_COLLECTION = "projects";
 export const PROJECTS_TAG = "projects";
+export const RESUME_TAG = "resume";
+/** Um único currículo: coleção "resume", documento "main" */
+export const RESUME_DOC = { collection: "resume", id: "main" } as const;
 
 const REVALIDATE_SECONDS = 3600;
 
@@ -158,4 +162,36 @@ export async function getPublishedProjects(): Promise<Project[]> {
 export async function getProject(id: string): Promise<Project | null> {
   const doc = await adminDb().collection(PROJECTS_COLLECTION).doc(id).get();
   return doc.exists ? toProject(doc) : null;
+}
+
+// ─── Currículo ────────────────────────────────────────────────────────────────
+
+const resumeRef = () => adminDb().collection(RESUME_DOC.collection).doc(RESUME_DOC.id);
+
+/** Para o painel: null enquanto o currículo nunca foi salvo. */
+export async function getResumeUncached(): Promise<Resume | null> {
+  const doc = await resumeRef().get();
+  return doc.exists ? (doc.data() as Resume) : null;
+}
+
+const getResumeCached = unstable_cache(getResumeUncached, ["resume:main"], {
+  tags: [RESUME_TAG],
+  revalidate: REVALIDATE_SECONDS,
+});
+
+/** Para páginas públicas: só devolve o currículo publicado; em erro, null. */
+export async function getPublishedResume(): Promise<Resume | null> {
+  if (!isAdminConfigured()) return null;
+  try {
+    const resume = await getResumeCached();
+    return resume?.published ? resume : null;
+  } catch (error) {
+    console.error("Erro ao carregar currículo:", error);
+    return null;
+  }
+}
+
+export async function saveResume(resume: Resume): Promise<void> {
+  // O Firestore recusa undefined, inclusive dentro das listas: o JSON descarta esses campos
+  await resumeRef().set(JSON.parse(JSON.stringify(resume)));
 }

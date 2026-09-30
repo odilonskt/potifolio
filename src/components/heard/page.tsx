@@ -31,7 +31,7 @@ export default function ResponsiveNav() {
   return (
     <>
       {/* ========== DESKTOP ========== */}
-      <header className="fixed inset-x-0 top-3 z-50 hidden justify-center px-4 md:flex">
+      <header className="fixed inset-x-0 top-3 z-50 hidden justify-center px-4 md:flex print:hidden">
         <nav
           aria-label="Navegação principal"
           className="flex items-center gap-1 rounded-full border border-border bg-background/80 p-1.5 shadow-sm backdrop-blur-md"
@@ -66,14 +66,14 @@ export default function ResponsiveNav() {
       {/* ========== CELULAR ========== */}
       <AnimatedThemeToggler
         className={cn(
-          "fixed top-3 right-3 z-50 flex size-11 items-center justify-center rounded-full border border-border bg-background/80 text-foreground shadow-sm backdrop-blur-md md:hidden [&_svg]:size-5",
+          "fixed top-3 right-3 z-50 flex size-11 items-center justify-center rounded-full border border-border bg-background/80 text-foreground shadow-sm backdrop-blur-md md:hidden print:hidden [&_svg]:size-5",
           focusRing,
         )}
       />
 
       <nav
         aria-label="Navegação principal"
-        className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
+        className="fixed inset-x-0 bottom-0 z-50 border-t border-border bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden print:hidden"
       >
         <ul className="grid grid-cols-6">
           {MOBILE_ITEMS.map(({ label, href, icon: Icon }) => (

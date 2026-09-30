@@ -19,8 +19,11 @@ import {
   POSTS_TAG,
   PROJECTS_COLLECTION,
   PROJECTS_TAG,
+  RESUME_TAG,
+  saveResume,
   uniqueSlug,
 } from "@/lib/content/repository";
+import { describeIssue, resumeInputSchema } from "@/lib/content/resume";
 import {
   journeyInputSchema,
   MAX_PROJECT_IMAGES,
@@ -336,4 +339,41 @@ export async function deleteProjectAction(formData: FormData): Promise<void> {
   await adminDb().collection(PROJECTS_COLLECTION).doc(id).delete();
   await Promise.all(existing.images.map((image) => deleteImage(image.path)));
   updateTag(PROJECTS_TAG);
+}
+
+// ─── Currículo ────────────────────────────────────────────────────────────────
+
+const MAX_RESUME_JSON = 100_000; // ~10x um currículo completo
+
+export async function saveResumeAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const { uid } = await requireAdmin();
+  if (isRateLimited(uid, "save")) return errorState(formData, { message: RATE_LIMITED_MESSAGE });
+
+  // O formulário envia o currículo inteiro como JSON (seções com listas)
+  const raw = formData.get("resume");
+  let input: unknown;
+  try {
+    input = typeof raw === "string" && raw.length <= MAX_RESUME_JSON ? JSON.parse(raw) : null;
+  } catch {
+    input = null;
+  }
+  if (!input) return errorState(formData, { message: "Dados do currículo inválidos. Recarregue a página." });
+
+  const parsed = resumeInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return errorState(formData, {
+      message: "Revise o currículo:",
+      fieldErrors: { resume: [...new Set(parsed.error.issues.map(describeIssue))].slice(0, 8) },
+    });
+  }
+
+  try {
+    await saveResume({ ...parsed.data, updatedAt: new Date().toISOString() });
+  } catch (error) {
+    console.error("Erro ao salvar currículo:", error);
+    return errorState(formData, { message: "Não foi possível salvar. Tente novamente." });
+  }
+
+  updateTag(RESUME_TAG);
+  redirect("/dashboard/curriculo?salvo=1");
 }
