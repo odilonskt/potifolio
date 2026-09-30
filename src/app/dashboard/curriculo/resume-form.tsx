@@ -1,183 +1,343 @@
 "use client";
 
+import { ArrowDown, ArrowUp, Plus, Trash2 } from "lucide-react";
 import { useActionState, useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { Field, FieldDescription, FieldGroup, FieldLabel, FieldLegend, FieldSet } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { formatMonth } from "@/lib/content/dates";
-import type { Resume } from "@/lib/content/resume";
-import { initialFormState, JOURNEY_KIND_LABELS, JOURNEY_KINDS, type JourneyItem } from "@/lib/content/schemas";
+import type {
+  Resume,
+  ResumeCourse,
+  ResumeEducation,
+  ResumeExperience,
+  ResumeLink,
+  ResumeProject,
+  ResumeSkillGroup,
+} from "@/lib/content/resume";
+import { initialFormState } from "@/lib/content/schemas";
 
 import { saveResumeAction } from "../actions";
-import { fieldProps, FieldErrors, FormMessage, SubmitButton } from "../form-parts";
+import { FormMessage, SubmitButton } from "../form-parts";
 
-/** Valores salvos convertidos para o texto que cada campo edita. */
-function toFormValues(resume: Resume): Record<string, string> {
-  return {
-    name: resume.name,
-    role: resume.role,
-    summary: resume.summary,
-    email: resume.email ?? "",
-    phone: resume.phone ?? "",
-    location: resume.location ?? "",
-    links: resume.links.map((link) => `${link.label} | ${link.url}`).join("\n"),
-    skills: resume.skills.join(", "),
-    softSkills: resume.softSkills.join(", "),
-    languages: resume.languages.join("\n"),
+// Estado controlado: o currículo inteiro vai num input escondido (JSON) e é
+// validado no servidor. Controlado também sobrevive ao reset do form após erro.
+
+type TextProps = {
+  id: string;
+  label: string;
+  value: string | undefined;
+  onChange: (value: string) => void;
+  hint?: string;
+  multiline?: boolean;
+  rows?: number;
+  maxLength?: number;
+  type?: string;
+  placeholder?: string;
+};
+
+function TextField({ id, label, value, onChange, hint, multiline, rows = 3, maxLength, type, placeholder }: TextProps) {
+  const describedBy = hint ? `${id}-hint` : undefined;
+  const common = {
+    id,
+    value: value ?? "",
+    maxLength,
+    placeholder,
+    "aria-describedby": describedBy,
   };
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      {multiline ? (
+        <Textarea {...common} rows={rows} onChange={(event) => onChange(event.target.value)} />
+      ) : (
+        <Input {...common} type={type} onChange={(event) => onChange(event.target.value)} />
+      )}
+      {hint && <FieldDescription id={describedBy}>{hint}</FieldDescription>}
+    </Field>
+  );
 }
 
-export function ResumeForm({ resume, journey }: { resume: Resume; journey: JourneyItem[] }) {
-  const [state, formAction] = useActionState(saveResumeAction, initialFormState);
-  const saved = toFormValues(resume);
-  const value = (name: string) => state.values?.[name] ?? saved[name] ?? "";
-  const invalid = (name: string) => Boolean(state.fieldErrors?.[name]) || undefined;
+/** Tópicos editados como texto, um por linha */
+function BulletsField({ id, value, onChange, max }: { id: string; value: string[]; onChange: (value: string[]) => void; max: number }) {
+  return (
+    <TextField
+      id={id}
+      label="Tópicos"
+      value={value.join("\n")}
+      onChange={(next) => onChange(next.split("\n"))}
+      multiline
+      rows={4}
+      hint={`Um por linha, até ${max}. Comece com um verbo: “Desenvolvimento de...”, “Criação de...”.`}
+    />
+  );
+}
 
-  // Controlados: o React reseta o formulário após a action e perderia as escolhas em caso de erro
-  const [selected, setSelected] = useState(() => new Set(resume.journeyIds));
-  const [published, setPublished] = useState(resume.published);
-
-  const toggle = (id: string, checked: boolean) =>
-    setSelected((current) => {
-      const next = new Set(current);
-      if (checked) next.add(id);
-      else next.delete(id);
-      return next;
-    });
+function ListEditor<T>({
+  title,
+  description,
+  itemName,
+  items,
+  max,
+  empty,
+  onChange,
+  renderItem,
+}: {
+  title: string;
+  description?: string;
+  /** "experiência", "projeto"... usado nos rótulos */
+  itemName: string;
+  items: T[];
+  max: number;
+  empty: T;
+  onChange: (items: T[]) => void;
+  renderItem: (item: T, update: (patch: Partial<T>) => void, index: number) => React.ReactNode;
+}) {
+  const update = (index: number, patch: Partial<T>) =>
+    onChange(items.map((item, current) => (current === index ? { ...item, ...patch } : item)));
+  const move = (index: number, delta: number) => {
+    const next = [...items];
+    const [item] = next.splice(index, 1);
+    next.splice(index + delta, 0, item);
+    onChange(next);
+  };
 
   return (
-    <form action={formAction} className="flex flex-col gap-6" noValidate>
+    <FieldSet>
+      <FieldLegend>{title}</FieldLegend>
+      {description && <FieldDescription>{description}</FieldDescription>}
+      <ol className="flex flex-col gap-4">
+        {items.map((item, index) => (
+          <li key={index} className="flex flex-col gap-4 rounded-lg border border-border p-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <p className="text-sm font-medium text-foreground">
+                {itemName.charAt(0).toUpperCase() + itemName.slice(1)} {index + 1}
+              </p>
+              <div className="flex gap-1">
+                <Button type="button" variant="ghost" size="icon" disabled={index === 0} onClick={() => move(index, -1)} aria-label={`Mover ${itemName} ${index + 1} para cima`}>
+                  <ArrowUp aria-hidden="true" />
+                </Button>
+                <Button type="button" variant="ghost" size="icon" disabled={index === items.length - 1} onClick={() => move(index, 1)} aria-label={`Mover ${itemName} ${index + 1} para baixo`}>
+                  <ArrowDown aria-hidden="true" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="text-destructive"
+                  onClick={() => onChange(items.filter((_, current) => current !== index))}
+                  aria-label={`Remover ${itemName} ${index + 1}`}
+                >
+                  <Trash2 aria-hidden="true" />
+                </Button>
+              </div>
+            </div>
+            {renderItem(item, (patch) => update(index, patch), index)}
+          </li>
+        ))}
+      </ol>
+      <div>
+        <Button type="button" variant="outline" size="sm" disabled={items.length >= max} onClick={() => onChange([...items, empty])}>
+          <Plus data-icon="inline-start" aria-hidden="true" />
+          Adicionar {itemName}
+        </Button>
+      </div>
+    </FieldSet>
+  );
+}
+
+const EMPTY = {
+  link: { label: "", url: "" } satisfies ResumeLink,
+  skill: { label: "", items: "" } satisfies ResumeSkillGroup,
+  experience: { role: "", organization: "", period: "", bullets: [] } satisfies ResumeExperience,
+  project: { name: "", context: "", bullets: [], linkLabel: "", linkUrl: "" } satisfies ResumeProject,
+  education: { course: "", institution: "", period: "", details: "" } satisfies ResumeEducation,
+  course: { name: "", details: "", url: "" } satisfies ResumeCourse,
+};
+
+export function ResumeForm({ resume: initial }: { resume: Resume }) {
+  const [state, formAction] = useActionState(saveResumeAction, initialFormState);
+  const [resume, setResume] = useState<Resume>(initial);
+  const set = <K extends keyof Resume>(key: K) => (value: Resume[K]) => setResume((current) => ({ ...current, [key]: value }));
+  const errors = state.fieldErrors?.resume;
+
+  return (
+    <form action={formAction} className="flex flex-col gap-8" noValidate>
+      <input type="hidden" name="resume" value={JSON.stringify(resume)} />
       <FormMessage state={state} />
+      {errors && (
+        <ul className="-mt-4 flex list-disc flex-col gap-1 pl-5 text-sm text-destructive">
+          {errors.map((error) => (
+            <li key={error}>{error}</li>
+          ))}
+        </ul>
+      )}
 
       <FieldGroup>
         <div className="grid gap-6 sm:grid-cols-2">
-          <Field data-invalid={invalid("name")}>
-            <FieldLabel htmlFor="name">Nome</FieldLabel>
-            <Input {...fieldProps(state, "name")} defaultValue={value("name")} required maxLength={80} autoComplete="name" />
-            <FieldErrors state={state} name="name" />
-          </Field>
-          <Field data-invalid={invalid("role")}>
-            <FieldLabel htmlFor="role">Cargo ou objetivo</FieldLabel>
-            <Input {...fieldProps(state, "role")} defaultValue={value("role")} required maxLength={80} />
-            <FieldErrors state={state} name="role" />
-          </Field>
+          <TextField id="name" label="Nome" value={resume.name} onChange={set("name")} maxLength={80} />
+          <TextField id="headline" label="Cargo ou objetivo" value={resume.headline} onChange={set("headline")} maxLength={80} />
         </div>
-
-        <Field data-invalid={invalid("summary")}>
-          <FieldLabel htmlFor="summary">Resumo profissional</FieldLabel>
-          <Textarea {...fieldProps(state, "summary")} defaultValue={value("summary")} rows={4} required maxLength={1200} />
-          <FieldDescription>Duas ou três frases sobre quem você é e o que busca. Até 1200 caracteres.</FieldDescription>
-          <FieldErrors state={state} name="summary" />
-        </Field>
+        <TextField
+          id="stack"
+          label="Stack em destaque (opcional)"
+          value={resume.stack}
+          onChange={set("stack")}
+          maxLength={120}
+          hint="Aparece abaixo do cargo. Ex.: “JavaScript/TypeScript · React/Next.js · Node.js”."
+        />
+        <TextField
+          id="summary"
+          label="Resumo profissional"
+          value={resume.summary}
+          onChange={set("summary")}
+          multiline
+          rows={6}
+          maxLength={1500}
+          hint="Quem você é, o que já entregou e o que busca. Até 1500 caracteres."
+        />
 
         <FieldSet>
           <FieldLegend>Contato (privado)</FieldLegend>
-          <FieldDescription>Só aparece no PDF baixado pelo painel. A página pública não mostra esses dados.</FieldDescription>
+          <FieldDescription>Só entra no PDF baixado pelo painel. A página pública nunca mostra esses dados.</FieldDescription>
           <div className="grid gap-6 sm:grid-cols-3">
-            <Field data-invalid={invalid("email")}>
-              <FieldLabel htmlFor="email">E-mail</FieldLabel>
-              <Input {...fieldProps(state, "email")} type="email" defaultValue={value("email")} maxLength={120} autoComplete="email" />
-              <FieldErrors state={state} name="email" />
-            </Field>
-            <Field data-invalid={invalid("phone")}>
-              <FieldLabel htmlFor="phone">Telefone</FieldLabel>
-              <Input {...fieldProps(state, "phone")} type="tel" defaultValue={value("phone")} maxLength={30} autoComplete="tel" />
-              <FieldErrors state={state} name="phone" />
-            </Field>
-            <Field data-invalid={invalid("location")}>
-              <FieldLabel htmlFor="location">Cidade</FieldLabel>
-              <Input {...fieldProps(state, "location")} defaultValue={value("location")} maxLength={80} />
-              <FieldErrors state={state} name="location" />
-            </Field>
+            <TextField id="email" label="E-mail" type="email" value={resume.email} onChange={set("email")} maxLength={120} />
+            <TextField id="phone" label="Celular" type="tel" value={resume.phone} onChange={set("phone")} maxLength={30} />
+            <TextField id="location" label="Cidade" value={resume.location} onChange={set("location")} maxLength={80} />
           </div>
         </FieldSet>
 
-        <Field data-invalid={invalid("links")}>
-          <FieldLabel htmlFor="links">Links</FieldLabel>
-          <Textarea {...fieldProps(state, "links")} defaultValue={value("links")} rows={3} className="font-mono text-sm" />
-          <FieldDescription>Um por linha, no formato “GitHub | https://github.com/...”. Até 6.</FieldDescription>
-          <FieldErrors state={state} name="links" />
-        </Field>
-
-        <FieldSet>
-          <FieldLegend>Trajetória no currículo</FieldLegend>
-          <FieldDescription>
-            Marque os itens que entram. Para editar textos e datas, use a página Trajetória.
-          </FieldDescription>
-          {journey.length === 0 ? (
-            <p className="text-sm text-muted-foreground">Nenhum item na Trajetória ainda.</p>
-          ) : (
-            JOURNEY_KINDS.map((kind) => {
-              const items = journey.filter((item) => item.kind === kind);
-              if (items.length === 0) return null;
-              return (
-                <div key={kind} role="group" aria-labelledby={`journey-${kind}`} className="flex flex-col gap-2">
-                  <p id={`journey-${kind}`} className="text-sm font-medium text-foreground">
-                    {JOURNEY_KIND_LABELS[kind]}
-                  </p>
-                  <ul className="flex flex-col gap-2">
-                    {items.map((item) => (
-                      <li key={item.id}>
-                        <Label
-                          htmlFor={`journey-item-${item.id}`}
-                          className="flex cursor-pointer items-start gap-3 rounded-lg border border-border p-3 font-normal has-[:checked]:border-primary has-[:checked]:bg-primary/10"
-                        >
-                          <input
-                            id={`journey-item-${item.id}`}
-                            type="checkbox"
-                            name="journeyIds"
-                            value={item.id}
-                            checked={selected.has(item.id)}
-                            onChange={(event) => toggle(item.id, event.target.checked)}
-                            className="mt-0.5 size-4 accent-primary"
-                          />
-                          <span className="flex min-w-0 flex-col">
-                            <span className="truncate text-foreground">{item.title}</span>
-                            <span className="truncate text-xs text-muted-foreground">
-                              {item.organization}, {formatMonth(item.startDate)}
-                            </span>
-                          </span>
-                        </Label>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              );
-            })
+        <ListEditor
+          title="Links"
+          itemName="link"
+          items={resume.links}
+          max={6}
+          empty={EMPTY.link}
+          onChange={set("links")}
+          renderItem={(link, update, index) => (
+            <div className="grid gap-4 sm:grid-cols-[12rem_1fr]">
+              <TextField id={`link-${index}-label`} label="Rótulo" value={link.label} onChange={(label) => update({ label })} maxLength={40} placeholder="LinkedIn" />
+              <TextField id={`link-${index}-url`} label="Endereço" type="url" value={link.url} onChange={(url) => update({ url })} placeholder="https://" />
+            </div>
           )}
-        </FieldSet>
+        />
 
-        <div className="grid gap-6 sm:grid-cols-2">
-          <Field data-invalid={invalid("skills")}>
-            <FieldLabel htmlFor="skills">Competências técnicas</FieldLabel>
-            <Textarea {...fieldProps(state, "skills")} defaultValue={value("skills")} rows={3} />
-            <FieldDescription>Separadas por vírgula. Até 30.</FieldDescription>
-            <FieldErrors state={state} name="skills" />
-          </Field>
-          <Field data-invalid={invalid("softSkills")}>
-            <FieldLabel htmlFor="softSkills">Competências pessoais</FieldLabel>
-            <Textarea {...fieldProps(state, "softSkills")} defaultValue={value("softSkills")} rows={3} />
-            <FieldDescription>Separadas por vírgula. Até 15.</FieldDescription>
-            <FieldErrors state={state} name="softSkills" />
-          </Field>
-        </div>
+        <ListEditor
+          title="Habilidades"
+          description="Agrupe por área. Ex.: Front-end, Back-end, Banco de dados, Idiomas."
+          itemName="grupo"
+          items={resume.skills}
+          max={8}
+          empty={EMPTY.skill}
+          onChange={set("skills")}
+          renderItem={(group, update, index) => (
+            <div className="grid gap-4 sm:grid-cols-[12rem_1fr]">
+              <TextField id={`skill-${index}-label`} label="Grupo" value={group.label} onChange={(label) => update({ label })} maxLength={40} />
+              <TextField id={`skill-${index}-items`} label="Habilidades" value={group.items} onChange={(items) => update({ items })} maxLength={300} hint="Separadas por vírgula." />
+            </div>
+          )}
+        />
 
-        <Field data-invalid={invalid("languages")}>
-          <FieldLabel htmlFor="languages">Idiomas</FieldLabel>
-          <Textarea {...fieldProps(state, "languages")} defaultValue={value("languages")} rows={2} />
-          <FieldDescription>Um por linha. Ex.: “Inglês: intermediário”.</FieldDescription>
-          <FieldErrors state={state} name="languages" />
-        </Field>
+        <ListEditor
+          title="Experiência profissional"
+          description="Da mais recente para a mais antiga."
+          itemName="experiência"
+          items={resume.experience}
+          max={10}
+          empty={EMPTY.experience}
+          onChange={set("experience")}
+          renderItem={(item, update, index) => (
+            <>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <TextField id={`exp-${index}-role`} label="Cargo" value={item.role} onChange={(role) => update({ role })} maxLength={100} />
+                <TextField id={`exp-${index}-org`} label="Empresa (opcional)" value={item.organization} onChange={(organization) => update({ organization })} maxLength={100} />
+                <TextField id={`exp-${index}-period`} label="Período" value={item.period} onChange={(period) => update({ period })} maxLength={60} placeholder="Ago/2026 – Atual" />
+              </div>
+              <BulletsField id={`exp-${index}-bullets`} value={item.bullets} onChange={(bullets) => update({ bullets })} max={8} />
+            </>
+          )}
+        />
+
+        <ListEditor
+          title="Projetos"
+          itemName="projeto"
+          items={resume.projects}
+          max={10}
+          empty={EMPTY.project}
+          onChange={set("projects")}
+          renderItem={(item, update, index) => (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <TextField id={`proj-${index}-name`} label="Nome" value={item.name} onChange={(name) => update({ name })} maxLength={120} />
+                <TextField id={`proj-${index}-context`} label="Contexto (opcional)" value={item.context} onChange={(context) => update({ context })} maxLength={60} placeholder="Freelance · Next.js" />
+              </div>
+              <BulletsField id={`proj-${index}-bullets`} value={item.bullets} onChange={(bullets) => update({ bullets })} max={6} />
+              <div className="grid gap-4 sm:grid-cols-[12rem_1fr]">
+                <TextField id={`proj-${index}-link-label`} label="Rótulo do link" value={item.linkLabel} onChange={(linkLabel) => update({ linkLabel })} maxLength={30} placeholder="Deploy" />
+                <TextField id={`proj-${index}-link-url`} label="Link (opcional)" type="url" value={item.linkUrl} onChange={(linkUrl) => update({ linkUrl })} placeholder="https://" />
+              </div>
+            </>
+          )}
+        />
+
+        <ListEditor
+          title="Formação"
+          itemName="formação"
+          items={resume.education}
+          max={6}
+          empty={EMPTY.education}
+          onChange={set("education")}
+          renderItem={(item, update, index) => (
+            <>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <TextField id={`edu-${index}-course`} label="Curso" value={item.course} onChange={(course) => update({ course })} maxLength={120} />
+                <TextField id={`edu-${index}-inst`} label="Instituição" value={item.institution} onChange={(institution) => update({ institution })} maxLength={120} />
+                <TextField id={`edu-${index}-period`} label="Período" value={item.period} onChange={(period) => update({ period })} maxLength={60} placeholder="Jul/2024 – Jul/2025" />
+              </div>
+              <TextField id={`edu-${index}-details`} label="Detalhes (opcional)" value={item.details} onChange={(details) => update({ details })} maxLength={200} />
+            </>
+          )}
+        />
+
+        <ListEditor
+          title="Cursos e certificações"
+          itemName="curso"
+          items={resume.courses}
+          max={12}
+          empty={EMPTY.course}
+          onChange={set("courses")}
+          renderItem={(item, update, index) => (
+            <div className="grid gap-4 sm:grid-cols-3">
+              <TextField id={`course-${index}-name`} label="Nome" value={item.name} onChange={(name) => update({ name })} maxLength={160} />
+              <TextField id={`course-${index}-details`} label="Detalhes (opcional)" value={item.details} onChange={(details) => update({ details })} maxLength={100} placeholder="Udemy · 5 h · 2026" />
+              <TextField id={`course-${index}-url`} label="Certificado (opcional)" type="url" value={item.url} onChange={(url) => update({ url })} placeholder="https://" />
+            </div>
+          )}
+        />
+
+        <TextField
+          id="availability"
+          label="Disponibilidade (opcional)"
+          value={resume.availability}
+          onChange={set("availability")}
+          maxLength={200}
+          placeholder="Remoto, híbrido ou presencial"
+        />
 
         <div className="flex items-start gap-3">
-          <Switch id="published" name="published" checked={published} onCheckedChange={setPublished} aria-describedby="published-hint" />
+          <Switch
+            id="published"
+            checked={resume.published}
+            onCheckedChange={set("published")}
+            aria-describedby="published-hint"
+          />
           <div className="flex flex-col gap-1">
             <Label htmlFor="published">Publicar em /curriculo</Label>
             <FieldDescription id="published-hint">
-              O botão “Ver currículo” da home passa a abrir esta página, com opção de baixar o PDF.
+              A página pública mostra o currículo com botão de download. O botão “Ver currículo” da home passa a abrir essa página.
             </FieldDescription>
           </div>
         </div>

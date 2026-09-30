@@ -20,7 +20,7 @@ import {
   saveResume,
   uniqueSlug,
 } from "@/lib/content/repository";
-import { resumeInputSchema } from "@/lib/content/resume";
+import { describeIssue, resumeInputSchema } from "@/lib/content/resume";
 import {
   journeyInputSchema,
   postInputSchema,
@@ -237,28 +237,32 @@ export async function deletePostAction(formData: FormData): Promise<void> {
 
 // ─── Currículo ────────────────────────────────────────────────────────────────
 
+const MAX_RESUME_JSON = 100_000; // ~10x um currículo completo
+
 export async function saveResumeAction(_prev: FormState, formData: FormData): Promise<FormState> {
   const { uid } = await requireAdmin();
   if (isRateLimited(uid, "save")) return errorState(formData, { message: RATE_LIMITED_MESSAGE });
 
-  const parsed = resumeInputSchema.safeParse({
-    name: formData.get("name"),
-    role: formData.get("role"),
-    summary: formData.get("summary"),
-    email: formData.get("email"),
-    phone: formData.get("phone"),
-    location: formData.get("location"),
-    links: formData.get("links") ?? "",
-    skills: formData.get("skills") ?? "",
-    softSkills: formData.get("softSkills") ?? "",
-    languages: formData.get("languages") ?? "",
-    journeyIds: formData.getAll("journeyIds"),
-    published: formData.get("published"),
-  });
-  if (!parsed.success) return validationError(formData, parsed.error);
+  // O formulário envia o currículo inteiro como JSON (seções com listas)
+  const raw = formData.get("resume");
+  let input: unknown;
+  try {
+    input = typeof raw === "string" && raw.length <= MAX_RESUME_JSON ? JSON.parse(raw) : null;
+  } catch {
+    input = null;
+  }
+  if (!input) return errorState(formData, { message: "Dados do currículo inválidos. Recarregue a página." });
+
+  const parsed = resumeInputSchema.safeParse(input);
+  if (!parsed.success) {
+    return errorState(formData, {
+      message: "Revise o currículo:",
+      fieldErrors: { resume: [...new Set(parsed.error.issues.map(describeIssue))].slice(0, 8) },
+    });
+  }
 
   try {
-    await saveResume(clean({ ...parsed.data, updatedAt: new Date().toISOString() }) as typeof parsed.data);
+    await saveResume({ ...parsed.data, updatedAt: new Date().toISOString() });
   } catch (error) {
     console.error("Erro ao salvar currículo:", error);
     return errorState(formData, { message: "Não foi possível salvar. Tente novamente." });

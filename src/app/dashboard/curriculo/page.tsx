@@ -5,8 +5,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { requireAdmin } from "@/lib/auth/session";
-import { getResumeUncached, listJourneyUncached } from "@/lib/content/repository";
-import { defaultResume } from "@/lib/content/resume";
+import { getResumeUncached } from "@/lib/content/repository";
+import { RESUME_SEED } from "@/lib/content/resume";
 
 import { PageHeader } from "../page-header";
 import { ResumeForm } from "./resume-form";
@@ -16,25 +16,25 @@ type Props = { searchParams: Promise<{ salvo?: string }> };
 export default async function ResumeDashboardPage({ searchParams }: Props) {
   await requireAdmin();
   const { salvo } = await searchParams;
-  const [saved, journey] = await Promise.all([getResumeUncached(), listJourneyUncached()]);
-  const resume = saved ?? defaultResume(journey);
+  const saved = await getResumeUncached();
+  const resume = saved ?? RESUME_SEED;
 
   return (
     <>
       <PageHeader
         title="Currículo"
-        description="Monte o currículo com seus dados e os itens da Trajetória. Gere o PDF ou publique em /curriculo."
+        description="Edite cada seção do currículo, gere o PDF ou publique em /curriculo para quem quiser baixar."
       />
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_18rem]">
         <Card className="order-2 lg:order-1">
           <CardHeader>
             <CardTitle>{saved ? "Editar currículo" : "Novo currículo"}</CardTitle>
             {!saved && (
-              <CardDescription>Preenchemos um rascunho com o conteúdo do site. Nada é salvo até você clicar em salvar.</CardDescription>
+              <CardDescription>Rascunho montado a partir do seu currículo em PDF. Nada é salvo até você clicar em salvar.</CardDescription>
             )}
           </CardHeader>
           <CardContent>
-            <ResumeForm resume={resume} journey={journey} />
+            <ResumeForm resume={resume} />
           </CardContent>
         </Card>
 

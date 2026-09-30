@@ -150,5 +150,6 @@ export async function getPublishedResume(): Promise<Resume | null> {
 }
 
 export async function saveResume(resume: Resume): Promise<void> {
-  await resumeRef().set(resume);
+  // O Firestore recusa undefined, inclusive dentro das listas: o JSON descarta esses campos
+  await resumeRef().set(JSON.parse(JSON.stringify(resume)));
 }
