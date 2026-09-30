@@ -1,5 +1,5 @@
 import { ContactForm } from "@/components/contact-form/page";
-import GithubRepos from "@/components/Github-repos/gituhb-portifolio";
+import Projects from "@/components/projects/projects";
 import Header from "@/components/heard/page";
 import Hover3DCard from "@/components/HoverCard3D/page";
 import JourneySections from "@/components/journey/journey-sections";
@@ -42,7 +42,7 @@ export default function Home() {
         </Section>
 
         <Section id="Projeto" title="Projetos" description="Repositórios públicos no GitHub, do mais recente ao mais antigo.">
-          <GithubRepos />
+          <Projects />
         </Section>
 
         <Section id="Contato" title="Contato" description="Vagas, projetos ou só um oi: respondo em até 24 horas úteis." width="narrow">
