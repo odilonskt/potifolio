@@ -10,21 +10,30 @@ const isProd = process.env.NODE_ENV === "production";
 // - 'unsafe-eval' só em desenvolvimento (recarregamento do next dev)
 // - 'unsafe-inline' em script-src é exigido pelo Next sem nonce; nonce tornaria todas
 //   as páginas dinâmicas e desligaria o cache (ISR)
-const CSP = [
-  "default-src 'self'",
-  `script-src 'self' 'unsafe-inline'${isProd ? "" : " 'unsafe-eval'"}`,
-  "style-src 'self' 'unsafe-inline'",
-  "img-src 'self' data: blob: https:",
-  "font-src 'self' data:",
-  "connect-src 'self'",
-  "media-src 'self'",
-  "object-src 'none'",
-  "frame-src 'none'",
-  "frame-ancestors 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  ...(isProd ? ["upgrade-insecure-requests"] : []),
-].join("; ");
+// - Só nos posts do blog (voz de IA, opcional): 'wasm-unsafe-eval' para compilar o
+//   WebAssembly do Piper, download da voz no Hugging Face e áudio gerado em blob:
+const HUGGING_FACE = "https://huggingface.co https://*.huggingface.co https://*.hf.co";
+
+function buildCsp({ tts }: { tts: boolean }) {
+  return [
+    "default-src 'self'",
+    `script-src 'self' 'unsafe-inline'${tts ? " 'wasm-unsafe-eval'" : ""}${isProd ? "" : " 'unsafe-eval'"}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https:",
+    "font-src 'self' data:",
+    `connect-src 'self'${tts ? ` ${HUGGING_FACE}` : ""}`,
+    `media-src 'self'${tts ? " blob:" : ""}`,
+    "object-src 'none'",
+    "frame-src 'none'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    ...(isProd ? ["upgrade-insecure-requests"] : []),
+  ].join("; ");
+}
+
+const CSP = buildCsp({ tts: false });
+const CSP_WITH_TTS = buildCsp({ tts: true });
 
 const SECURITY_HEADERS: Record<string, string> = {
   "Content-Security-Policy": CSP,
@@ -81,6 +90,8 @@ export function proxy(request: NextRequest) {
   }
 
   const response = withSecurityHeaders(NextResponse.next());
+  // Post do blog ("/blog/slug"): libera só o necessário para a voz de IA
+  if (/^\/blog\/[^/]+$/.test(route)) response.headers.set("Content-Security-Policy", CSP_WITH_TTS);
 
   // Lembra o idioma da página (usado por server actions e por quem volta sem prefixo)
   if (locale && request.cookies.get(LOCALE_COOKIE)?.value !== locale) {

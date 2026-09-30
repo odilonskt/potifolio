@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   // Define the root for turbopack to avoid lockfile detection issues
   turbopack: {
     root: __dirname,
+    // O código do Piper (voz de IA do blog) cita "fs" em trechos só para Node
+    resolveAlias: {
+      fs: { browser: "./src/lib/empty-module.ts" },
+    },
   },
   reactStrictMode: true,
   // Não expõe "X-Powered-By: Next.js"
