@@ -25,7 +25,7 @@ export default function Footer() {
 
   return (
     // pb extra no celular: espaço para a barra de navegação fixa
-    <footer className="border-t border-border bg-background pb-24 md:pb-0">
+    <footer className="border-t border-border bg-background pb-24 md:pb-0 print:hidden">
       <div className="mx-auto flex w-full max-w-5xl flex-col items-center gap-6 px-4 py-8 sm:flex-row sm:justify-between sm:px-6">
         <div className="flex items-center gap-3">
           <Image src="/favicon.svg" alt="" width={36} height={36} className="size-9 rounded-lg" />

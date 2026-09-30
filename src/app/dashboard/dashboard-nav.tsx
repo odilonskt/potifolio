@@ -1,6 +1,6 @@
 "use client";
 
-import { Inbox, Newspaper, Route } from "lucide-react";
+import { FileText, Inbox, Newspaper, Route } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -10,6 +10,7 @@ const LINKS = [
   { href: "/dashboard", label: "Contatos", icon: Inbox },
   { href: "/dashboard/trajetoria", label: "Trajetória", icon: Route },
   { href: "/dashboard/blog", label: "Blog", icon: Newspaper },
+  { href: "/dashboard/curriculo", label: "Currículo", icon: FileText },
 ];
 
 export function DashboardNav() {

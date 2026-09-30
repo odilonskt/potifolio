@@ -4,6 +4,7 @@ import Image from "next/image";
 
 import { Button } from "@/components/ui/button";
 import { PROFILE, SOCIAL_LINKS } from "@/lib/content/profile";
+import { getPublishedResume } from "@/lib/content/repository";
 import { env } from "@/lib/env";
 import { getGitHubUser, type GitHubUser } from "@/lib/github";
 
@@ -60,7 +61,9 @@ function Portrait() {
 }
 
 export default async function Start({ id }: { id: string }) {
-  const user = await loadGitHubUser();
+  const [user, resume] = await Promise.all([loadGitHubUser(), getPublishedResume()]);
+  // Currículo publicado no painel substitui o documento externo
+  const resumeHref = resume ? "/curriculo" : PROFILE.resumeUrl;
 
   return (
     <section id={id} aria-labelledby="hero-titulo" className="scroll-mt-24">
@@ -81,7 +84,7 @@ export default async function Start({ id }: { id: string }) {
 
           <div className="flex flex-wrap items-center justify-center gap-3 lg:justify-start">
             <Button asChild>
-              <a href={PROFILE.resumeUrl} target="_blank" rel="noopener noreferrer">
+              <a href={resumeHref} target="_blank" rel="noopener noreferrer">
                 <FileText data-icon="inline-start" aria-hidden="true" />
                 Ver currículo
                 <span className="sr-only"> (abre em nova aba)</span>

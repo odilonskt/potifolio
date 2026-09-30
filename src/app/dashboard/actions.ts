@@ -16,8 +16,11 @@ import {
   JOURNEY_TAG,
   POSTS_COLLECTION,
   POSTS_TAG,
+  RESUME_TAG,
+  saveResume,
   uniqueSlug,
 } from "@/lib/content/repository";
+import { resumeInputSchema } from "@/lib/content/resume";
 import {
   journeyInputSchema,
   postInputSchema,
@@ -230,4 +233,37 @@ export async function deletePostAction(formData: FormData): Promise<void> {
   await adminDb().collection(POSTS_COLLECTION).doc(id).delete();
   await deleteImage(existing.coverPath);
   updateTag(POSTS_TAG);
+}
+
+// ─── Currículo ────────────────────────────────────────────────────────────────
+
+export async function saveResumeAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const { uid } = await requireAdmin();
+  if (isRateLimited(uid, "save")) return errorState(formData, { message: RATE_LIMITED_MESSAGE });
+
+  const parsed = resumeInputSchema.safeParse({
+    name: formData.get("name"),
+    role: formData.get("role"),
+    summary: formData.get("summary"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    location: formData.get("location"),
+    links: formData.get("links") ?? "",
+    skills: formData.get("skills") ?? "",
+    softSkills: formData.get("softSkills") ?? "",
+    languages: formData.get("languages") ?? "",
+    journeyIds: formData.getAll("journeyIds"),
+    published: formData.get("published"),
+  });
+  if (!parsed.success) return validationError(formData, parsed.error);
+
+  try {
+    await saveResume(clean({ ...parsed.data, updatedAt: new Date().toISOString() }) as typeof parsed.data);
+  } catch (error) {
+    console.error("Erro ao salvar currículo:", error);
+    return errorState(formData, { message: "Não foi possível salvar. Tente novamente." });
+  }
+
+  updateTag(RESUME_TAG);
+  redirect("/dashboard/curriculo?salvo=1");
 }
