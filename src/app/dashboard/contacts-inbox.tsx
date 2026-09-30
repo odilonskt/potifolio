@@ -32,7 +32,6 @@ export type InboxContact = {
   nome: string;
   email: string;
   telefone?: string;
-  ip?: string;
   subject: string;
   message: string;
   read: boolean;
@@ -235,12 +234,6 @@ export function ContactsInbox({ initialContacts }: { initialContacts: InboxConta
                 <dt className="text-muted-foreground">E-mail:</dt>
                 <dd className="break-all text-foreground">{opened.email}</dd>
               </div>
-              {opened.ip && (
-                <div className="flex gap-2">
-                  <dt className="text-muted-foreground">IP:</dt>
-                  <dd className="font-mono text-foreground">{opened.ip}</dd>
-                </div>
-              )}
               {opened.telefone && (
                 <div className="flex gap-2">
                   <dt className="text-muted-foreground">Telefone:</dt>

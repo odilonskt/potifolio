@@ -10,7 +10,7 @@ import { isAdminRequest } from "@/lib/auth/session";
 import { isAdminConfigured } from "@/lib/firebase/admin";
 import { deleteContact, markAsRead, markAsUnread, saveContactForm } from "@/lib/firebase-contacts";
 import { contactFormSchema } from "@/lib/schemas/contact-form";
-import { clientIp, clientIpForStorage, exceedsBodyLimit, isSameOrigin, rateLimit } from "@/lib/security/request-guard";
+import { clientIp, exceedsBodyLimit, isSameOrigin, rateLimit } from "@/lib/security/request-guard";
 
 export const dynamic = "force-dynamic";
 
@@ -73,8 +73,7 @@ async function handleSubmission(request: NextRequest, body: unknown) {
     );
   }
 
-  // IP registrado para prevenção de abuso (informado no formulário)
-  const result = await saveContactForm(parsed.data, { ip: clientIpForStorage(request.headers) });
+  const result = await saveContactForm(parsed.data);
   if (!result.success) return json({ success: false, error: "Erro ao salvar contato" }, 500);
 
   return json({ success: true, id: result.data?.id, message: "Contato salvo com sucesso" });
