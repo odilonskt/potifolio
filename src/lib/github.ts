@@ -22,6 +22,31 @@ const buildGitHubHeaders = (githubToken?: string) => ({
   "User-Agent": "NextJS-Portfolio-Server",
 });
 
+/**
+ * Limite da API do GitHub (403/429). Sem token são só 60 requisições por hora por IP,
+ * e na Vercel o IP de saída é compartilhado: configure GITHUB_TOKEN para 5000/hora.
+ */
+export class GitHubRateLimitError extends Error {
+  constructor(path: string) {
+    super(`Limite da API do GitHub atingido em ${path}. Configure GITHUB_TOKEN para aumentar o limite.`);
+    this.name = "GitHubRateLimitError";
+  }
+}
+
+function assertOk(response: Response, path: string) {
+  if (response.ok) return;
+  if (response.status === 429 || (response.status === 403 && response.headers.get("x-ratelimit-remaining") === "0")) {
+    throw new GitHubRateLimitError(path);
+  }
+  throw new Error(`GitHub fetch failed (${response.status}): ${path}`);
+}
+
+/** Limite atingido é esperado (a página mostra o aviso): só um alerta curto no log. */
+export function logGitHubFailure(context: string, error: unknown) {
+  if (error instanceof GitHubRateLimitError) console.warn(`${context}: ${error.message}`);
+  else console.error(`${context}:`, error);
+}
+
 export async function getGitHubUser(username: string): Promise<GitHubUser> {
   const githubApiUrl = env.GITHUB_API_URL.replace(/\/+$/, "");
   const githubToken = env.GITHUB_TOKEN;
@@ -30,9 +55,7 @@ export async function getGitHubUser(username: string): Promise<GitHubUser> {
     next: { revalidate: 3600, tags: [`github-user-${username}`] },
   });
 
-  if (!response.ok) {
-    throw new Error(`GitHub user fetch failed: ${response.status}`);
-  }
+  assertOk(response, `/users/${username}`);
 
   // Só os campos usados pelo site vão para o HTML (evita expor o objeto inteiro da API)
   const data = (await response.json()) as GitHubUser;
@@ -91,6 +114,8 @@ type RawRepo = {
   homepage: string | null;
   updated_at: string;
   fork: boolean;
+  /** Linguagem principal, já vem na lista (sem requisição extra) */
+  language: string | null;
 };
 
 async function githubJson<T>(path: string, tag: string): Promise<T> {
@@ -98,7 +123,7 @@ async function githubJson<T>(path: string, tag: string): Promise<T> {
     headers: buildGitHubHeaders(env.GITHUB_TOKEN),
     next: { revalidate: 3600, tags: [tag] },
   });
-  if (!response.ok) throw new Error(`GitHub fetch failed (${response.status}): ${path}`);
+  assertOk(response, path);
   return response.json() as Promise<T>;
 }
 
@@ -120,13 +145,19 @@ export async function getPortfolioRepos(): Promise<PortfolioRepo[]> {
     "github-repos",
   );
 
-  // Linguagens de todos os repositórios em paralelo; falha em um não derruba os outros
+  // Com token: detalhe de linguagens de cada repositório (1 requisição por repo, em paralelo).
+  // Sem token: só a linguagem principal, que já vem na lista, para não estourar o limite
+  // de 60 requisições por hora.
   return Promise.all(
     repos.map(async (repo) => {
-      const languages = await githubJson<Record<string, number>>(
-        `/repos/${username}/${encodeURIComponent(repo.name)}/languages`,
-        `github-languages-${repo.name}`,
-      ).catch(() => ({}));
+      const languages = env.GITHUB_TOKEN
+        ? await githubJson<Record<string, number>>(
+            `/repos/${username}/${encodeURIComponent(repo.name)}/languages`,
+            `github-languages-${repo.name}`,
+          ).catch(() => ({}))
+        : repo.language
+          ? { [repo.language]: 1 }
+          : {};
 
       return {
         id: repo.id,

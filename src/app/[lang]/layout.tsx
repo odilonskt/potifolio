@@ -2,7 +2,7 @@ import Footer from "@/components/footer/page";
 import { ThemeProvider } from "@/components/theme/theme-provider";
 import { GitHubUserProvider } from "@/context/github-user-context";
 import { env } from "@/lib/env";
-import { getGitHubUser } from "@/lib/github";
+import { getGitHubUser, logGitHubFailure } from "@/lib/github";
 import { LocaleProvider } from "@/lib/i18n/client";
 import { HTML_LANG, languageAlternates, LOCALES, OG_LOCALE } from "@/lib/i18n/config";
 import { common } from "@/lib/i18n/messages/common";
@@ -52,7 +52,7 @@ export default async function RootLayout({ children }: LayoutProps<"/[lang]">) {
   try {
     githubUser = await getGitHubUser(env.GITHUB_USERNAME);
   } catch (error) {
-    console.error("Error fetching GitHub user in layout:", error);
+    logGitHubFailure("Perfil do GitHub (layout)", error);
   }
   return (
     // suppressHydrationWarning: o next-themes ajusta class/data-theme do <html> antes da hidratação

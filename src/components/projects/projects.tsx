@@ -5,7 +5,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { getPublishedProjects } from "@/lib/content/repository";
 import { localize } from "@/lib/content/translations";
-import { getPortfolioRepos, type LanguageShare, type PortfolioRepo } from "@/lib/github";
+import { getPortfolioRepos, logGitHubFailure, type LanguageShare, type PortfolioRepo } from "@/lib/github";
 import { HTML_LANG, type Locale } from "@/lib/i18n/config";
 import { home } from "@/lib/i18n/messages/home";
 import { getLocale } from "@/lib/i18n/server";
@@ -127,7 +127,7 @@ async function loadRepos(): Promise<PortfolioRepo[] | null> {
   try {
     return await getPortfolioRepos();
   } catch (error) {
-    console.error("Erro ao carregar repositórios:", error);
+    logGitHubFailure("Repositórios do GitHub", error);
     return null;
   }
 }
