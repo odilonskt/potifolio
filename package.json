@@ -1,7 +1,9 @@
 {
   "dependencies": {
     "@deemlol/next-icons": "^0.1.9",
+    "@diffusionstudio/piper-wasm": "1.0.0",
     "@hookform/resolvers": "^5.2.2",
+    "@mintplex-labs/piper-tts-web": "1.0.5",
     "@radix-ui/react-accordion": "^1.2.12",
     "@radix-ui/react-alert-dialog": "^1.1.15",
     "@radix-ui/react-aspect-ratio": "^1.1.8",
@@ -39,6 +41,7 @@
     "motion": "^12.38.0",
     "next": "16.3.7",
     "next-themes": "^0.4.6",
+    "onnxruntime-web": "1.18.0",
     "react": "19.3.0",
     "react-dom": "19.3.0",
     "react-hook-form": "^7.67.0",
@@ -75,8 +78,8 @@
   "name": "potifolio",
   "private": true,
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
+    "build": "node scripts/copy-tts-assets.mjs && next build",
+    "dev": "node scripts/copy-tts-assets.mjs && next dev",
     "lint": "eslint",
     "start": "next start",
     "typecheck": "tsc --noEmit",

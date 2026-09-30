@@ -5,11 +5,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Markdown } from "@/components/blog/markdown";
+import { ReadAloud } from "@/components/blog/read-aloud";
 import Header from "@/components/heard/page";
 import { Badge } from "@/components/ui/badge";
 import { formatDay, readingTime } from "@/lib/content/dates";
 import { getPublishedPostBySlug } from "@/lib/content/repository";
 import { slugSchema } from "@/lib/content/schemas";
+import { markdownToSpeech, splitForSpeech } from "@/lib/content/speech";
 import { localize } from "@/lib/content/translations";
 import { HTML_LANG, languageAlternates, localePath, OG_LOCALE } from "@/lib/i18n/config";
 import { blog } from "@/lib/i18n/messages/blog";
@@ -63,6 +65,11 @@ export default async function PostPage({ params }: Props) {
   const post = localize(original, locale);
   // Sem tradução do texto: avisa e marca o idioma (leitores de tela pronunciam certo)
   const inPortuguese = locale !== "pt" && !original.translations?.[locale]?.content;
+  // Leitura em voz alta no idioma real do texto (português quando não há tradução)
+  const contentLocale = inPortuguese ? "pt" : locale;
+  const speech = splitForSpeech(
+    [`${post.title}.`, post.excerpt, markdownToSpeech(post.content, blog[contentLocale].readAloud.codeBlock)].join("\n"),
+  );
 
   return (
     <>
@@ -101,6 +108,8 @@ export default async function PostPage({ params }: Props) {
               )}
             </div>
           </header>
+
+          <ReadAloud chunks={speech} contentLocale={contentLocale} />
 
           {post.coverUrl && (
             <Image

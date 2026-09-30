@@ -44,3 +44,6 @@ next-env.d.ts
 firebase-debug.log
 firestore-debug.log
 .firebase/
+
+# Voz de IA: copiado de node_modules no build (scripts/copy-tts-assets.mjs)
+/public/tts/
