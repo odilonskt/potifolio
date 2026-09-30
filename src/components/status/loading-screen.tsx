@@ -1,3 +1,5 @@
+import { common } from "@/lib/i18n/messages/common";
+import { getLocale } from "@/lib/i18n/server";
 import { cn } from "@/lib/utils";
 
 /**
@@ -9,7 +11,8 @@ import { cn } from "@/lib/utils";
  * Usado só em segmentos sem notFound() dinâmico: um loading.tsx acima de uma página
  * faz a resposta começar com HTTP 200 antes de a página decidir que é 404.
  */
-export function LoadingScreen({ fullScreen = true }: { fullScreen?: boolean }) {
+export async function LoadingScreen({ fullScreen = true }: { fullScreen?: boolean }) {
+  const t = common[await getLocale()].status;
   return (
     <div
       role="status"
@@ -21,7 +24,7 @@ export function LoadingScreen({ fullScreen = true }: { fullScreen?: boolean }) {
           <circle cx="25" cy="25" r="20" fill="none" strokeWidth="3" className="stroke-border" />
           <circle cx="25" cy="25" r="20" fill="none" strokeWidth="3" strokeLinecap="round" className="loader-arc stroke-brand" />
         </svg>
-        <span className="loader-label text-sm text-muted-foreground">Carregando</span>
+        <span className="loader-label text-sm text-muted-foreground">{t.loading.replace(/\.+$/, "")}</span>
       </div>
     </div>
   );

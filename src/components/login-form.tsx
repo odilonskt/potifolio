@@ -5,6 +5,9 @@ import { useRouter } from "next/navigation";
 import { useActionState, useEffect } from "react";
 
 import { loginAction, type LoginFormState } from "@/app/actions/auth";
+import { useLocale } from "@/lib/i18n/client";
+import { localePath } from "@/lib/i18n/config";
+import { dashboard } from "@/lib/i18n/messages/dashboard";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,11 +19,13 @@ const initialState: LoginFormState = { message: "", success: false };
 
 export function LoginForm() {
   const router = useRouter();
+  const locale = useLocale();
+  const t = dashboard[locale].login;
   const [state, formAction, isPending] = useActionState(loginAction, initialState);
 
   useEffect(() => {
-    if (state.success) router.push("/dashboard");
-  }, [state.success, router]);
+    if (state.success) router.push(localePath(locale, "/dashboard"));
+  }, [state.success, router, locale]);
 
   const emailError = state.error?.email;
   const passwordError = state.error?.password;
@@ -29,9 +34,9 @@ export function LoginForm() {
     <Card className="w-full max-w-sm">
       <CardHeader>
         <CardTitle>
-          <h1 className="text-xl font-semibold">Entrar no painel</h1>
+          <h1 className="text-xl font-semibold">{t.title}</h1>
         </CardTitle>
-        <CardDescription>Acesso restrito ao administrador do site.</CardDescription>
+        <CardDescription>{t.description}</CardDescription>
       </CardHeader>
       <CardContent>
         <form action={formAction} className="flex flex-col gap-6" noValidate>
@@ -46,7 +51,7 @@ export function LoginForm() {
 
           <FieldGroup>
             <Field data-invalid={emailError ? true : undefined}>
-              <FieldLabel htmlFor="email">E-mail</FieldLabel>
+              <FieldLabel htmlFor="email">{t.email}</FieldLabel>
               <Input
                 id="email"
                 name="email"
@@ -61,7 +66,7 @@ export function LoginForm() {
             </Field>
 
             <Field data-invalid={passwordError ? true : undefined}>
-              <FieldLabel htmlFor="password">Senha</FieldLabel>
+              <FieldLabel htmlFor="password">{t.password}</FieldLabel>
               <Input
                 id="password"
                 name="password"
@@ -78,7 +83,7 @@ export function LoginForm() {
 
           <Button type="submit" disabled={isPending} className="w-full">
             {isPending && <Spinner data-icon="inline-start" />}
-            {isPending ? "Entrando..." : "Entrar"}
+            {isPending ? t.submitting : t.submit}
           </Button>
         </form>
       </CardContent>

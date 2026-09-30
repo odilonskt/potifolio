@@ -1,5 +1,8 @@
 import type { ResumeView } from "@/lib/content/resume";
 import { slugify } from "@/lib/content/schemas";
+import { HTML_LANG, type Locale } from "@/lib/i18n/config";
+import { common } from "@/lib/i18n/messages/common";
+import { resume as resumeMessages } from "@/lib/i18n/messages/resume";
 import { cn } from "@/lib/utils";
 
 // Folha A4 do currículo. Na tela segue o tema; na impressão sai sempre preto no
@@ -8,11 +11,11 @@ import { cn } from "@/lib/utils";
 const linkClass =
   "rounded-sm underline underline-offset-4 hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring print:no-underline";
 
-function ExternalLink({ href, children }: { href: string; children: React.ReactNode }) {
+function ExternalLink({ href, newTab, children }: { href: string; newTab: string; children: React.ReactNode }) {
   return (
     <a href={href} target="_blank" rel="noopener noreferrer" className={linkClass}>
       {children}
-      <span className="sr-only"> (abre em nova aba)</span>
+      <span className="sr-only"> {newTab}</span>
       {/* No papel o link não é clicável: mostra o endereço */}
       <span className="hidden print:inline"> ({href.replace(/^https:\/\//, "")})</span>
     </a>
@@ -44,16 +47,22 @@ function EntryHeader({ title, subtitle, period }: { title: string; subtitle?: st
 
 export function ResumeDocument({
   resume,
+  locale,
   actions,
   className,
 }: {
   resume: ResumeView;
+  /** Idioma do conteúdo: títulos das seções e atributo lang */
+  locale: Locale;
   /** Botões exibidos no cabeçalho (download etc.); somem na impressão */
   actions?: React.ReactNode;
   className?: string;
 }) {
+  const t = resumeMessages[locale].sections;
+  const newTab = common[locale].newTab;
   return (
     <article
+      lang={HTML_LANG[locale]}
       aria-labelledby="curriculo-nome"
       className={cn(
         "mx-auto flex w-full max-w-[210mm] flex-col gap-7 rounded-lg border border-border bg-card p-6 text-card-foreground sm:p-10",
@@ -77,7 +86,9 @@ export function ResumeDocument({
             ))}
             {resume.links.map((link) => (
               <li key={link.url}>
-                <ExternalLink href={link.url}>{link.label}</ExternalLink>
+                <ExternalLink href={link.url} newTab={newTab}>
+                  {link.label}
+                </ExternalLink>
               </li>
             ))}
           </ul>
@@ -86,12 +97,12 @@ export function ResumeDocument({
         {actions && <div className="pt-2 print:hidden">{actions}</div>}
       </header>
 
-      <ResumeSection title="Resumo">
+      <ResumeSection title={t.summary}>
         <p className="leading-relaxed">{resume.summary}</p>
       </ResumeSection>
 
       {resume.experience.length > 0 && (
-        <ResumeSection title="Experiência profissional">
+        <ResumeSection title={t.experience}>
           <ul className="flex flex-col gap-5">
             {resume.experience.map((item) => (
               <li key={`${item.role}-${item.period}`} className="break-inside-avoid">
@@ -104,7 +115,7 @@ export function ResumeDocument({
       )}
 
       {resume.projects.length > 0 && (
-        <ResumeSection title="Projetos">
+        <ResumeSection title={t.projects}>
           <ul className="flex flex-col gap-5">
             {resume.projects.map((project) => (
               <li key={project.name} className="break-inside-avoid">
@@ -112,7 +123,9 @@ export function ResumeDocument({
                 <Bullets items={project.bullets} />
                 {project.linkUrl && (
                   <p className="mt-1 text-sm text-muted-foreground print:text-black/75">
-                    <ExternalLink href={project.linkUrl}>{project.linkLabel || "Ver projeto"}</ExternalLink>
+                    <ExternalLink href={project.linkUrl} newTab={newTab}>
+                      {project.linkLabel || resumeMessages[locale].viewProject}
+                    </ExternalLink>
                   </p>
                 )}
               </li>
@@ -122,7 +135,7 @@ export function ResumeDocument({
       )}
 
       {resume.skills.length > 0 && (
-        <ResumeSection title="Habilidades técnicas">
+        <ResumeSection title={t.skills}>
           <dl className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-[10rem_1fr]">
             {resume.skills.map((group) => (
               <div key={group.label} className="contents">
@@ -135,7 +148,7 @@ export function ResumeDocument({
       )}
 
       {resume.education.length > 0 && (
-        <ResumeSection title="Formação">
+        <ResumeSection title={t.education}>
           <ul className="flex flex-col gap-4">
             {resume.education.map((item) => (
               <li key={`${item.course}-${item.institution}`} className="break-inside-avoid">
@@ -148,11 +161,17 @@ export function ResumeDocument({
       )}
 
       {resume.courses.length > 0 && (
-        <ResumeSection title="Cursos e certificações">
+        <ResumeSection title={t.courses}>
           <ul className="flex list-disc flex-col gap-1 pl-5 text-sm marker:text-muted-foreground">
             {resume.courses.map((course) => (
               <li key={course.name}>
-                {course.url ? <ExternalLink href={course.url}>{course.name}</ExternalLink> : course.name}
+                {course.url ? (
+                  <ExternalLink href={course.url} newTab={newTab}>
+                    {course.name}
+                  </ExternalLink>
+                ) : (
+                  course.name
+                )}
                 {course.details && <span className="text-muted-foreground print:text-black/75"> · {course.details}</span>}
               </li>
             ))}
@@ -161,7 +180,7 @@ export function ResumeDocument({
       )}
 
       {resume.availability && (
-        <ResumeSection title="Disponibilidade">
+        <ResumeSection title={t.availability}>
           <p className="text-sm">{resume.availability}</p>
         </ResumeSection>
       )}

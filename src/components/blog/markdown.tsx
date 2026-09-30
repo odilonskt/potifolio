@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
  */
 export type ImageResolver = (src: string) => string | null;
 
-function buildComponents(resolveImage?: ImageResolver): Components {
+function buildComponents(resolveImage: ImageResolver | undefined, newTabLabel: string): Components {
   return {
     a({ href, children, ...props }) {
       const isExternal = href?.startsWith("http");
@@ -23,7 +23,7 @@ function buildComponents(resolveImage?: ImageResolver): Components {
           {...(isExternal ? { target: "_blank", rel: "noopener noreferrer nofollow" } : {})}
         >
           {children}
-          {isExternal && <span className="sr-only"> (abre em nova aba)</span>}
+          {isExternal && <span className="sr-only"> {newTabLabel}</span>}
         </a>
       );
     },
@@ -50,16 +50,18 @@ function buildComponents(resolveImage?: ImageResolver): Components {
   };
 }
 
-const defaultComponents = buildComponents();
 
 export function Markdown({
   content,
   className,
   resolveImage,
+  newTabLabel = "(abre em nova aba)",
 }: {
   content: string;
   className?: string;
   resolveImage?: ImageResolver;
+  /** Aviso lido por leitores de tela em links externos */
+  newTabLabel?: string;
 }) {
   return (
     <div
@@ -70,7 +72,7 @@ export function Markdown({
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        components={resolveImage ? buildComponents(resolveImage) : defaultComponents}
+        components={buildComponents(resolveImage, newTabLabel)}
       >
         {content}
       </ReactMarkdown>

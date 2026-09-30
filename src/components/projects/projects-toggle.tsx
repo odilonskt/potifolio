@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { useMessages } from "@/lib/i18n/client";
+import { home } from "@/lib/i18n/messages/home";
 import { cn } from "@/lib/utils";
 
 /**
@@ -19,6 +21,7 @@ export function ProjectsToggle({
   children: React.ReactNode;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const t = useMessages(home).projects;
   const collapsible = total > initialVisible;
 
   return (
@@ -41,7 +44,7 @@ export function ProjectsToggle({
           aria-expanded={expanded}
           aria-controls="lista-projetos"
         >
-          {expanded ? "Mostrar menos" : `Ver todos os ${total} projetos`}
+          {expanded ? t.showLess : t.showAll(total)}
         </Button>
       )}
     </div>

@@ -2,6 +2,10 @@
 // Validação dos conteúdos gerenciados pelo painel (trajetória, blog e projetos).
 import { z } from "zod";
 
+import type { Translations } from "@/lib/content/translations";
+import { DEFAULT_LOCALE, type Locale } from "@/lib/i18n/config";
+import { dashboard } from "@/lib/i18n/messages/dashboard";
+
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 /** Aceita "aaaa-mm" e também "mm/aaaa" (como o campo exibe), sempre gravando "aaaa-mm". */
@@ -11,12 +15,13 @@ const month = (message: string) =>
     z.string().regex(monthRegex, message),
   );
 
-const httpsUrl = z
-  .string()
-  .trim()
-  .max(2048)
-  .url("URL inválida")
-  .refine((value) => value.startsWith("https://"), "Use um link https://");
+const httpsUrl = (invalid: string, httpsOnly: string) =>
+  z
+    .string()
+    .trim()
+    .max(2048)
+    .url(invalid)
+    .refine((value) => value.startsWith("https://"), httpsOnly);
 
 /** Campos de formulário vazios chegam como "" — tratamos como ausentes. */
 const optional = <T extends z.ZodTypeAny>(schema: T) =>
@@ -27,32 +32,34 @@ const optional = <T extends z.ZodTypeAny>(schema: T) =>
 export const JOURNEY_KINDS = ["work", "education", "certificate"] as const;
 export type JourneyKind = (typeof JOURNEY_KINDS)[number];
 
-export const JOURNEY_KIND_LABELS: Record<JourneyKind, string> = {
-  work: "Carreira",
-  education: "Estudos",
-  certificate: "Certificados",
-};
+/** Mensagens de erro no idioma de quem edita (o painel também é traduzido). */
+export function createJourneySchema(locale: Locale = DEFAULT_LOCALE) {
+  const v = dashboard[locale].journey.validation;
+  return z
+    .object({
+      kind: z.enum(JOURNEY_KINDS, { message: v.kind }),
+      title: z.string().trim().min(2, v.title).max(120),
+      organization: z.string().trim().min(2, v.organization).max(120),
+      description: z.string().trim().min(10, v.description).max(1200),
+      startDate: month(v.start),
+      endDate: optional(month(v.end)),
+      link: optional(httpsUrl(v.url, v.https)),
+      imageAlt: optional(z.string().trim().max(160)),
+    })
+    .refine((data) => !data.endDate || data.endDate >= data.startDate, {
+      path: ["endDate"],
+      message: v.endBeforeStart,
+    });
+}
 
-export const journeyInputSchema = z
-  .object({
-    kind: z.enum(JOURNEY_KINDS, { message: "Escolha um tipo" }),
-    title: z.string().trim().min(2, "Informe o nome").max(120),
-    organization: z.string().trim().min(2, "Informe a instituição ou empresa").max(120),
-    description: z.string().trim().min(10, "Escreva ao menos 10 caracteres").max(1200),
-    startDate: month("Informe o mês de início no formato mm/aaaa"),
-    endDate: optional(month("Mês de término inválido: use mm/aaaa")),
-    link: optional(httpsUrl),
-    imageAlt: optional(z.string().trim().max(160)),
-  })
-  .refine((data) => !data.endDate || data.endDate >= data.startDate, {
-    path: ["endDate"],
-    message: "O término deve ser depois do início",
-  });
+export type JourneyInput = z.infer<ReturnType<typeof createJourneySchema>>;
 
-export type JourneyInput = z.infer<typeof journeyInputSchema>;
+/** Campos da trajetória que podem ser traduzidos no painel */
+export const JOURNEY_TRANSLATABLE = { title: 120, organization: 120, description: 1200, imageAlt: 160 } as const;
 
 export type JourneyItem = JourneyInput & {
   id: string;
+  translations?: Translations<Pick<JourneyInput, keyof typeof JOURNEY_TRANSLATABLE>>;
   imageUrl?: string;
   imagePath?: string;
   createdAt: string;
@@ -61,24 +68,30 @@ export type JourneyItem = JourneyInput & {
 
 // ─── Blog ─────────────────────────────────────────────────────────────────────
 
-export const postInputSchema = z.object({
-  title: z.string().trim().min(3, "Informe o título").max(140),
-  excerpt: z.string().trim().min(10, "Escreva um resumo de ao menos 10 caracteres").max(300),
-  content: z.string().trim().min(20, "Escreva o conteúdo do post").max(50_000),
-  tags: z
-    .string()
-    .max(200)
-    .transform((value) =>
-      [...new Set(value.split(",").map((tag) => tag.trim().toLowerCase()).filter(Boolean))].slice(0, 8)
-    ),
-  published: z.preprocess((value) => value === "on" || value === true, z.boolean()),
-  coverAlt: optional(z.string().trim().max(160)),
-});
+export function createPostSchema(locale: Locale = DEFAULT_LOCALE) {
+  const v = dashboard[locale].blog.validation;
+  return z.object({
+    title: z.string().trim().min(3, v.title).max(140),
+    excerpt: z.string().trim().min(10, v.excerpt).max(300),
+    content: z.string().trim().min(20, v.content).max(50_000),
+    tags: z
+      .string()
+      .max(200)
+      .transform((value) =>
+        [...new Set(value.split(",").map((tag) => tag.trim().toLowerCase()).filter(Boolean))].slice(0, 8)
+      ),
+    published: z.preprocess((value) => value === "on" || value === true, z.boolean()),
+    coverAlt: optional(z.string().trim().max(160)),
+  });
+}
 
-export type PostInput = z.infer<typeof postInputSchema>;
+export type PostInput = z.infer<ReturnType<typeof createPostSchema>>;
+
+export const POST_TRANSLATABLE = { title: 140, excerpt: 300, content: 50_000, coverAlt: 160 } as const;
 
 export type Post = PostInput & {
   id: string;
+  translations?: Translations<Pick<PostInput, keyof typeof POST_TRANSLATABLE>>;
   slug: string;
   coverUrl?: string;
   coverPath?: string;
@@ -106,24 +119,30 @@ export const MAX_PROJECT_IMAGES = 4;
 
 export type ProjectImage = { url: string; path: string };
 
-export const projectInputSchema = z.object({
-  title: z.string().trim().min(2, "Informe o nome do projeto").max(80),
-  summary: z.string().trim().min(10, "Escreva um resumo de ao menos 10 caracteres").max(400),
-  tags: z
-    .string()
-    .max(300)
-    .transform((value) => [...new Set(value.split(",").map((tag) => tag.trim()).filter(Boolean))].slice(0, 8)),
-  repoUrl: optional(httpsUrl),
-  demoUrl: optional(httpsUrl),
-  imageAlt: optional(z.string().trim().max(160)),
-  order: z.coerce.number().int("Use um número inteiro").min(0, "Mínimo 0").max(99, "Máximo 99").default(0),
-  published: z.preprocess((value) => value === "on" || value === true, z.boolean()),
-});
+export function createProjectSchema(locale: Locale = DEFAULT_LOCALE) {
+  const v = dashboard[locale].projects.validation;
+  return z.object({
+    title: z.string().trim().min(2, v.title).max(80),
+    summary: z.string().trim().min(10, v.summary).max(400),
+    tags: z
+      .string()
+      .max(300)
+      .transform((value) => [...new Set(value.split(",").map((tag) => tag.trim()).filter(Boolean))].slice(0, 8)),
+    repoUrl: optional(httpsUrl(v.url, v.https)),
+    demoUrl: optional(httpsUrl(v.url, v.https)),
+    imageAlt: optional(z.string().trim().max(160)),
+    order: z.coerce.number().int(v.integer).min(0, v.min).max(99, v.max).default(0),
+    published: z.preprocess((value) => value === "on" || value === true, z.boolean()),
+  });
+}
 
-export type ProjectInput = z.infer<typeof projectInputSchema>;
+export type ProjectInput = z.infer<ReturnType<typeof createProjectSchema>>;
+
+export const PROJECT_TRANSLATABLE = { title: 80, summary: 400, imageAlt: 160 } as const;
 
 export type Project = ProjectInput & {
   id: string;
+  translations?: Translations<Pick<ProjectInput, keyof typeof PROJECT_TRANSLATABLE>>;
   images: ProjectImage[];
   createdAt: string;
   updatedAt: string;

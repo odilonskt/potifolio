@@ -3,6 +3,9 @@
 import { useCallback, useRef, useSyncExternalStore } from "react"
 import { Moon, Sun } from "lucide-react"
 import { useTheme } from "next-themes"
+
+import { useMessages } from "@/lib/i18n/client"
+import { common } from "@/lib/i18n/messages/common"
 import { flushSync } from "react-dom"
 
 import { cn } from "@/lib/utils"
@@ -150,6 +153,7 @@ export const AnimatedThemeToggler = ({
 }: AnimatedThemeTogglerProps) => {
   const shape = variant ?? "circle"
   const { resolvedTheme, systemTheme, setTheme } = useTheme()
+  const t = useMessages(common)
   const buttonRef = useRef<HTMLButtonElement>(null)
   // O tema só é conhecido no cliente: antes da hidratação renderizamos um estado neutro
   const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false)
@@ -255,9 +259,9 @@ export const AnimatedThemeToggler = ({
       type="button"
       ref={buttonRef}
       onClick={toggleTheme}
-      aria-label="Tema escuro"
+      aria-label={t.theme.label}
       aria-pressed={mounted ? isDark : undefined}
-      title={isDark ? "Mudar para o tema claro" : "Mudar para o tema escuro"}
+      title={isDark ? t.theme.toLight : t.theme.toDark}
       className={cn(className)}
       {...props}
     >

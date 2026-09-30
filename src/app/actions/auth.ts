@@ -7,18 +7,21 @@ import {
 } from "@/lib/auth/session";
 import { env } from "@/lib/env";
 import { adminAuth, isAdminConfigured } from "@/lib/firebase/admin";
+import { localePath } from "@/lib/i18n/config";
+import { dashboard } from "@/lib/i18n/messages/dashboard";
+import { getRequestLocale } from "@/lib/i18n/server";
 import { actionClientIp, rateLimit } from "@/lib/security/request-guard";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-const loginSchema = z.object({
-  email: z.string().trim().email("Email inválido").max(254),
-  password: z
-    .string()
-    .min(6, "Senha deve ter no mínimo 6 caracteres")
-    .max(128),
-});
+type LoginMessages = (typeof dashboard)["pt"]["login"];
+
+const loginSchema = (t: LoginMessages) =>
+  z.object({
+    email: z.string().trim().email(t.invalidEmail).max(254),
+    password: z.string().min(6, t.shortPassword).max(128),
+  });
 
 export type LoginFormState = {
   message: string;
@@ -29,7 +32,6 @@ export type LoginFormState = {
   success?: boolean;
 };
 
-const INVALID_CREDENTIALS = "Credenciais inválidas";
 
 /**
  * Autentica pela API REST do Firebase Auth (sem estado compartilhado entre requests)
@@ -37,10 +39,11 @@ const INVALID_CREDENTIALS = "Credenciais inválidas";
  */
 async function signInWithPassword(
   email: string,
-  password: string
+  password: string,
+  t: LoginMessages
 ): Promise<{ idToken: string } | { error: string }> {
   const apiKey = env.FIREBASE_API_KEY;
-  if (!apiKey) return { error: "Serviço de login indisponível" };
+  if (!apiKey) return { error: t.unavailable };
 
   const response = await fetch(
     `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${encodeURIComponent(apiKey)}`,
@@ -61,24 +64,25 @@ async function signInWithPassword(
     error?: { message?: string };
   } | null;
   if (data?.error?.message?.startsWith("TOO_MANY_ATTEMPTS")) {
-    return { error: "Muitas tentativas. Tente novamente mais tarde" };
+    return { error: t.tooManyAttempts };
   }
   // Mensagem genérica: não revela se o e-mail existe
-  return { error: INVALID_CREDENTIALS };
+  return { error: t.invalidCredentials };
 }
 
 export async function loginAction(
   _prevState: LoginFormState,
   formData: FormData
 ): Promise<LoginFormState> {
-  const validatedFields = loginSchema.safeParse({
+  const t = dashboard[await getRequestLocale()].login;
+  const validatedFields = loginSchema(t).safeParse({
     email: formData.get("email"),
     password: formData.get("password"),
   });
 
   if (!validatedFields.success) {
     return {
-      message: "Por favor, corrija os erros abaixo.",
+      message: t.fixErrors,
       error: validatedFields.error.flatten().fieldErrors,
       success: false,
     };
@@ -88,7 +92,7 @@ export async function loginAction(
     console.error(
       "Login bloqueado: FIREBASE_CLIENT_EMAIL/FIREBASE_PRIVATE_KEY ausentes."
     );
-    return { message: "Serviço de login indisponível", success: false };
+    return { message: t.unavailable, success: false };
   }
 
   const { email, password } = validatedFields.data;
@@ -97,21 +101,21 @@ export async function loginAction(
   const ipLimit = rateLimit(`login:ip:${await actionClientIp()}`, 5, 60 * 1000);
   const emailLimit = rateLimit(`login:email:${email.toLowerCase()}`, 5, 15 * 60 * 1000);
   if (!ipLimit.allowed || !emailLimit.allowed) {
-    return { message: "Muitas tentativas. Aguarde alguns minutos e tente de novo.", success: false };
+    return { message: t.tooManyAttempts, success: false };
   }
 
   if (!isAllowedAdmin(email)) {
-    return { message: INVALID_CREDENTIALS, success: false };
+    return { message: t.invalidCredentials, success: false };
   }
 
   try {
-    const result = await signInWithPassword(email, password);
+    const result = await signInWithPassword(email, password, t);
     if ("error" in result) return { message: result.error, success: false };
 
     // Confere o token no servidor antes de emitir a sessão
     const decoded = await (await adminAuth()).verifyIdToken(result.idToken);
     if (!isAllowedAdmin(decoded.email)) {
-      return { message: INVALID_CREDENTIALS, success: false };
+      return { message: t.invalidCredentials, success: false };
     }
 
     const sessionCookie = await (await adminAuth()).createSessionCookie(
@@ -130,10 +134,10 @@ export async function loginAction(
       maxAge: SESSION_MAX_AGE_SECONDS,
     });
 
-    return { message: "Login realizado com sucesso!", success: true };
+    return { message: t.success, success: true };
   } catch (error) {
     console.error("Erro ao criar sessão:", error);
-    return { message: "Não foi possível entrar agora. Tente novamente em alguns instantes.", success: false };
+    return { message: t.failed, success: false };
   }
 }
 
@@ -152,5 +156,5 @@ export async function logoutAction() {
     }
   }
 
-  redirect("/login");
+  redirect(localePath(await getRequestLocale(), "/login"));
 }

@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { AlertCircle, CheckCircle2, Loader2, Send } from "lucide-react";
-import { useState, type BaseSyntheticEvent } from "react";
+import { useMemo, useState, type BaseSyntheticEvent } from "react";
 import { useForm } from "react-hook-form";
 import { v4 as uuidv4 } from "uuid";
 
@@ -20,7 +20,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useContactForm } from "@/hooks/useContactForm";
-import { contactFormSchema, type ContactFormInput } from "@/lib/schemas/contact-form";
+import { useMessages } from "@/lib/i18n/client";
+import { home } from "@/lib/i18n/messages/home";
+import { createContactFormSchema, type ContactFormInput } from "@/lib/schemas/contact-form";
+
+type ContactMessages = (typeof home)["pt"]["contact"];
 
 const MESSAGE_MAX = 500;
 
@@ -42,7 +46,7 @@ const defaultValues: ContactFormInput = {
 type TextFieldName = "nome" | "email" | "telefone" | "subject";
 
 // Campos de linha única: uma configuração em vez de blocos repetidos
-const TEXT_FIELDS: {
+function textFields(t: ContactMessages): {
   name: TextFieldName;
   label: string;
   type: "text" | "email" | "tel";
@@ -50,20 +54,14 @@ const TEXT_FIELDS: {
   placeholder: string;
   description?: string;
   optional?: boolean;
-}[] = [
-  { name: "nome", label: "Nome completo", type: "text", autoComplete: "name", placeholder: "Seu nome" },
-  { name: "email", label: "E-mail", type: "email", autoComplete: "email", placeholder: "voce@email.com" },
-  { name: "subject", label: "Assunto", type: "text", autoComplete: "off", placeholder: "Sobre o que vamos conversar?" },
-  {
-    name: "telefone",
-    label: "Telefone",
-    type: "tel",
-    autoComplete: "tel",
-    placeholder: "(31) 99999-9999",
-    description: "Opcional. Preencha só se preferir contato por telefone.",
-    optional: true,
-  },
-];
+}[] {
+  return [
+    { name: "nome", type: "text", autoComplete: "name", ...t.name },
+    { name: "email", type: "email", autoComplete: "email", ...t.email },
+    { name: "subject", type: "text", autoComplete: "off", ...t.subject },
+    { name: "telefone", type: "tel", autoComplete: "tel", ...t.phone, optional: true },
+  ];
+}
 
 function RequiredMark() {
   // O asterisco é visual; o "required" do campo informa os leitores de tela
@@ -76,18 +74,20 @@ function RequiredMark() {
 
 export function ContactForm() {
   const { submitForm, isLoading, error, success, reset } = useContactForm();
+  const t = useMessages(home).contact;
+  const schema = useMemo(() => createContactFormSchema(t.validation), [t]);
   // Antispam: robôs preenchem o campo invisível e enviam instantaneamente
   const [openedAt] = useState(() => Date.now());
 
   const form = useForm<ContactFormInput>({
-    resolver: zodResolver(contactFormSchema),
+    resolver: zodResolver(schema),
     defaultValues,
     mode: "onSubmit",
   });
 
   async function onSubmit(inputData: ContactFormInput, event?: BaseSyntheticEvent) {
     const honeypot = (event?.target as HTMLFormElement | undefined)?.elements.namedItem("website");
-    const formData = contactFormSchema.parse({
+    const formData = schema.parse({
       ...inputData,
       id: inputData.id || uuidv4(),
       create: inputData.create ?? new Date().toISOString(),
@@ -110,17 +110,17 @@ export function ContactForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} noValidate className="relative flex flex-col gap-6">
         <p className="text-sm text-muted-foreground">
-          Campos com <RequiredMark /> são obrigatórios.
+          {t.requiredNoteBefore} <RequiredMark /> {t.requiredNoteAfter}
         </p>
 
         {/* Honeypot: invisível e fora da ordem de foco e da árvore de acessibilidade */}
         <div aria-hidden="true" className="absolute -left-[9999px] size-px overflow-hidden">
-          <label htmlFor="website">Não preencha este campo</label>
+          <label htmlFor="website">{t.honeypot}</label>
           <input id="website" name="website" type="text" tabIndex={-1} autoComplete="off" defaultValue="" />
         </div>
 
         <div className="grid gap-6 sm:grid-cols-2">
-          {TEXT_FIELDS.map((config) => (
+          {textFields(t).map((config) => (
             <FormField
               key={config.name}
               control={form.control}
@@ -128,7 +128,7 @@ export function ContactForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {config.label} {config.optional ? <span className="font-normal text-muted-foreground">(opcional)</span> : <RequiredMark />}
+                    {config.label} {config.optional ? <span className="font-normal text-muted-foreground">{t.optional}</span> : <RequiredMark />}
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -155,19 +155,19 @@ export function ContactForm() {
           render={({ field }) => (
             <FormItem>
               <FormLabel>
-                Mensagem <RequiredMark />
+                {t.message.label} <RequiredMark />
               </FormLabel>
               <FormControl>
                 <Textarea
                   {...field}
-                  placeholder="Conte sobre a vaga, o projeto ou a ideia."
+                  placeholder={t.message.placeholder}
                   maxLength={MESSAGE_MAX}
                   required
                   className="min-h-40 resize-y"
                 />
               </FormControl>
               <FormDescription>
-                Entre 10 e {MESSAGE_MAX} caracteres. {field.value?.length ?? 0}/{MESSAGE_MAX}
+                {t.message.counter(MESSAGE_MAX, field.value?.length ?? 0)}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -178,14 +178,14 @@ export function ContactForm() {
           {success && (
             <Alert>
               <CheckCircle2 aria-hidden="true" />
-              <AlertTitle>Mensagem enviada</AlertTitle>
-              <AlertDescription>Obrigado pelo contato. Respondo em até 24 horas úteis.</AlertDescription>
+              <AlertTitle>{t.successTitle}</AlertTitle>
+              <AlertDescription>{t.successDescription}</AlertDescription>
             </Alert>
           )}
           {error && (
             <Alert variant="destructive">
               <AlertCircle aria-hidden="true" />
-              <AlertTitle>Não foi possível enviar</AlertTitle>
+              <AlertTitle>{t.errorTitle}</AlertTitle>
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
@@ -193,7 +193,7 @@ export function ContactForm() {
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs text-muted-foreground">
-            Seus dados são usados só para responder este contato.
+            {t.privacy}
           </p>
           <Button type="submit" size="lg" disabled={isLoading}>
             {isLoading ? (
@@ -201,7 +201,7 @@ export function ContactForm() {
             ) : (
               <Send data-icon="inline-start" aria-hidden="true" />
             )}
-            {isLoading ? "Enviando..." : "Enviar mensagem"}
+            {isLoading ? t.sending : t.send}
           </Button>
         </div>
       </form>

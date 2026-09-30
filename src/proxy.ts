@@ -1,6 +1,8 @@
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
+import { isLocale, LOCALE_COOKIE, localePath, negotiateLocale } from "@/lib/i18n/config";
+
 const isProd = process.env.NODE_ENV === "production";
 
 // Content Security Policy: de onde o navegador pode carregar cada tipo de recurso.
@@ -38,26 +40,55 @@ const SECURITY_HEADERS: Record<string, string> = {
   ...(isProd ? { "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload" } : {}),
 };
 
+function withSecurityHeaders(response: NextResponse): NextResponse {
+  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
+    response.headers.set(key, value);
+  }
+  return response;
+}
+
+/** Idioma de quem chega sem prefixo: a escolha anterior (cookie) ou o idioma da máquina. */
+function preferredLocale(request: NextRequest) {
+  const saved = request.cookies.get(LOCALE_COOKIE)?.value;
+  return isLocale(saved) ? saved : negotiateLocale(request.headers.get("accept-language"));
+}
+
 // Next 16.3+: "proxy" substitui a convenção "middleware"
 export function proxy(request: NextRequest) {
-  const session = request.cookies.get("session");
+  const { pathname, search } = request.nextUrl;
+
+  // API e arquivos (icon.svg, imagens) não têm idioma
+  const isApiOrFile = pathname.startsWith("/api/") || /\.[a-z0-9]+$/i.test(pathname);
+  const [, first = ""] = pathname.split("/");
+
+  // Sem prefixo de idioma: redireciona para /pt, /en ou /es
+  if (!isApiOrFile && !isLocale(first)) {
+    const url = request.nextUrl.clone();
+    url.pathname = localePath(preferredLocale(request), pathname);
+    url.search = search;
+    return withSecurityHeaders(NextResponse.redirect(url));
+  }
+
+  const locale = isLocale(first) ? first : null;
+  const route = locale ? pathname.slice(locale.length + 1) || "/" : pathname;
+  const isAdminArea = route.startsWith("/dashboard") || route.startsWith("/login");
 
   // Filtro rápido: sem cookie nem chega no painel. A verificação real do cookie
   // (assinatura, expiração, e-mail admin) acontece no servidor via requireAdmin().
   // Não redirecionamos /login -> /dashboard aqui: um cookie inválido causaria loop.
-  if (!session && request.nextUrl.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (locale && !request.cookies.get("session") && route.startsWith("/dashboard")) {
+    return withSecurityHeaders(NextResponse.redirect(new URL(localePath(locale, "/login"), request.url)));
   }
 
-  const response = NextResponse.next();
-  for (const [key, value] of Object.entries(SECURITY_HEADERS)) {
-    response.headers.set(key, value);
+  const response = withSecurityHeaders(NextResponse.next());
+
+  // Lembra o idioma da página (usado por server actions e por quem volta sem prefixo)
+  if (locale && request.cookies.get(LOCALE_COOKIE)?.value !== locale) {
+    response.cookies.set(LOCALE_COOKIE, locale, { path: "/", maxAge: 60 * 60 * 24 * 365, sameSite: "lax", secure: isProd });
   }
 
   // Área administrativa nunca vai para cache compartilhado
-  if (request.nextUrl.pathname.startsWith("/dashboard") || request.nextUrl.pathname.startsWith("/login")) {
-    response.headers.set("Cache-Control", "private, no-store");
-  }
+  if (isAdminArea) response.headers.set("Cache-Control", "private, no-store");
 
   return response;
 }

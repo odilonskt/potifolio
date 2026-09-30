@@ -6,6 +6,10 @@ import "server-only";
 import { Document, Font, Link, Page, renderToBuffer, StyleSheet, Text, View } from "@react-pdf/renderer";
 
 import type { ResumeView } from "@/lib/content/resume";
+import { HTML_LANG, type Locale } from "@/lib/i18n/config";
+import { resume as resumeMessages } from "@/lib/i18n/messages/resume";
+
+type ResumeMessages = (typeof resumeMessages)["pt"];
 
 // Sem hifenização automática: nomes de tecnologia não podem virar "Ex-press"
 Font.registerHyphenationCallback((word) => [word]);
@@ -74,9 +78,9 @@ function EntryHead({ title, subtitle, period }: { title: string; subtitle?: stri
 
 const shortUrl = (url: string) => url.replace(/^https:\/\//, "").replace(/\/$/, "");
 
-function ResumePdf({ resume }: { resume: ResumeView }) {
+function ResumePdf({ resume, t, locale }: { resume: ResumeView; t: ResumeMessages; locale: Locale }) {
   return (
-    <Document title={`Currículo – ${resume.name}`} author={resume.name} language="pt-BR">
+    <Document title={t.pdfTitle(resume.name)} author={resume.name} language={HTML_LANG[locale]}>
       <Page size="A4" style={styles.page}>
         <View style={styles.header}>
           <Text style={styles.name}>{resume.name}</Text>
@@ -102,12 +106,12 @@ function ResumePdf({ resume }: { resume: ResumeView }) {
           </View>
         </View>
 
-        <Section title="Perfil">
+        <Section title={t.sections.profile}>
           <Text>{resume.summary}</Text>
         </Section>
 
         {resume.skills.length > 0 && (
-          <Section title="Habilidades técnicas">
+          <Section title={t.sections.skills}>
             {resume.skills.map((group) => (
               <Text key={group.label} style={styles.skillRow}>
                 <Text style={styles.bold}>{group.label}: </Text>
@@ -118,7 +122,7 @@ function ResumePdf({ resume }: { resume: ResumeView }) {
         )}
 
         {resume.experience.length > 0 && (
-          <Section title="Experiência profissional">
+          <Section title={t.sections.experience}>
             {resume.experience.map((item) => (
               <View key={`${item.role}-${item.period}`} style={styles.entry} wrap={false}>
                 <EntryHead title={item.role} subtitle={item.organization} period={item.period} />
@@ -129,14 +133,14 @@ function ResumePdf({ resume }: { resume: ResumeView }) {
         )}
 
         {resume.projects.length > 0 && (
-          <Section title="Projetos">
+          <Section title={t.sections.projects}>
             {resume.projects.map((project) => (
               <View key={project.name} style={styles.entry} wrap={false}>
                 <EntryHead title={project.name} subtitle={project.context} />
                 <Bullets items={project.bullets} />
                 {project.linkUrl ? (
                   <Text>
-                    {project.linkLabel || "Link"}:{" "}
+                    {project.linkLabel || t.link}:{" "}
                     <Link src={project.linkUrl} style={styles.link}>
                       {shortUrl(project.linkUrl)}
                     </Link>
@@ -148,7 +152,7 @@ function ResumePdf({ resume }: { resume: ResumeView }) {
         )}
 
         {resume.education.length > 0 && (
-          <Section title="Formação">
+          <Section title={t.sections.education}>
             {resume.education.map((item) => (
               <View key={`${item.course}-${item.institution}`} style={styles.entry} wrap={false}>
                 <EntryHead title={item.course} period={item.period} />
@@ -162,14 +166,14 @@ function ResumePdf({ resume }: { resume: ResumeView }) {
         )}
 
         {resume.courses.length > 0 && (
-          <Section title="Cursos e certificações">
+          <Section title={t.sections.courses}>
             <Bullets items={resume.courses.map((course) => (course.details ? `${course.name} (${course.details})` : course.name))} />
           </Section>
         )}
 
         {resume.availability && (
           <Text style={{ marginTop: 8 }}>
-            <Text style={styles.bold}>Disponibilidade: </Text>
+            <Text style={styles.bold}>{t.sections.availability}: </Text>
             {resume.availability}
           </Text>
         )}
@@ -179,9 +183,10 @@ function ResumePdf({ resume }: { resume: ResumeView }) {
 }
 
 /** Resposta pronta para download. */
-export async function resumePdfResponse(resume: ResumeView, headers: HeadersInit = {}): Promise<Response> {
-  const buffer = await renderToBuffer(<ResumePdf resume={resume} />);
-  const filename = `curriculo-${resume.name.normalize("NFD").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase()}.pdf`;
+export async function resumePdfResponse(resume: ResumeView, locale: Locale, headers: HeadersInit = {}): Promise<Response> {
+  const t = resumeMessages[locale];
+  const buffer = await renderToBuffer(<ResumePdf resume={resume} t={t} locale={locale} />);
+  const filename = `${t.fileName}-${resume.name.normalize("NFD").replace(/[^A-Za-z0-9]+/g, "-").replace(/^-|-$/g, "").toLowerCase()}.pdf`;
   return new Response(new Uint8Array(buffer), {
     headers: {
       "Content-Type": "application/pdf",

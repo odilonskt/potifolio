@@ -6,12 +6,15 @@ import { cn } from "@/lib/utils";
  */
 export function StatusPage({
   code,
+  codeLabel,
   title,
   description,
   children,
   className,
 }: {
   code: number;
+  /** Como o leitor de tela lê o código ("Erro 404") */
+  codeLabel: string;
   title: string;
   description: string;
   /** Ações (links/botões) */
@@ -25,7 +28,7 @@ export function StatusPage({
     >
       <div className="flex max-w-lg flex-col items-center gap-6 text-center">
         {/* Código lido como "Erro 404" por leitores de tela; os dígitos animam uma vez na entrada */}
-        <p className="status-code text-8xl font-bold tracking-tighter text-foreground tabular-nums sm:text-9xl" aria-label={`Erro ${code}`}>
+        <p className="status-code text-8xl font-bold tracking-tighter text-foreground tabular-nums sm:text-9xl" aria-label={codeLabel}>
           {String(code)
             .split("")
             .map((digit, index) => (

@@ -1,18 +1,24 @@
 import { Section } from "@/components/section/section";
 import { getJourney } from "@/lib/content/repository";
 import type { JourneyItem } from "@/lib/content/schemas";
+import { localize } from "@/lib/content/translations";
+import type { Locale } from "@/lib/i18n/config";
+import { home } from "@/lib/i18n/messages/home";
+import { getLocale } from "@/lib/i18n/server";
+
+type JourneyMessages = (typeof home)["pt"]["journey"];
 
 import { JourneyLogo } from "./journey-card";
 import { JourneyTabs } from "./journey-tabs";
 
-function NowRow({ label, item }: { label: string; item: JourneyItem }) {
+function NowRow({ label, item, t, locale }: { label: string; item: JourneyItem; t: JourneyMessages; locale: Locale }) {
   return (
     <div className="flex items-center gap-4">
-      <JourneyLogo item={item} size={48} />
+      <JourneyLogo item={item} size={48} locale={locale} />
       <div className="min-w-0">
         <dt className="text-sm text-muted-foreground">{label}</dt>
         <dd className="text-base font-medium text-foreground sm:text-lg">
-          {item.title} <span className="text-muted-foreground">em</span>{" "}
+          {item.title} <span className="text-muted-foreground">{t.at}</span>{" "}
           <span className="text-brand">{item.organization}</span>
         </dd>
       </div>
@@ -21,7 +27,7 @@ function NowRow({ label, item }: { label: string; item: JourneyItem }) {
 }
 
 /** "Agora": onde trabalho e o que estudo — itens sem data de término. */
-function NowSection({ items }: { items: JourneyItem[] }) {
+function NowSection({ items, t, locale }: { items: JourneyItem[]; t: JourneyMessages; locale: Locale }) {
   const working = items.filter((item) => item.kind === "work" && !item.endDate);
   const studying = items.filter((item) => item.kind === "education" && !item.endDate);
   if (working.length === 0 && studying.length === 0) return null;
@@ -38,15 +44,15 @@ function NowSection({ items }: { items: JourneyItem[] }) {
             <span className="absolute inline-flex size-full rounded-full bg-emerald-400 opacity-60 motion-safe:animate-ping" />
             <span className="relative inline-flex size-2.5 rounded-full bg-emerald-400" />
           </span>
-          Agora
+          {t.now}
         </h2>
 
         <dl className="mt-6 grid gap-6 sm:grid-cols-2">
           {working.map((item) => (
-            <NowRow key={item.id} label="Trabalhando" item={item} />
+            <NowRow key={item.id} label={t.working} item={item} t={t} locale={locale} />
           ))}
           {studying.map((item) => (
-            <NowRow key={item.id} label="Estudando" item={item} />
+            <NowRow key={item.id} label={t.studying} item={item} t={t} locale={locale} />
           ))}
         </dl>
       </div>
@@ -55,14 +61,16 @@ function NowSection({ items }: { items: JourneyItem[] }) {
 }
 
 export default async function JourneySections() {
-  const items = await getJourney();
+  const locale = await getLocale();
+  const t = home[locale].journey;
+  const items = (await getJourney()).map((item) => localize(item, locale));
   if (items.length === 0) return null;
 
   return (
     <>
-      <NowSection items={items} />
+      <NowSection items={items} t={t} locale={locale} />
 
-      <Section id="Trajetoria" title="Trajetória" description="Carreira, estudos e certificados." width="narrow">
+      <Section id="Trajetoria" title={t.title} description={t.description} width="narrow">
         <JourneyTabs items={items} />
       </Section>
     </>

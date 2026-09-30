@@ -22,6 +22,8 @@ import { TbApi } from "react-icons/tb";
 
 import { Button } from "@/components/ui/button";
 import { TECHNOLOGIES, type Technology } from "@/lib/content/profile";
+import { useMessages } from "@/lib/i18n/client";
+import { home } from "@/lib/i18n/messages/home";
 import { cn } from "@/lib/utils";
 
 import styles from "./InfinityScroll.module.css";
@@ -71,6 +73,7 @@ function TechList({ hidden = false }: { hidden?: boolean }) {
  */
 export default function TechMarquee() {
   const [paused, setPaused] = useState(false);
+  const t = useMessages(home).technologies;
 
   return (
     <div className="flex flex-col gap-4">
@@ -88,7 +91,7 @@ export default function TechMarquee() {
         className={cn("self-end", styles.toggle)}
       >
         {paused ? <Play data-icon="inline-start" aria-hidden="true" /> : <Pause data-icon="inline-start" aria-hidden="true" />}
-        {paused ? "Retomar animação" : "Pausar animação"}
+        {paused ? t.resume : t.pause}
       </Button>
     </div>
   );

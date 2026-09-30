@@ -2,11 +2,21 @@
 
 import "./globals.css";
 
-import { useEffect } from "react";
+import { useEffect, useSyncExternalStore } from "react";
 
 import { StatusPage } from "@/components/status/status-page";
 import { THEME_STORAGE_KEY } from "@/components/theme/theme-provider";
 import { Button } from "@/components/ui/button";
+import { DEFAULT_LOCALE, HTML_LANG, isLocale, localePath, type Locale } from "@/lib/i18n/config";
+import { common } from "@/lib/i18n/messages/common";
+
+const subscribeNoop = () => () => {};
+
+/** Fora do layout não há LocaleProvider: o idioma vem do primeiro segmento da URL */
+function localeFromUrl(): Locale {
+  const first = window.location.pathname.split("/")[1];
+  return isLocale(first) ? first : DEFAULT_LOCALE;
+}
 
 /**
  * Falha no próprio layout raiz. Substitui o documento inteiro, então precisa de
@@ -19,6 +29,9 @@ export default function GlobalError({
   error: Error & { digest?: string };
   retry: () => void;
 }) {
+  const locale = useSyncExternalStore(subscribeNoop, localeFromUrl, () => DEFAULT_LOCALE);
+  const t = common[locale].status;
+
   useEffect(() => {
     console.error(error);
     let theme: string | null = null;
@@ -33,23 +46,18 @@ export default function GlobalError({
   }, [error]);
 
   return (
-    <html lang="pt-BR" suppressHydrationWarning>
+    <html lang={HTML_LANG[locale]} suppressHydrationWarning>
       <body className="antialiased">
-        <title>Erro | Odilon</title>
-        <StatusPage
-          code={500}
-          title="O site está com problemas"
-          description="Não foi possível carregar a página. Tente de novo em alguns instantes."
-        >
-          <Button onClick={() => retry()}>Tentar de novo</Button>
+        <title>{`${t.errorCode(500)} | Odilon`}</title>
+        <StatusPage code={500} codeLabel={t.errorCode(500)} title={t.globalErrorTitle} description={t.globalErrorDescription}>
+          <Button onClick={() => retry()}>{t.retry}</Button>
           {/* <a> em vez de <Link>: o roteador pode estar indisponível aqui */}
           <Button asChild variant="outline">
-            {/* eslint-disable-next-line @next/next/no-html-link-for-pages -- recarga completa proposital após falha do layout raiz */}
-            <a href="/">Ir para o início</a>
+            <a href={localePath(locale)}>{t.goHome}</a>
           </Button>
           {error.digest && (
             <p className="w-full text-xs text-muted-foreground">
-              Código do erro: <code className="font-mono">{error.digest}</code>
+              {t.errorDigest} <code className="font-mono">{error.digest}</code>
             </p>
           )}
         </StatusPage>

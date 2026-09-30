@@ -1,0 +1,157 @@
+// Textos compartilhados: menu, rodapé, tema, idioma e páginas de status.
+import { defineMessages } from "../messages";
+
+export const common = defineMessages(
+  {
+    meta: {
+      title: "Odilon - Portfólio",
+      description:
+        "Portfólio de Odilon de Campos, desenvolvedor full stack. Projetos, trajetória, blog e currículo para download.",
+    },
+    siteName: "Odilon",
+    skipToContent: "Pular para o conteúdo",
+    nav: {
+      label: "Navegação principal",
+      home: "Início",
+      about: "Sobre",
+      journey: "Trajetória",
+      technologies: "Tecnologias",
+      highlight: "Destaque",
+      projects: "Projetos",
+      blog: "Blog",
+      contact: "Contato",
+    },
+    theme: {
+      label: "Tema escuro",
+      toLight: "Mudar para o tema claro",
+      toDark: "Mudar para o tema escuro",
+    },
+    language: {
+      label: "Idioma",
+      change: "Mudar idioma",
+      current: (name: string) => `Idioma atual: ${name}`,
+    },
+    footer: {
+      socialLabel: "Redes sociais",
+      codingSince: "Desenvolvendo desde",
+      opensInNewTab: "abre em nova aba",
+    },
+    newTab: "(abre em nova aba)",
+    status: {
+      errorCode: (code: number) => `Erro ${code}`,
+      notFoundTitle: "Página não encontrada",
+      notFoundDescription: "O endereço pode ter mudado ou a página foi removida. Confira o link ou volte para o início.",
+      errorTitle: "Algo deu errado",
+      errorDescription: "Um erro inesperado impediu esta página de carregar. Tente de novo em alguns segundos.",
+      globalErrorTitle: "O site está com problemas",
+      globalErrorDescription: "Não foi possível carregar a página. Tente de novo em alguns instantes.",
+      retry: "Tentar de novo",
+      goHome: "Ir para o início",
+      seeBlog: "Ver o blog",
+      errorDigest: "Código do erro:",
+      loading: "Carregando...",
+    },
+  },
+  {
+    en: {
+      meta: {
+        title: "Odilon - Portfolio",
+        description:
+          "Portfolio of Odilon de Campos, full stack developer. Projects, career journey, blog and a downloadable resume.",
+      },
+      siteName: "Odilon",
+      skipToContent: "Skip to content",
+      nav: {
+        label: "Main navigation",
+        home: "Home",
+        about: "About",
+        journey: "Journey",
+        technologies: "Technologies",
+        highlight: "Highlight",
+        projects: "Projects",
+        blog: "Blog",
+        contact: "Contact",
+      },
+      theme: {
+        label: "Dark theme",
+        toLight: "Switch to light theme",
+        toDark: "Switch to dark theme",
+      },
+      language: {
+        label: "Language",
+        change: "Change language",
+        current: (name: string) => `Current language: ${name}`,
+      },
+      footer: {
+        socialLabel: "Social media",
+        codingSince: "Coding since",
+        opensInNewTab: "opens in a new tab",
+      },
+      newTab: "(opens in a new tab)",
+      status: {
+        errorCode: (code: number) => `Error ${code}`,
+        notFoundTitle: "Page not found",
+        notFoundDescription: "The address may have changed or the page was removed. Check the link or go back home.",
+        errorTitle: "Something went wrong",
+        errorDescription: "An unexpected error kept this page from loading. Try again in a few seconds.",
+        globalErrorTitle: "The site is having problems",
+        globalErrorDescription: "The page could not be loaded. Try again in a moment.",
+        retry: "Try again",
+        goHome: "Go home",
+        seeBlog: "Read the blog",
+        errorDigest: "Error code:",
+        loading: "Loading...",
+      },
+    },
+    es: {
+      meta: {
+        title: "Odilon - Portafolio",
+        description:
+          "Portafolio de Odilon de Campos, desarrollador full stack. Proyectos, trayectoria, blog y currículum para descargar.",
+      },
+      siteName: "Odilon",
+      skipToContent: "Saltar al contenido",
+      nav: {
+        label: "Navegación principal",
+        home: "Inicio",
+        about: "Sobre mí",
+        journey: "Trayectoria",
+        technologies: "Tecnologías",
+        highlight: "Destacado",
+        projects: "Proyectos",
+        blog: "Blog",
+        contact: "Contacto",
+      },
+      theme: {
+        label: "Tema oscuro",
+        toLight: "Cambiar al tema claro",
+        toDark: "Cambiar al tema oscuro",
+      },
+      language: {
+        label: "Idioma",
+        change: "Cambiar idioma",
+        current: (name: string) => `Idioma actual: ${name}`,
+      },
+      footer: {
+        socialLabel: "Redes sociales",
+        codingSince: "Programando desde",
+        opensInNewTab: "se abre en una pestaña nueva",
+      },
+      newTab: "(se abre en una pestaña nueva)",
+      status: {
+        errorCode: (code: number) => `Error ${code}`,
+        notFoundTitle: "Página no encontrada",
+        notFoundDescription: "La dirección puede haber cambiado o la página fue eliminada. Revisa el enlace o vuelve al inicio.",
+        errorTitle: "Algo salió mal",
+        errorDescription: "Un error inesperado impidió cargar esta página. Inténtalo de nuevo en unos segundos.",
+        globalErrorTitle: "El sitio tiene problemas",
+        globalErrorDescription: "No se pudo cargar la página. Inténtalo de nuevo en unos instantes.",
+        retry: "Intentar de nuevo",
+        goHome: "Ir al inicio",
+        seeBlog: "Ver el blog",
+        errorDigest: "Código del error:",
+        loading: "Cargando...",
+      },
+    },
+  },
+);

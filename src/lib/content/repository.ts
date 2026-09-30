@@ -7,7 +7,8 @@ import type { DocumentSnapshot } from "firebase-admin/firestore";
 import { unstable_cache } from "next/cache";
 
 import { adminDb, isAdminConfigured } from "@/lib/firebase/admin";
-import type { Resume } from "@/lib/content/resume";
+import { RESUME_SEED, type Resume } from "@/lib/content/resume";
+import type { Locale } from "@/lib/i18n/config";
 import type { JourneyItem, Post, Project } from "@/lib/content/schemas";
 
 export const JOURNEY_COLLECTION = "journey";
@@ -165,33 +166,52 @@ export async function getProject(id: string): Promise<Project | null> {
 }
 
 // ─── Currículo ────────────────────────────────────────────────────────────────
+// Um documento por idioma; a versão em português controla a publicação e serve de
+// alternativa quando o idioma ainda não foi salvo.
 
-const resumeRef = () => adminDb().collection(RESUME_DOC.collection).doc(RESUME_DOC.id);
+const RESUME_DOC_IDS: Record<Locale, string> = { pt: RESUME_DOC.id, en: "en", es: "es" };
+const resumeRef = (locale: Locale) => adminDb().collection(RESUME_DOC.collection).doc(RESUME_DOC_IDS[locale]);
 
-/** Para o painel: null enquanto o currículo nunca foi salvo. */
-export async function getResumeUncached(): Promise<Resume | null> {
-  const doc = await resumeRef().get();
+/** Para o painel: null enquanto a versão desse idioma nunca foi salva. */
+export async function getResumeUncached(locale: Locale = "pt"): Promise<Resume | null> {
+  const doc = await resumeRef(locale).get();
   return doc.exists ? (doc.data() as Resume) : null;
 }
 
-const getResumeCached = unstable_cache(getResumeUncached, ["resume:main"], {
+const getResumeCached = unstable_cache(getResumeUncached, ["resume"], {
   tags: [RESUME_TAG],
   revalidate: REVALIDATE_SECONDS,
 });
 
-/** Para páginas públicas: só devolve o currículo publicado; em erro, null. */
-export async function getPublishedResume(): Promise<Resume | null> {
+/**
+ * Para páginas públicas: currículo publicado no idioma pedido ou, se ainda não houver
+ * essa versão, em português (`locale` diz qual veio). Em erro, null.
+ */
+export async function getPublishedResume(locale: Locale = "pt"): Promise<{ resume: Resume; locale: Locale } | null> {
   if (!isAdminConfigured()) return null;
   try {
-    const resume = await getResumeCached();
-    return resume?.published ? resume : null;
+    const base = await getResumeCached("pt");
+    if (!base?.published) return null;
+    const translated = locale === "pt" ? null : await getResumeCached(locale);
+    return translated ? { resume: { ...translated, published: true }, locale } : { resume: base, locale: "pt" };
   } catch (error) {
     console.error("Erro ao carregar currículo:", error);
     return null;
   }
 }
 
-export async function saveResume(resume: Resume): Promise<void> {
+export async function saveResume(resume: Resume, locale: Locale = "pt"): Promise<void> {
   // O Firestore recusa undefined, inclusive dentro das listas: o JSON descarta esses campos
-  await resumeRef().set(JSON.parse(JSON.stringify(resume)));
+  await resumeRef(locale).set(JSON.parse(JSON.stringify(resume)));
+}
+
+/**
+ * Rascunho do painel para um idioma: a versão salva ou, se ainda não existe, o
+ * conteúdo inicial traduzido com o contato e a publicação da versão em português.
+ */
+export async function getResumeDraft(locale: Locale): Promise<{ resume: Resume; saved: boolean }> {
+  const [own, base] = await Promise.all([getResumeUncached(locale), locale === "pt" ? null : getResumeUncached("pt")]);
+  if (own) return { resume: own, saved: true };
+  const fallback = locale === "pt" ? RESUME_SEED.pt : { ...RESUME_SEED[locale], email: base?.email ?? "", phone: base?.phone ?? "", location: base?.location, published: base?.published ?? false };
+  return { resume: fallback, saved: false };
 }

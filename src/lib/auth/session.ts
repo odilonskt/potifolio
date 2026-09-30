@@ -8,6 +8,8 @@ import { cache } from "react";
 
 import { env } from "@/lib/env";
 import { adminAuth, isAdminConfigured } from "@/lib/firebase/admin";
+import { localePath } from "@/lib/i18n/config";
+import { getRequestLocale } from "@/lib/i18n/server";
 
 export const SESSION_COOKIE = "session";
 export const SESSION_MAX_AGE_SECONDS = 60 * 60 * 24 * 5; // 5 dias
@@ -78,6 +80,6 @@ export async function isAdminRequest(request: Request): Promise<boolean> {
 /** Use no topo de páginas e server actions do painel. */
 export async function requireAdmin(): Promise<{ uid: string; email: string }> {
   const session = await getSession();
-  if (!session.authenticated) redirect("/login");
+  if (!session.authenticated) redirect(localePath(await getRequestLocale(), "/login"));
   return { uid: session.uid, email: session.email };
 }

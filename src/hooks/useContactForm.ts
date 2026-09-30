@@ -1,12 +1,16 @@
 "use client";
 
-import { ContactFormData } from "@/lib/schemas/contact-form";
 import { useState } from "react";
+
+import { useMessages } from "@/lib/i18n/client";
+import { home } from "@/lib/i18n/messages/home";
+import { ContactFormData } from "@/lib/schemas/contact-form";
 
 export function useContactForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const t = useMessages(home).contact;
 
   // antispam: campo honeypot + tempo de preenchimento (validados no servidor)
   const submitForm = async (data: ContactFormData & { website?: string; elapsedMs?: number }) => {
@@ -25,21 +29,19 @@ export function useContactForm() {
 
       const contentType = response.headers.get("content-type");
       if (!contentType || !contentType.includes("application/json")) {
-        throw new Error("Resposta inválida do servidor");
+        throw new Error(t.invalidResponse);
       }
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(
-          result.error || `Erro ${response.status}: ${response.statusText}`
-        );
+        throw new Error(result.error || t.httpError(response.status));
       }
 
       setSuccess(true);
       return { success: true, id: result.id };
     } catch (err) {
-      const message = err instanceof Error ? err.message : "Erro desconhecido";
+      const message = err instanceof Error ? err.message : t.unknownError;
       setError(message);
       return { success: false, error: message };
     } finally {
