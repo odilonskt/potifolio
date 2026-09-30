@@ -5,6 +5,7 @@ import "./globals.css";
 import { useEffect } from "react";
 
 import { StatusPage } from "@/components/status/status-page";
+import { THEME_STORAGE_KEY } from "@/components/theme/theme-provider";
 import { Button } from "@/components/ui/button";
 
 /**
@@ -22,7 +23,7 @@ export default function GlobalError({
     console.error(error);
     let theme: string | null = null;
     try {
-      theme = localStorage.getItem("theme");
+      theme = localStorage.getItem(THEME_STORAGE_KEY);
     } catch {
       // Armazenamento bloqueado: segue a preferência do sistema
     }

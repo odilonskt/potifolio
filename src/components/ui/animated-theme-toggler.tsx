@@ -149,7 +149,7 @@ export const AnimatedThemeToggler = ({
   ...props
 }: AnimatedThemeTogglerProps) => {
   const shape = variant ?? "circle"
-  const { resolvedTheme, setTheme } = useTheme()
+  const { resolvedTheme, systemTheme, setTheme } = useTheme()
   const buttonRef = useRef<HTMLButtonElement>(null)
   // O tema só é conhecido no cliente: antes da hidratação renderizamos um estado neutro
   const mounted = useSyncExternalStore(subscribeNoop, () => true, () => false)
@@ -166,7 +166,8 @@ export const AnimatedThemeToggler = ({
       root.classList.toggle("dark", nextTheme === "dark")
       root.dataset.theme = nextTheme
       root.style.colorScheme = nextTheme
-      setTheme(nextTheme)
+      // Escolher o mesmo tema do sistema volta a seguir o sistema (e suas mudanças)
+      setTheme(nextTheme === systemTheme ? "system" : nextTheme)
     }
 
     // Sem isso, os "transition-colors/all" dos componentes animam as cores durante a
@@ -246,7 +247,7 @@ export const AnimatedThemeToggler = ({
         )
       })
     }
-  }, [shape, fromCenter, duration, isDark, setTheme])
+  }, [shape, fromCenter, duration, isDark, setTheme, systemTheme])
 
   // Botão de alternância acessível: nome fixo + aria-pressed indica o estado
   return (
