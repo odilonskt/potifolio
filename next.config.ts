@@ -13,8 +13,9 @@ const nextConfig: NextConfig = {
   experimental: {
     // Se quiser usar server actions puros
     serverActions: {
-      // Imagens de até 2 MB + campos do formulário do painel
-      bodySizeLimit: "3mb",
+      // Imagens (até 4 MB somadas por envio) + campos do formulário do painel.
+      // A Vercel recusa corpos acima de 4,5 MB de qualquer forma.
+      bodySizeLimit: "4.4mb",
     },
   },
   // Melhor suporte para PWA e cache

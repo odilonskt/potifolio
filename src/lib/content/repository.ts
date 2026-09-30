@@ -1,5 +1,5 @@
 // lib/content/repository.ts
-// Leitura e escrita da trajetória e do blog no Firestore (via Admin SDK, só no servidor).
+// Leitura e escrita da trajetória, do blog e dos projetos no Firestore (via Admin SDK, só no servidor).
 // Leituras públicas usam cache com tag; as server actions invalidam com updateTag().
 import "server-only";
 
@@ -7,12 +7,14 @@ import type { DocumentSnapshot } from "firebase-admin/firestore";
 import { unstable_cache } from "next/cache";
 
 import { adminDb, isAdminConfigured } from "@/lib/firebase/admin";
-import type { JourneyItem, Post } from "@/lib/content/schemas";
+import type { JourneyItem, Post, Project } from "@/lib/content/schemas";
 
 export const JOURNEY_COLLECTION = "journey";
 export const POSTS_COLLECTION = "posts";
 export const JOURNEY_TAG = "journey";
 export const POSTS_TAG = "posts";
+export const PROJECTS_COLLECTION = "projects";
+export const PROJECTS_TAG = "projects";
 
 const REVALIDATE_SECONDS = 3600;
 
@@ -116,4 +118,44 @@ export async function uniqueSlug(base: string, ignoreId?: string): Promise<strin
     if (snapshot.docs.every((doc) => doc.id === ignoreId)) return candidate;
   }
   return `${root}-${Date.now()}`;
+}
+
+// ─── Projetos ─────────────────────────────────────────────────────────────────
+
+/** Documentos antigos ou sem imagem podem não ter o campo "images". */
+function toProject(doc: DocumentSnapshot): Project {
+  const project = mapDoc<Project>(doc);
+  return { ...project, images: project.images ?? [] };
+}
+
+/** Menor "ordem" primeiro; empate, o mais novo primeiro. */
+function sortProjects(projects: Project[]): Project[] {
+  return [...projects].sort((a, b) => a.order - b.order || b.createdAt.localeCompare(a.createdAt));
+}
+
+export async function listProjectsUncached(): Promise<Project[]> {
+  const snapshot = await adminDb().collection(PROJECTS_COLLECTION).get();
+  return sortProjects(snapshot.docs.map(toProject));
+}
+
+const listPublishedProjectsCached = unstable_cache(
+  async (): Promise<Project[]> => (await listProjectsUncached()).filter((project) => project.published),
+  ["projects:published"],
+  { tags: [PROJECTS_TAG], revalidate: REVALIDATE_SECONDS },
+);
+
+/** Para a home: nunca quebra a página; em erro devolve lista vazia. */
+export async function getPublishedProjects(): Promise<Project[]> {
+  if (!isAdminConfigured()) return [];
+  try {
+    return await listPublishedProjectsCached();
+  } catch (error) {
+    console.error("Erro ao carregar projetos:", error);
+    return [];
+  }
+}
+
+export async function getProject(id: string): Promise<Project | null> {
+  const doc = await adminDb().collection(PROJECTS_COLLECTION).doc(id).get();
+  return doc.exists ? toProject(doc) : null;
 }

@@ -1,5 +1,5 @@
 // lib/content/schemas.ts
-// Validação dos conteúdos gerenciados pelo painel (trajetória e blog).
+// Validação dos conteúdos gerenciados pelo painel (trajetória, blog e projetos).
 import { z } from "zod";
 
 const monthRegex = /^\d{4}-(0[1-9]|1[0-2])$/;
@@ -92,6 +92,35 @@ export function slugify(value: string): string {
 }
 
 export const slugSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/).max(80);
+
+// ─── Projetos ─────────────────────────────────────────────────────────────────
+
+export const MAX_PROJECT_IMAGES = 4;
+
+export type ProjectImage = { url: string; path: string };
+
+export const projectInputSchema = z.object({
+  title: z.string().trim().min(2, "Informe o nome do projeto").max(80),
+  summary: z.string().trim().min(10, "Escreva um resumo de ao menos 10 caracteres").max(400),
+  tags: z
+    .string()
+    .max(300)
+    .transform((value) => [...new Set(value.split(",").map((tag) => tag.trim()).filter(Boolean))].slice(0, 8)),
+  repoUrl: optional(httpsUrl),
+  demoUrl: optional(httpsUrl),
+  imageAlt: optional(z.string().trim().max(160)),
+  order: z.coerce.number().int("Use um número inteiro").min(0, "Mínimo 0").max(99, "Máximo 99").default(0),
+  published: z.preprocess((value) => value === "on" || value === true, z.boolean()),
+});
+
+export type ProjectInput = z.infer<typeof projectInputSchema>;
+
+export type Project = ProjectInput & {
+  id: string;
+  images: ProjectImage[];
+  createdAt: string;
+  updatedAt: string;
+};
 
 // ─── Formulários ──────────────────────────────────────────────────────────────
 
