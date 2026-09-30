@@ -48,7 +48,7 @@ export function readImageField(value: FormDataEntryValue | null): ImageValidatio
 
 export async function uploadImage(
   file: File,
-  folder: "journey" | "posts"
+  folder: "journey" | "posts" | "projects"
 ): Promise<{ url: string; path: string }> {
   const bytes = new Uint8Array(await file.arrayBuffer());
   const kind = SIGNATURES.find((signature) => signature.test(bytes));

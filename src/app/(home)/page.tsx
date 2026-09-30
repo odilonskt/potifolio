@@ -41,7 +41,7 @@ export default function Home() {
           </div>
         </Section>
 
-        <Section id="Projeto" title="Projetos" description="Repositórios públicos no GitHub, do mais recente ao mais antigo.">
+        <Section id="Projeto" title="Projetos" description="Projetos em destaque e repositórios públicos no GitHub.">
           <Projects />
         </Section>
 

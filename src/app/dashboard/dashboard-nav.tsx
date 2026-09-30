@@ -1,6 +1,6 @@
 "use client";
 
-import { Inbox, Newspaper, Route } from "lucide-react";
+import { FolderKanban, Inbox, Newspaper, Route } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 const LINKS = [
   { href: "/dashboard", label: "Contatos", icon: Inbox },
   { href: "/dashboard/trajetoria", label: "Trajetória", icon: Route },
+  { href: "/dashboard/projetos", label: "Projetos", icon: FolderKanban },
   { href: "/dashboard/blog", label: "Blog", icon: Newspaper },
 ];
 

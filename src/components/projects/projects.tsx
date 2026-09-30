@@ -3,8 +3,10 @@ import Image from "next/image";
 
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
+import { getPublishedProjects } from "@/lib/content/repository";
 import { getPortfolioRepos, type LanguageShare, type PortfolioRepo } from "@/lib/github";
 
+import { ProjectCard } from "./project-card";
 import { ProjectsToggle } from "./projects-toggle";
 
 // Prints dos projetos (em /public). Sem print, o card mostra só o texto.
@@ -40,7 +42,7 @@ function LanguageBar({ shares }: { shares: LanguageShare[] }) {
   );
 }
 
-function RepoCard({ repo }: { repo: PortfolioRepo }) {
+function RepoCard({ repo, headingLevel: Heading }: { repo: PortfolioRepo; headingLevel: "h3" | "h4" }) {
   const image = PROJECT_IMAGES[repo.name];
   const titleId = `repo-${repo.id}-title`;
 
@@ -59,9 +61,9 @@ function RepoCard({ repo }: { repo: PortfolioRepo }) {
 
       <div className="flex flex-1 flex-col gap-4 p-5">
         <header className="flex flex-col gap-1">
-          <h3 id={titleId} className="font-semibold break-words text-foreground">
+          <Heading id={titleId} className="font-semibold break-words text-foreground">
             {repo.name}
-          </h3>
+          </Heading>
           <p className="text-xs text-muted-foreground">
             Atualizado em <time dateTime={repo.updatedAt}>{dateFormatter.format(new Date(repo.updatedAt))}</time>
           </p>
@@ -92,29 +94,65 @@ function RepoCard({ repo }: { repo: PortfolioRepo }) {
   );
 }
 
-/** Projetos do GitHub, renderizados no servidor (cache de 1h). */
-export default async function Projects() {
-  let repos: PortfolioRepo[];
+function GitHubUnavailable() {
+  return (
+    <Alert variant="destructive">
+      <AlertCircle aria-hidden="true" />
+      <AlertTitle>Não foi possível carregar os repositórios</AlertTitle>
+      <AlertDescription>O GitHub não respondeu agora. Veja os repositórios direto no meu perfil.</AlertDescription>
+    </Alert>
+  );
+}
+
+async function loadRepos(): Promise<PortfolioRepo[] | null> {
   try {
-    repos = await getPortfolioRepos();
+    return await getPortfolioRepos();
   } catch (error) {
     console.error("Erro ao carregar repositórios:", error);
-    return (
-      <Alert variant="destructive">
-        <AlertCircle aria-hidden="true" />
-        <AlertTitle>Não foi possível carregar os projetos</AlertTitle>
-        <AlertDescription>O GitHub não respondeu agora. Veja os repositórios direto no meu perfil.</AlertDescription>
-      </Alert>
-    );
+    return null;
   }
+}
 
+function RepoList({ repos, headingLevel }: { repos: PortfolioRepo[]; headingLevel: "h3" | "h4" }) {
   return (
     <ProjectsToggle total={repos.length} initialVisible={INITIAL_VISIBLE}>
       {repos.map((repo) => (
         <li key={repo.id}>
-          <RepoCard repo={repo} />
+          <RepoCard repo={repo} headingLevel={headingLevel} />
         </li>
       ))}
     </ProjectsToggle>
+  );
+}
+
+/**
+ * Projetos cadastrados no painel primeiro; depois os repositórios do GitHub.
+ * Tudo renderizado no servidor, com cache (1h ou até salvar no painel).
+ */
+export default async function Projects() {
+  const [projects, repos] = await Promise.all([getPublishedProjects(), loadRepos()]);
+
+  // Sem projetos cadastrados: a seção mostra só o GitHub, como antes
+  if (projects.length === 0) {
+    return repos ? <RepoList repos={repos} headingLevel="h3" /> : <GitHubUnavailable />;
+  }
+
+  return (
+    <div className="flex flex-col gap-12">
+      <ul className="grid w-full gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {projects.map((project) => (
+          <li key={project.id}>
+            <ProjectCard project={project} />
+          </li>
+        ))}
+      </ul>
+
+      <section aria-labelledby="mais-no-github" className="flex flex-col gap-6">
+        <h3 id="mais-no-github" className="text-xl font-semibold text-foreground">
+          Mais no GitHub
+        </h3>
+        {repos ? <RepoList repos={repos} headingLevel="h4" /> : <GitHubUnavailable />}
+      </section>
+    </div>
   );
 }

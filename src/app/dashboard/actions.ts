@@ -12,15 +12,21 @@ import { deleteImage, InvalidImageError, readImageField, uploadImage } from "@/l
 import {
   getJourneyItem,
   getPost,
+  getProject,
   JOURNEY_COLLECTION,
   JOURNEY_TAG,
   POSTS_COLLECTION,
   POSTS_TAG,
+  PROJECTS_COLLECTION,
+  PROJECTS_TAG,
   uniqueSlug,
 } from "@/lib/content/repository";
 import {
   journeyInputSchema,
+  MAX_PROJECT_IMAGES,
   postInputSchema,
+  projectInputSchema,
+  type ProjectImage,
   slugify,
   type FormState,
 } from "@/lib/content/schemas";
@@ -230,4 +236,104 @@ export async function deletePostAction(formData: FormData): Promise<void> {
   await adminDb().collection(POSTS_COLLECTION).doc(id).delete();
   await deleteImage(existing.coverPath);
   updateTag(POSTS_TAG);
+}
+
+// ─── Projetos ─────────────────────────────────────────────────────────────────
+
+const MAX_UPLOAD_BYTES_PER_SAVE = 4 * 1024 * 1024;
+
+export async function saveProjectAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const { uid } = await requireAdmin();
+  if (isRateLimited(uid, "save")) return errorState(formData, { message: RATE_LIMITED_MESSAGE });
+
+  const parsed = projectInputSchema.safeParse({
+    title: formData.get("title"),
+    summary: formData.get("summary"),
+    tags: formData.get("tags") ?? "",
+    repoUrl: formData.get("repoUrl"),
+    demoUrl: formData.get("demoUrl"),
+    imageAlt: formData.get("imageAlt"),
+    order: formData.get("order") || 0,
+    published: formData.get("published"),
+  });
+  if (!parsed.success) return validationError(formData, parsed.error);
+
+  const files: File[] = [];
+  for (const entry of formData.getAll("images")) {
+    const image = readImageField(entry);
+    if (!image.ok) return errorState(formData, { fieldErrors: { images: [image.error] } });
+    if (image.file) files.push(image.file);
+  }
+
+  const id = readId(formData);
+  const existing = id ? await getProject(id) : null;
+  if (id && !existing) return errorState(formData, { message: "Projeto não encontrado." });
+
+  // Só remove caminhos que já pertencem a este projeto
+  const toRemove = new Set(formData.getAll("removeImages").filter((value): value is string => typeof value === "string"));
+  const kept = (existing?.images ?? []).filter((image) => !toRemove.has(image.path));
+  const removed = (existing?.images ?? []).filter((image) => toRemove.has(image.path));
+
+  // Limite da Vercel: 4,5 MB por requisição, somando todos os arquivos
+  if (files.reduce((total, file) => total + file.size, 0) > MAX_UPLOAD_BYTES_PER_SAVE) {
+    return errorState(formData, {
+      fieldErrors: { images: ["As imagens novas passam de 4 MB juntas. Envie menos de cada vez e salve de novo para adicionar o resto."] },
+    });
+  }
+  if (kept.length + files.length > MAX_PROJECT_IMAGES) {
+    return errorState(formData, {
+      fieldErrors: { images: [`No máximo ${MAX_PROJECT_IMAGES} imagens por projeto. Remova alguma antes de enviar outra.`] },
+    });
+  }
+  if (kept.length + files.length > 0 && !parsed.data.imageAlt) {
+    return errorState(formData, { fieldErrors: { imageAlt: ["Descreva as imagens para quem usa leitor de tela"] } });
+  }
+
+  const uploaded: ProjectImage[] = [];
+  try {
+    for (const file of files) uploaded.push(await uploadImage(file, "projects"));
+
+    const now = new Date().toISOString();
+    const data = {
+      ...parsed.data,
+      repoUrl: parsed.data.repoUrl ?? null,
+      demoUrl: parsed.data.demoUrl ?? null,
+      imageAlt: parsed.data.imageAlt ?? null,
+      images: [...kept, ...uploaded],
+      updatedAt: now,
+    };
+
+    const collection = adminDb().collection(PROJECTS_COLLECTION);
+    if (existing) {
+      await collection.doc(existing.id).update(clean(data));
+    } else {
+      await collection.add(clean({ ...data, createdAt: now }));
+    }
+  } catch (error) {
+    // Não deixa arquivos órfãos no Storage se o salvamento falhar
+    await Promise.all(uploaded.map((image) => deleteImage(image.path)));
+    if (error instanceof InvalidImageError) {
+      return errorState(formData, { fieldErrors: { images: [error.message] } });
+    }
+    console.error("Erro ao salvar projeto:", error);
+    return errorState(formData, { message: "Não foi possível salvar. Tente novamente." });
+  }
+
+  await Promise.all(removed.map((image) => deleteImage(image.path)));
+  updateTag(PROJECTS_TAG);
+  redirect("/dashboard/projetos?salvo=1");
+}
+
+export async function deleteProjectAction(formData: FormData): Promise<void> {
+  const { uid } = await requireAdmin();
+  if (isRateLimited(uid, "delete")) return;
+  const id = readId(formData);
+  if (!id) return;
+
+  const existing = await getProject(id);
+  if (!existing) return;
+
+  await adminDb().collection(PROJECTS_COLLECTION).doc(id).delete();
+  await Promise.all(existing.images.map((image) => deleteImage(image.path)));
+  updateTag(PROJECTS_TAG);
 }
