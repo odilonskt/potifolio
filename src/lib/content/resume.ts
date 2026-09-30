@@ -67,12 +67,15 @@ export const resumeInputSchema = z.object({
   headline: text("Cargo", 2, 80),
   stack: optionalText("Stack em destaque", 120),
   summary: text("Resumo", 20, 1500),
-  // Privados: só no PDF baixado pelo painel, nunca na página pública
-  email: z.preprocess(
-    (value) => (value === "" || value === null ? undefined : value),
-    z.string().trim().email("E-mail inválido").max(120).optional(),
-  ),
-  phone: optionalText("Telefone", 30),
+  // Contato: obrigatório e impresso no PDF (para empresas chamarem), mas nunca
+  // exibido na página pública, para robôs não coletarem os dados
+  email: z.string().trim().min(1, { error: "E-mail: obrigatório", abort: true }).email("E-mail inválido").max(120),
+  phone: z
+    .string()
+    .trim()
+    .min(1, { error: "Celular: obrigatório", abort: true })
+    .max(30)
+    .refine((value) => /^[0-9+()\s-]{10,20}$/.test(value), "Celular inválido: use DDD e número, ex.: (31) 99999-0000"),
   location: optionalText("Cidade", 80),
   links: z.array(linkSchema).max(6, "No máximo 6 links"),
   skills: z.array(skillGroupSchema).max(8, "No máximo 8 grupos de habilidades"),
@@ -113,12 +116,14 @@ export function describeIssue(issue: z.core.$ZodIssue): string {
 }
 
 // ─── Conteúdo inicial ─────────────────────────────────────────────────────────
-// Montado a partir do currículo em PDF (versão consolidada). Sem e-mail, telefone
-// ou cidade: esses campos ficam vazios e são preenchidos, se quiser, no painel.
+// Montado a partir do currículo em PDF (versão consolidada). E-mail e celular não
+// ficam no código: são preenchidos no painel (obrigatórios para salvar).
 
 export const RESUME_SEED: Resume = {
   name: "Odilon de Campos",
   headline: "Desenvolvedor Full Stack Júnior",
+  email: "",
+  phone: "",
   stack: "JavaScript/TypeScript · React/Next.js · Node.js",
   summary:
     "Desenvolvedor Full Stack com base sólida em JavaScript/TypeScript, React/Next.js no front-end e Node.js (Express/NestJS) no back-end, com experiência em APIs RESTful, autenticação JWT e bancos de dados relacionais (MySQL/PostgreSQL). Atuo como instrutor front-end na PUC Minas e como freelancer full stack, entregando projetos reais do levantamento de requisitos à produção. Cursando Análise e Desenvolvimento de Sistemas na PUC Minas, como bolsista integral PROUNI, e formado pelo Programadores do Amanhã. Proativo, comunicativo e com rápida adaptação a novas tecnologias.",
@@ -262,10 +267,10 @@ export type ResumeView = Omit<Resume, "email" | "phone" | "location" | "publishe
 };
 
 /**
- * `includePrivate: false` (página e PDF públicos) remove e-mail, telefone e cidade:
- * o portfólio não publica dados pessoais de contato.
+ * `withContact: true` para o PDF (e a prévia do painel): leva e-mail, celular e cidade.
+ * `withContact: false` para a página pública: esses dados nem chegam ao HTML.
  */
-export function buildResumeView(resume: Resume, { includePrivate }: { includePrivate: boolean }): ResumeView {
+export function buildResumeView(resume: Resume, { withContact }: { withContact: boolean }): ResumeView {
   const { email, phone, location } = resume;
   return {
     name: resume.name,
@@ -279,6 +284,6 @@ export function buildResumeView(resume: Resume, { includePrivate }: { includePri
     education: resume.education,
     courses: resume.courses,
     availability: resume.availability,
-    contact: includePrivate ? [email, phone, location].filter((value): value is string => Boolean(value)) : [],
+    contact: withContact ? [email, phone, location].filter((value): value is string => Boolean(value)) : [],
   };
 }

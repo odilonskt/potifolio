@@ -201,12 +201,15 @@ export function ResumeForm({ resume: initial }: { resume: Resume }) {
         />
 
         <FieldSet>
-          <FieldLegend>Contato (privado)</FieldLegend>
-          <FieldDescription>Só entra no PDF baixado pelo painel. A página pública nunca mostra esses dados.</FieldDescription>
+          <FieldLegend>Contato</FieldLegend>
+          <FieldDescription>
+            E-mail e celular são obrigatórios e saem no PDF, para as empresas te chamarem. A página pública não mostra esses
+            dados, para robôs não coletarem.
+          </FieldDescription>
           <div className="grid gap-6 sm:grid-cols-3">
-            <TextField id="email" label="E-mail" type="email" value={resume.email} onChange={set("email")} maxLength={120} />
-            <TextField id="phone" label="Celular" type="tel" value={resume.phone} onChange={set("phone")} maxLength={30} />
-            <TextField id="location" label="Cidade" value={resume.location} onChange={set("location")} maxLength={80} />
+            <TextField id="email" label="E-mail (obrigatório)" type="email" value={resume.email} onChange={set("email")} maxLength={120} />
+            <TextField id="phone" label="Celular (obrigatório)" type="tel" value={resume.phone} onChange={set("phone")} maxLength={30} />
+            <TextField id="location" label="Cidade (opcional)" value={resume.location} onChange={set("location")} maxLength={80} />
           </div>
         </FieldSet>
 

@@ -10,7 +10,7 @@ import { buildResumeView, RESUME_SEED } from "@/lib/content/resume";
 
 export default async function ResumePreviewPage() {
   await requireAdmin();
-  const resume = buildResumeView((await getResumeUncached()) ?? RESUME_SEED, { includePrivate: true });
+  const resume = buildResumeView((await getResumeUncached()) ?? RESUME_SEED, { withContact: true });
 
   return (
     <div className="flex flex-col gap-6">

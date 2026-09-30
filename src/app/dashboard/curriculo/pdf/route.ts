@@ -1,4 +1,4 @@
-// GET /dashboard/curriculo/pdf → PDF completo (com contato privado), só para o admin
+// GET /dashboard/curriculo/pdf → PDF do rascunho atual, só para o admin
 import { requireAdmin } from "@/lib/auth/session";
 import { getResumeUncached } from "@/lib/content/repository";
 import { buildResumeView, RESUME_SEED } from "@/lib/content/resume";
@@ -14,6 +14,6 @@ export async function GET() {
     return new Response("Muitas gerações seguidas. Aguarde um minuto.", { status: 429 });
   }
 
-  const resume = buildResumeView((await getResumeUncached()) ?? RESUME_SEED, { includePrivate: true });
+  const resume = buildResumeView((await getResumeUncached()) ?? RESUME_SEED, { withContact: true });
   return resumePdfResponse(resume, { "Cache-Control": "private, no-store" });
 }

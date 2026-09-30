@@ -27,8 +27,8 @@ export default async function ResumePage() {
   const resume = await getPublishedResume();
   if (!resume) notFound();
 
-  // Versão pública: sem e-mail, celular ou cidade
-  const view = buildResumeView(resume, { includePrivate: false });
+  // Página pública: sem e-mail, celular ou cidade (estão só no PDF)
+  const view = buildResumeView(resume, { withContact: false });
 
   return (
     <>

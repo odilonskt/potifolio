@@ -64,7 +64,7 @@ export default async function ResumeDashboardPage({ searchParams }: Props) {
             <Button variant="outline" asChild>
               <a href="/dashboard/curriculo/pdf" download>
                 <Download data-icon="inline-start" aria-hidden="true" />
-                Baixar PDF completo
+                Baixar PDF
               </a>
             </Button>
             {saved?.published && (
@@ -79,8 +79,8 @@ export default async function ResumeDashboardPage({ searchParams }: Props) {
           </div>
 
           <p className="text-sm text-muted-foreground">
-            A prévia e o PDF do painel usam a última versão salva e incluem e-mail, telefone e cidade. A página
-            pública nunca mostra esses dados.
+            Os PDFs (do painel e o que o visitante baixa) levam e-mail, celular e cidade. A página pública
+            /curriculo não mostra esses dados.
           </p>
         </aside>
       </div>
